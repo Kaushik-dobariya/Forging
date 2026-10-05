@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Login{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin.css">
+{% endblock %}
+
+{% block root_content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-brand">
+        <span style="color: var(--color-accent);">&#9632;</span>
+        <span>FORGING CMS</span>
+      </div>
+      <p class="auth-subtitle">Super Admin Portal Authentication</p>
+    </div>
+
+    {% include "components/alert.html" %}
+
+    <form action="/admin/login" method="POST" novalidate>
+      <input type="hidden" name="next" value="{{ next|default('/admin') }}">
+      
+      <div class="form-group">
+        <label for="email" class="form-label">Administrator Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          class="form-control" 
+          placeholder="admin@forgingcms.com"
+          value="{{ email|default('') }}" 
+          required 
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          class="form-control" 
+          placeholder="••••••••••••"
+          required 
+          autocomplete="current-password"
+        >
+      </div>
+
+      <div style="margin-top: var(--space-xl);">
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+          Authenticate to Dashboard
+        </button>
+      </div>
+    </form>
+
+    <div style="margin-top: var(--space-xl); text-align: center; font-size: 0.8rem; color: var(--color-text-muted);">
+      <a href="/" style="color: var(--color-accent); text-decoration: underline;">&larr; Return to Public Website</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

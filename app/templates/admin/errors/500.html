@@ -1,0 +1,16 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Server Error (500){% endblock %}
+
+{% block content %}
+<div class="admin-card" style="text-align: center; padding: var(--space-3xl) var(--space-xl);">
+  <div style="font-family: var(--font-mono); font-size: 3rem; font-weight: 800; color: var(--color-warning); margin-bottom: var(--space-sm);">
+    500
+  </div>
+  <h2 style="margin-bottom: var(--space-sm);">Administrative Execution Exception</h2>
+  <p style="color: var(--color-text-muted); margin-bottom: var(--space-xl); max-width: 450px; margin-left: auto; margin-right: auto;">
+    A server-side failure occurred while executing the administrative request. System logs contain diagnostic traces.
+  </p>
+  <a href="/admin" class="btn btn-primary">Return to Admin Dashboard</a>
+</div>
+{% endblock %}

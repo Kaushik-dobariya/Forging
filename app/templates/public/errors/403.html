@@ -1,0 +1,18 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}403 Forbidden{% endblock %}
+
+{% block content %}
+<section class="section" style="text-align: center; padding: var(--space-3xl) 0;">
+  <div class="container" style="max-width: 600px;">
+    <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 800; color: var(--color-danger); line-height: 1;">
+      403
+    </div>
+    <h1 style="font-size: 2rem; margin: var(--space-md) 0 var(--space-sm);">Access Restricted</h1>
+    <p style="color: var(--color-text-muted); margin-bottom: var(--space-xl); font-size: 1rem;">
+      You do not possess the required clearance to access this engineering sector.
+    </p>
+    <a href="/" class="btn btn-primary">Return to Homepage</a>
+  </div>
+</section>
+{% endblock %}

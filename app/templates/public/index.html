@@ -1,0 +1,139 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}Heavy Precision Forging & Metallurgy Excellence{% endblock %}
+
+{% block content %}
+<!-- Industrial Hero Section -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tagline">
+          <span>PRECISION FORGED ENGINEERING</span>
+        </div>
+        <h1 class="hero-title">
+          High-Integrity Forgings Engineered for Critical Stress Environments.
+        </h1>
+        <p class="hero-subtitle">
+          Specializing in closed-die and upset forgings from 0.5 kg to 150 kg in carbon, alloy, and stainless steels. Delivering certified metallurgical consistency to tier-1 automotive, railway, defense, and power transmission leaders.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#contact" class="btn btn-accent">Request Engineering Consultation</a>
+          <a href="/admin" class="btn btn-outline">Access CMS Administration</a>
+        </div>
+      </div>
+
+      <!-- Industrial Technical Card -->
+      <div style="background: var(--color-primary); color: #FFF; padding: var(--space-xl); border-radius: var(--radius-md); border-left: 4px solid var(--color-accent); box-shadow: var(--shadow-lg);">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-accent); margin-bottom: var(--space-xs); text-transform: uppercase;">
+          FACILITY METRICS
+        </div>
+        <h3 style="color: #FFF; font-size: 1.4rem; margin-bottom: var(--space-md);">Production Readiness</h3>
+        <p style="color: var(--color-text-light); font-size: 0.9rem; margin-bottom: var(--space-lg); line-height: 1.6;">
+          Fully integrated closed-die forge lines with automated induction billet heaters, PLC-controlled drop hammers, and in-house CNC tool & die manufacturing.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); border-top: 1px solid var(--color-secondary-light); padding-top: var(--space-md);">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">Press Line Capacity</div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #FFF;">1,000T - 4,000T</div>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--color-text-light);">Metallurgy Lab</div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #FFF;">NABL Certified</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics Strip -->
+    <div class="metrics-strip" style="margin-top: var(--space-3xl);">
+      <div class="metric-card">
+        <div class="metric-value">4,000 T</div>
+        <div class="metric-label">Max Press Capacity</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">18,000+</div>
+        <div class="metric-label">Annual Metric Tonnes</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">0.015 mm</div>
+        <div class="metric-label">Machining Tolerance</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">100%</div>
+        <div class="metric-label">Ultrasonic Tested</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Engineering Capabilities Section -->
+<section id="capabilities" class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">ENGINEERING SPECS</span>
+      <h2 class="section-title">Core Manufacturing Capabilities</h2>
+    </div>
+
+    <div class="features-grid">
+      <article class="feature-box">
+        <div>
+          <div class="feature-number">01 // FORGE DIVISION</div>
+          <h3 class="feature-title">Closed-Die Hot Forging</h3>
+          <p class="feature-desc">
+            Computer-simulated grain flow orientation ensuring superior fatigue resistance and structural density for critical load-bearing automotive & heavy engineering shafts.
+          </p>
+        </div>
+      </article>
+
+      <article class="feature-box">
+        <div>
+          <div class="feature-number">02 // THERMAL TREATMENT</div>
+          <h3 class="feature-title">Controlled Heat Treatment</h3>
+          <p class="feature-desc">
+            Continuous normalizing, isothermal annealing, and polymer quench-and-temper furnaces with continuous SCADA thermal logging and micro-structure analysis.
+          </p>
+        </div>
+      </article>
+
+      <article class="feature-box">
+        <div>
+          <div class="feature-number">03 // CNC MACHINING</div>
+          <h3 class="feature-title">Precision Finish Machining</h3>
+          <p class="feature-desc">
+            Multi-axis CNC turning and vertical machining centers delivering components ready for line assembly with automated coordinate measuring machine (CMM) verification.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Quality Assurance Section -->
+<section id="quality" class="section" style="background-color: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">COMPLIANCE & TESTING</span>
+      <h2 class="section-title">Metallurgical Quality Assurance</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
+      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
+        <h4 style="margin-bottom: var(--space-xs);">Optical Emission Spectrometer</h4>
+        <p style="font-size: 0.9rem; color: var(--color-text-muted);">24-channel chemical composition analysis verifying carbon, sulfur, phosphorus, and micro-alloy balance per heat lot.</p>
+      </div>
+
+      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
+        <h4 style="margin-bottom: var(--space-xs);">Magnetic Particle (MPI) & Ultrasonic (UT)</h4>
+        <p style="font-size: 0.9rem; color: var(--color-text-muted);">100% volumetric and surface defect verification per ASTM & DIN aerospace standards before dispatch.</p>
+      </div>
+
+      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
+        <h4 style="margin-bottom: var(--space-xs);">Mechanical & Impact Testing</h4>
+        <p style="font-size: 0.9rem; color: var(--color-text-muted);">In-house tensile testing, Charpy V-notch impact down to -40°C, and Brinell/Rockwell hardness mapping.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Permission Denied (403){% endblock %}
+
+{% block content %}
+<div class="admin-card" style="text-align: center; padding: var(--space-3xl) var(--space-xl);">
+  <div style="font-family: var(--font-mono); font-size: 3rem; font-weight: 800; color: var(--color-danger); margin-bottom: var(--space-sm);">
+    403
+  </div>
+  <h2 style="margin-bottom: var(--space-sm);">Administrative Access Restricted</h2>
+  <p style="color: var(--color-text-muted); margin-bottom: var(--space-xl); max-width: 450px; margin-left: auto; margin-right: auto;">
+    Your current user role does not possess authorization to execute operations in this administrative sector.
+  </p>
+  <a href="/admin" class="btn btn-primary">Return to Admin Dashboard</a>
+</div>
+{% endblock %}

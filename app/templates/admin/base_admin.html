@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Super Admin Control Panel{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/admin.css">
+{% endblock %}
+
+{% block root_content %}
+<div class="admin-layout">
+  <!-- Admin Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <span style="color: var(--color-accent); font-weight: 900;">&#9632;</span>
+      <span>FORGING CMS</span>
+    </div>
+
+    <ul class="admin-nav">
+      <li class="admin-nav-item">
+        <a href="/admin" class="admin-nav-link active">
+          <span>&#9776;</span> Dashboard
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/" target="_blank" class="admin-nav-link">
+          <span>&#10138;</span> View Live Website
+        </a>
+      </li>
+    </ul>
+
+    <div class="admin-sidebar-footer">
+      <div style="color: var(--color-text-light); font-size: 0.8rem; margin-bottom: var(--space-xs);">
+        System Status: <span style="color: #4ade80;">Operational</span>
+      </div>
+      <form action="/admin/logout" method="POST">
+        <button type="submit" class="btn btn-outline" style="width: 100%; font-size: 0.8rem; color: #FFF; border-color: var(--color-secondary-light);">
+          Logout
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- Admin Main View Area -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="admin-topbar-title">
+        {% block page_title %}Administrative Console{% endblock %}
+      </div>
+      <div class="admin-topbar-user">
+        <span class="user-badge">{{ current_user.role|upper if current_user else 'SUPER_ADMIN' }}</span>
+        <span style="font-weight: 600; font-size: 0.9rem; color: var(--color-primary);">
+          {{ current_user.full_name if current_user else 'Admin' }}
+        </span>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      {% include "components/alert.html" %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/admin.js"></script>
+{% endblock %}

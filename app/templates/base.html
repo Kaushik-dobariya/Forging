@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  
+  <title>{% block title %}Industrial Forging & Precision Engineering{% endblock %} | {{ app_name|default('Forging CMS') }}</title>
+  
+  <meta name="description" content="{% block meta_description %}Premium closed-die, open-die, and precision engineered forgings manufactured to aerospace, automotive, and heavy industrial tolerances.{% endblock %}">
+  
+  {% block extra_meta %}{% endblock %}
+
+  <!-- Core Design Tokens & Styles -->
+  <link rel="stylesheet" href="/static/css/theme.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% block root_content %}{% endblock %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
