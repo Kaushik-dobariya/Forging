@@ -1,0 +1,174 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Products Catalog Management{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/products">Products</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Products Catalog</span>
+    </nav>
+    <h1 class="page-title">Products Catalog</h1>
+    <p class="page-description">
+      Database-driven industrial forging components, metallurgical properties, and technical specifications.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/products/create" class="btn btn-accent" id="btn-create-product">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add New Product
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Search & Filter Bar -->
+  <form method="GET" action="/admin/products" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search Catalog</label>
+      <input type="text" id="filterSearch" name="q" value="{{ q or '' }}" placeholder="Search by product name..." class="form-control">
+    </div>
+    <div style="min-width: 200px;">
+      <label class="form-label" for="filterCategory">Product Category</label>
+      <select id="filterCategory" name="category_id" class="form-select">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width: 150px;">
+      <label class="form-label" for="filterStatus">Publication Status</label>
+      <select id="filterStatus" name="status_filter" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if q or category_id or status_filter %}
+      <a href="/admin/products" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Products Catalog Table -->
+  {% if products %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 240px;">Product Name & Slug</th>
+          <th style="min-width: 140px;">Category</th>
+          <th style="min-width: 130px;">Material / Grade</th>
+          <th style="min-width: 120px; white-space: nowrap;">Weight Range</th>
+          <th style="width: 90px; text-align: center;">Specs</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 130px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ p.display_order }}
+          </td>
+          <td>
+            <a href="/admin/products/{{ p.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ p.name }}
+            </a>
+            <div class="table-subtext">/products/{{ p.category.slug if p.category else 'uncategorized' }}/{{ p.slug }}</div>
+          </td>
+          <td>
+            {% if p.category %}
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ p.category.name }}
+            </span>
+            {% else %}
+            <span style="color: var(--admin-text-subtle);">&mdash;</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.875rem;">{{ p.material or '&mdash;'|safe }}</td>
+          <td style="white-space: nowrap; font-size: 0.875rem;">{{ p.weight_range or '&mdash;'|safe }}</td>
+          <td style="text-align: center;">
+            <span class="badge" style="background-color: var(--admin-surface-muted); border: 1px solid var(--admin-border-subtle); color: var(--admin-text-muted);">
+              {{ p.specifications|length }}
+            </span>
+          </td>
+          <td>
+            {% if p.status == 'published' %}
+            <span class="badge badge-published">Published</span>
+            {% elif p.status == 'draft' %}
+            <span class="badge badge-draft">Draft</span>
+            {% else %}
+            <span class="badge badge-archived">{{ p.status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+              <!-- View Live Link -->
+              <a href="/products/{{ p.category.slug if p.category else 'general' }}/{{ p.slug }}" target="_blank" class="btn-icon" title="View Public Product Page" aria-label="View Public Product Page">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" x2="21" y1="14" y2="3"></line>
+                </svg>
+              </a>
+              <!-- Edit Product -->
+              <a href="/admin/products/{{ p.id }}/edit" class="btn-icon" title="Edit Product" aria-label="Edit Product">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </a>
+              <!-- Accessible Delete Trigger -->
+              <button type="button" class="btn-icon btn-icon-danger btn-delete-trigger" data-action="/admin/products/{{ p.id }}/delete" data-name="{{ p.name }}" title="Delete Product" aria-label="Delete Product">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.8125rem; color: var(--admin-text-muted);">
+    <span>Showing <strong>{{ products|length }}</strong> catalog product{{ 's' if products|length != 1 else '' }}</span>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"></path>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No products found</div>
+    <p class="table-empty-state-text">
+      {% if q or category_id or status_filter %}
+      No products match your active search and filter parameters. Try resetting your filters.
+      {% else %}
+      Your catalog is currently empty. Get started by adding your first forged industrial product.
+      {% endif %}
+    </p>
+    {% if q or category_id or status_filter %}
+    <a href="/admin/products" class="btn btn-outline btn-sm">Clear Filters</a>
+    {% else %}
+    <a href="/admin/products/create" class="btn btn-accent btn-sm">+ Create First Product</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

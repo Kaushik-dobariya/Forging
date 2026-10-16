@@ -1,0 +1,108 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Facilities Management{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/facilities">Infrastructure</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Plant Facilities</span>
+    </nav>
+    <h1 class="page-title">Plant & Workshop Facilities</h1>
+    <p class="page-description">
+      Manufacturing workshops, heat treatment plants, CNC machine centers, and metallurgical laboratories.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/infrastructure/facilities/create" class="btn btn-accent">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Facility
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if facilities %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 200px;">Facility Name</th>
+          <th style="min-width: 150px;">Workshop Category</th>
+          <th style="min-width: 150px;">Installed Capacity</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 120px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for fac in facilities %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ fac.display_order }}
+          </td>
+          <td>
+            <a href="/admin/infrastructure/facilities/{{ fac.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ fac.name }}
+            </a>
+          </td>
+          <td>
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ fac.category or 'General' }}
+            </span>
+          </td>
+          <td style="font-size: 0.875rem;">{{ fac.capacity or '&mdash;'|safe }}</td>
+          <td>
+            {% if fac.status == 'published' %}
+            <span class="badge badge-published">Published</span>
+            {% elif fac.status == 'draft' %}
+            <span class="badge badge-draft">Draft</span>
+            {% else %}
+            <span class="badge badge-archived">{{ fac.status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+              <a href="/admin/infrastructure/facilities/{{ fac.id }}/edit" class="btn-icon" title="Edit Facility" aria-label="Edit Facility">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </a>
+              <button type="button" class="btn-icon btn-icon-danger btn-delete-trigger" data-action="/admin/infrastructure/facilities/{{ fac.id }}/delete" data-name="{{ fac.name }}" title="Delete Facility" aria-label="Delete Facility">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+        <line x1="3" x2="21" y1="9" y2="9"></line>
+        <line x1="9" x2="9" y1="21" y2="9"></line>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No facilities configured</div>
+    <p class="table-empty-state-text">Add your plant workshops, forging bays, die shops, and metallurgical labs.</p>
+    <a href="/admin/infrastructure/facilities/create" class="btn btn-accent btn-sm">+ Add First Facility</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

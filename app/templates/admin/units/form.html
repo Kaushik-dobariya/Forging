@@ -1,0 +1,81 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if unit %}Edit Measurement Unit: {{ unit.symbol }}{% else %}Add New Measurement Unit{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/products">Products</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/specifications">Units & Specs</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if unit %}Edit Unit{% else %}Add Unit{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if unit %}Edit Measurement Unit: {{ unit.symbol }}{% else %}Add New Measurement Unit{% endif %}</h1>
+    <p class="page-description">
+      Configure standard physical dimensions, display symbols, and categorization.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/specifications" class="btn btn-outline">
+      &larr; Back to Units
+    </a>
+  </div>
+</div>
+
+<div class="admin-card" style="max-width: 680px;">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Unit Details</h3>
+  </div>
+
+  <form method="POST" action="{% if unit %}/admin/units/{{ unit.id }}/edit{% else %}/admin/units/create{% endif %}">
+    <div class="form-group">
+      <label class="form-label">Unit Full Name <span class="required-star">*</span></label>
+      <input type="text" name="name" value="{{ unit.name if unit else '' }}" required class="form-control" placeholder="e.g. Metric Ton (MT), Millimeter">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Symbol / Short Code <span class="required-star">*</span></label>
+        <input type="text" name="symbol" value="{{ unit.symbol if unit else '' }}" required class="form-control" placeholder="e.g. MT, mm, kN, kg, inch">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Physical Dimension <span class="required-star">*</span></label>
+        <select name="unit_type" class="form-select">
+          <option value="weight" {% if unit and unit.unit_type == 'weight' %}selected{% endif %}>Weight (kg, ton, MT, lbs)</option>
+          <option value="length" {% if unit and unit.unit_type == 'length' %}selected{% endif %}>Length (mm, cm, m, inch)</option>
+          <option value="capacity" {% if unit and unit.unit_type == 'capacity' %}selected{% endif %}>Capacity (Tons, kN, MT)</option>
+          <option value="pressure" {% if unit and unit.unit_type == 'pressure' %}selected{% endif %}>Pressure (MPa, bar, PSI, Class)</option>
+          <option value="hardness" {% if unit and unit.unit_type == 'hardness' %}selected{% endif %}>Hardness (HRC, HB, HV)</option>
+          <option value="other" {% if unit and unit.unit_type == 'other' %}selected{% endif %}>Other Custom</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ unit.display_order if unit else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="is_active" class="form-select">
+          <option value="true" {% if not unit or unit.is_active %}selected{% endif %}>Active</option>
+          <option value="false" {% if unit and not unit.is_active %}selected{% endif %}>Disabled</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if unit %}Save Unit{% else %}Create Unit{% endif %}
+      </button>
+      <a href="/admin/specifications" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

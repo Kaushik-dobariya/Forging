@@ -1,88 +1,373 @@
 {% extends "admin/base_admin.html" %}
 
-{% block page_title %}Dashboard & System Overview{% endblock %}
+{% block page_title %}Dashboard & Industrial CMS Overview{% endblock %}
 
 {% block content %}
-<div class="admin-card" style="border-left: 4px solid var(--color-accent); background: linear-gradient(135deg, #FFFFFF 0%, #FAF8F5 100%);">
-  <h2 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">
-    Welcome back, {{ current_user.full_name }}
-  </h2>
-  <p style="color: var(--color-text-muted); font-size: 0.95rem;">
-    Forging CMS Foundation is active and running in <strong>{{ app_env|upper }}</strong> mode.
-  </p>
-</div>
-
-<!-- Architecture & Foundation Status Grid -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-xl); margin-bottom: var(--space-2xl);">
-  <div class="admin-card" style="margin-bottom: 0;">
-    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent); text-transform: uppercase; margin-bottom: var(--space-2xs);">
-      PERSISTENCE STATUS
-    </div>
-    <h3 style="font-size: 1.25rem; margin-bottom: var(--space-sm);">Database & Migrations</h3>
-    <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">
-      Connected to database via SQLAlchemy with Alembic migration version tracking enabled.
+<!-- Reusable Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Dashboard</span>
+    </nav>
+    <h1 class="page-title">Dashboard & Operations Overview</h1>
+    <p class="page-description">
+      Real-time overview of manufacturing catalog items, industrial plant assets, quality assurance standards, and runtime health.
     </p>
-    <div style="display: flex; gap: var(--space-xs); align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--color-success);">
-      <span>&#10003;</span> Schema Synced & Ready
-    </div>
   </div>
-
-  <div class="admin-card" style="margin-bottom: 0;">
-    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent); text-transform: uppercase; margin-bottom: var(--space-2xs);">
-      ACCESS CONTROL
-    </div>
-    <h3 style="font-size: 1.25rem; margin-bottom: var(--space-sm);">Role-Based Security</h3>
-    <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">
-      Secure HTTP-only signed cookie session architecture with brute-force lockout protection active.
-    </p>
-    <div style="display: flex; gap: var(--space-xs); align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--color-success);">
-      <span>&#10003;</span> Super Admin Role Verified
-    </div>
-  </div>
-
-  <div class="admin-card" style="margin-bottom: 0;">
-    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent); text-transform: uppercase; margin-bottom: var(--space-2xs);">
-      STORAGE PIPELINE
-    </div>
-    <h3 style="font-size: 1.25rem; margin-bottom: var(--space-sm);">Media & Upload System</h3>
-    <p style="font-size: 0.9rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">
-      MIME inspection, Pillow raster verification, and directory traversal sanitization configured.
-    </p>
-    <div style="display: flex; gap: var(--space-xs); align-items: center; font-size: 0.85rem; font-weight: 600; color: var(--color-success);">
-      <span>&#10003;</span> Upload Storage Configured
-    </div>
+  <div class="page-header-actions">
+    <a href="/admin/products/create" class="btn btn-accent">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add New Product
+    </a>
+    <a href="/" target="_blank" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" x2="21" y1="14" y2="3"></line>
+      </svg>
+      Live Website
+    </a>
   </div>
 </div>
 
-<!-- System Settings Summary -->
+<!-- Welcome Notification Banner -->
+<div class="admin-card" style="border-left: 4px solid var(--admin-accent); margin-bottom: 1.5rem; background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.25rem;">
+        Welcome back, {{ current_user.full_name if current_user else 'Administrator' }}
+      </h2>
+      <p style="color: var(--admin-text-secondary); font-size: 0.875rem; margin: 0;">
+        You are authenticated with full Super Admin privileges. Industrial CMS engine is active and operational.
+      </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 0.75rem; color: var(--admin-text-muted); font-weight: 500;">Environment:</span>
+      {% if app_env|lower == 'production' %}
+      <span class="badge" style="background-color: #DC2626; color: #FFFFFF; font-weight: 700;">PRODUCTION</span>
+      {% else %}
+      <span class="badge" style="background-color: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; font-weight: 700;">DEVELOPMENT</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Database-Backed Operational Metric Cards -->
+<div class="metrics-grid">
+  <!-- 1. Products -->
+  <a href="/admin/products" class="metric-card" aria-label="Manage Products">
+    <div class="metric-card-header">
+      <span class="metric-label">Products</span>
+      <div class="metric-icon-wrap" style="color: var(--admin-accent);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"></path>
+          <polyline points="2.32 6.16 12 11 21.68 6.16"></polyline>
+          <line x1="12" y1="22.76" x2="12" y2="11"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.products if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Catalog</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 2. Categories -->
+  <a href="/admin/categories" class="metric-card" aria-label="Manage Product Categories">
+    <div class="metric-card-header">
+      <span class="metric-label">Categories</span>
+      <div class="metric-icon-wrap" style="color: #0284C7;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+          <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+          <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+          <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.categories if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Categories</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 3. Capabilities -->
+  <a href="/admin/capabilities" class="metric-card" aria-label="Manage Forging Capabilities">
+    <div class="metric-card-header">
+      <span class="metric-label">Capabilities</span>
+      <div class="metric-icon-wrap" style="color: #2563EB;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.capabilities if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Processes</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 4. Industries -->
+  <a href="/admin/industries" class="metric-card" aria-label="Manage Industries Served">
+    <div class="metric-card-header">
+      <span class="metric-label">Industries</span>
+      <div class="metric-icon-wrap" style="color: #059669;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path>
+          <path d="M17 18h1"></path>
+          <path d="M12 18h1"></path>
+          <path d="M7 18h1"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.industries if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Sectors</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 5. Facilities & Equipment -->
+  <a href="/admin/infrastructure/equipment" class="metric-card" aria-label="Manage Infrastructure Equipment">
+    <div class="metric-card-header">
+      <span class="metric-label">Equipment</span>
+      <div class="metric-icon-wrap" style="color: #D97706;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+          <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+          <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.equipment if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Machinery</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 6. Materials -->
+  <a href="/admin/materials" class="metric-card" aria-label="Manage Materials & Metallurgy">
+    <div class="metric-card-header">
+      <span class="metric-label">Materials</span>
+      <div class="metric-icon-wrap" style="color: #4F46E5;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="6 2 18 2 22 8 12 22 2 8 6 2"></polygon>
+          <line x1="2" x2="22" y1="8" y2="8"></line>
+          <line x1="12" x2="12" y1="2" y2="22"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.materials if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Manage Grades</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 7. Quality Certifications -->
+  <a href="/admin/certifications" class="metric-card" aria-label="Manage Quality Certifications">
+    <div class="metric-card-header">
+      <span class="metric-label">Certifications</span>
+      <div class="metric-icon-wrap" style="color: #7C3AED;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+          <path d="m9 12 2 2 4-4"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.certifications if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Compliance Standards</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 8. Plant Facilities -->
+  <a href="/admin/infrastructure/facilities" class="metric-card" aria-label="Manage Plant Facilities">
+    <div class="metric-card-header">
+      <span class="metric-label">Facilities</span>
+      <div class="metric-icon-wrap" style="color: #0D9488;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+          <line x1="3" x2="21" y1="9" y2="9"></line>
+          <line x1="9" x2="9" y1="21" y2="9"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.facilities if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Plant Locations</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+</div>
+
+<!-- Recent Products Section -->
 <div class="admin-card">
   <div class="admin-card-header">
-    <h3 class="admin-card-title">System Environment & Runtime Diagnostics</h3>
+    <div>
+      <h3 class="admin-card-title">Recent Catalog Products</h3>
+      <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin: 0.2rem 0 0 0;">
+        Recently created and updated industrial forgings in your database.
+      </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="/admin/products" class="btn btn-outline btn-sm">View Full Catalog &rarr;</a>
+      <a href="/admin/products/create" class="btn btn-accent btn-sm">+ Add Product</a>
+    </div>
   </div>
 
-  <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-    <tbody>
-      <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-        <td style="padding: 10px 0; font-weight: 600; width: 220px;">Environment:</td>
-        <td style="padding: 10px 0; font-family: var(--font-mono);">{{ app_env }}</td>
-      </tr>
-      <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-        <td style="padding: 10px 0; font-weight: 600;">Debug Mode:</td>
-        <td style="padding: 10px 0; font-family: var(--font-mono);">{{ app_debug }}</td>
-      </tr>
-      <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-        <td style="padding: 10px 0; font-weight: 600;">Session Cookie Name:</td>
-        <td style="padding: 10px 0; font-family: var(--font-mono);">{{ session_cookie_name }}</td>
-      </tr>
-      <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-        <td style="padding: 10px 0; font-weight: 600;">Session Max Age:</td>
-        <td style="padding: 10px 0; font-family: var(--font-mono);">{{ session_max_age }} seconds</td>
-      </tr>
-      <tr style="border-bottom: 1px solid var(--color-border-subtle);">
-        <td style="padding: 10px 0; font-weight: 600;">Max Upload Size:</td>
-        <td style="padding: 10px 0; font-family: var(--font-mono);">{{ max_upload_size }} bytes</td>
-      </tr>
-    </tbody>
-  </table>
+  {% if recent_products %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="min-width: 220px;">Product Name & Slug</th>
+          <th style="min-width: 140px;">Category</th>
+          <th style="min-width: 130px;">Material</th>
+          <th style="min-width: 120px;">Weight Range</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 100px; text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prod in recent_products %}
+        <tr>
+          <td>
+            <a href="/admin/products/{{ prod.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ prod.name }}
+            </a>
+            <div class="table-subtext">/products/{{ prod.category.slug if prod.category else 'general' }}/{{ prod.slug }}</div>
+          </td>
+          <td>
+            {% if prod.category %}
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ prod.category.name }}
+            </span>
+            {% else %}
+            <span style="color: var(--admin-text-subtle);">&mdash;</span>
+            {% endif %}
+          </td>
+          <td>{{ prod.material or '&mdash;'|safe }}</td>
+          <td style="white-space: nowrap;">{{ prod.weight_range or '&mdash;'|safe }}</td>
+          <td>
+            {% if prod.status == 'published' %}
+            <span class="badge badge-published">Published</span>
+            {% elif prod.status == 'draft' %}
+            <span class="badge badge-draft">Draft</span>
+            {% else %}
+            <span class="badge badge-archived">{{ prod.status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="/admin/products/{{ prod.id }}/edit" class="btn btn-outline btn-sm" title="Edit Product">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"></path>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No products found</div>
+    <p class="table-empty-state-text">Your industrial product catalog is currently empty. Add your first forging component to populate this table.</p>
+    <a href="/admin/products/create" class="btn btn-accent btn-sm">+ Create First Product</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- System Environment & Runtime Diagnostics (Sanitized - No Secrets Exposed) -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <div>
+      <h3 class="admin-card-title">System Environment & Runtime Diagnostics</h3>
+      <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin: 0.2rem 0 0 0;">
+        Operational configuration parameters and server runtime state.
+      </p>
+    </div>
+    <span class="badge badge-published">
+      <span class="status-dot-green" aria-hidden="true" style="margin-right: 4px;"></span>
+      Operational
+    </span>
+  </div>
+
+  <div class="table-responsive" style="border: none;">
+    <table class="admin-table">
+      <tbody>
+        <tr>
+          <td style="font-weight: 600; width: 220px; color: var(--admin-text-primary);">Execution Environment</td>
+          <td>
+            {% if app_env|lower == 'production' %}
+            <span class="badge" style="background-color: #DC2626; color: #FFFFFF;">PRODUCTION</span>
+            {% else %}
+            <span class="badge" style="background-color: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;">DEVELOPMENT</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600; color: var(--admin-text-primary);">Debug Mode</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8125rem;">
+            {% if app_debug %}
+            <span style="color: #D97706; font-weight: 600;">ENABLED (Verbose Error Reporting)</span>
+            {% else %}
+            <span style="color: #059669; font-weight: 600;">DISABLED (Hardened)</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600; color: var(--admin-text-primary);">Session Authentication Cookie</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8125rem;">{{ session_cookie_name }}</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600; color: var(--admin-text-primary);">Session Maximum Age</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8125rem;">{{ session_max_age }} seconds ({{ (session_max_age // 3600) }} hours)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600; color: var(--admin-text-primary);">Max File Upload Limit</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8125rem;">{{ (max_upload_size / (1024 * 1024))|round(1) }} MB ({{ max_upload_size }} bytes)</td>
+        </tr>
+        <tr>
+          <td style="font-weight: 600; color: var(--admin-text-primary);">Configured Site URL</td>
+          <td style="font-family: var(--font-mono); font-size: 0.8125rem;">{{ site_url }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

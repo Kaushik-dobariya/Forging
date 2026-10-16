@@ -1,0 +1,72 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Edit Quality Section: {{ section.title }}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Quality & Testing</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Sections</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Edit Section</span>
+    </nav>
+    <h1 class="page-title">Edit Section: {{ section.title }}</h1>
+    <p class="page-description">
+      Configure policy content, engineering subtitles, and display hierarchy.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/quality" class="btn btn-outline">
+      &larr; Back to Quality Sections
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Edit Section Content</h3>
+  </div>
+
+  <form method="POST" action="/admin/quality/{{ section.id }}/edit">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Section Title <span class="required-star">*</span></label>
+        <input type="text" name="title" value="{{ section.title }}" required class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subtitle / Engineering Heading</label>
+        <input type="text" name="subtitle" value="{{ section.subtitle or '' }}" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ section.display_order }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="is_active" class="form-select">
+          <option value="true" {% if section.is_active %}selected{% endif %}>Active</option>
+          <option value="false" {% if not section.is_active %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Section Body & Quality Protocol <span class="required-star">*</span></label>
+      <textarea name="content" rows="8" required class="form-control">{{ section.content }}</textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">Save Section</button>
+      <a href="/admin/quality" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

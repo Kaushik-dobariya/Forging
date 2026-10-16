@@ -1,0 +1,141 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Certifications</li>
+    </ul>
+    <h1 class="page-title">Industrial Certifications & Accreditations</h1>
+    <p class="page-subtitle">
+      Our manufacturing plants, metallurgical laboratory, and management systems hold international certifications from leading global notification bodies including TÜV, DNV, and Lloyd's Register.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <!-- Intro Banner -->
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-left: 4px solid var(--color-accent); border-radius: var(--radius-sm); padding: var(--space-xl); margin-bottom: var(--space-2xl); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+      <div>
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-2xs);">
+          Verified International Compliance
+        </h3>
+        <p style="font-size: 0.925rem; color: var(--color-text-muted); margin: 0; max-width: 720px; line-height: 1.6;">
+          All certifications are actively maintained through annual surveillance audits and unannounced third-party inspections. Digital PDF copies can be downloaded below for vendor registration and quality qualification.
+        </p>
+      </div>
+      <a href="/quality" class="btn btn-outline">
+        View Quality Assurance System &rarr;
+      </a>
+    </div>
+
+    <!-- Certifications Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: var(--space-xl);">
+      {% for cert in certifications %}
+      <article class="admin-card" style="margin-bottom: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+        <div>
+          <!-- Certificate Header / Visual Thumbnail -->
+          <div style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); padding: var(--space-xl); color: #FFF; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <span class="brand-badge" style="background: var(--color-accent); color: #FFF;">
+                {{ cert.issuing_organization or 'ACCREDITATION' }}
+              </span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: #D1D5DB; background: rgba(0,0,0,0.25); padding: 2px 8px; border-radius: var(--radius-xs);">
+                ORDER: #0{{ cert.display_order }}
+              </span>
+            </div>
+
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #FFFFFF; margin-top: var(--space-md); margin-bottom: var(--space-xs); line-height: 1.3;">
+              {{ cert.certificate_name }}
+            </h2>
+
+            {% if cert.certificate_number %}
+            <div style="font-family: var(--font-mono); font-size: 0.825rem; color: var(--color-accent-light);">
+              Cert No: {{ cert.certificate_number }}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Body Content -->
+          <div style="padding: var(--space-xl);">
+            {% if cert.issue_date or cert.expiry_date %}
+            <div style="display: flex; gap: var(--space-md); background: var(--color-surface-subtle); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-xs); margin-bottom: var(--space-md); font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-secondary);">
+              {% if cert.issue_date %}
+              <div><strong>Issued:</strong> {{ cert.issue_date }}</div>
+              {% endif %}
+              {% if cert.expiry_date %}
+              <div><strong>Valid Thru:</strong> {{ cert.expiry_date }}</div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-md);">
+              {{ cert.description or 'Certified manufacturing quality management system compliance.' }}
+            </p>
+
+            {% if cert.certificate_image %}
+            <div style="margin-bottom: var(--space-md); text-align: center;">
+              <a href="{{ cert.certificate_image }}" target="_blank" rel="noopener">
+                <img src="{{ cert.certificate_image }}" alt="{{ cert.certificate_name }}" style="max-height: 180px; width: auto; max-width: 100%; object-fit: contain; border: 1px solid var(--color-border); border-radius: var(--radius-xs); box-shadow: var(--shadow-sm);" loading="lazy">
+              </a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Card Footer Actions: View Certificate & Download PDF -->
+        <div style="padding: var(--space-md) var(--space-xl); background: var(--color-surface-subtle); border-top: 1px solid var(--color-border); display: flex; gap: var(--space-sm);">
+          {% if cert.certificate_image %}
+          <a href="{{ cert.certificate_image }}" target="_blank" rel="noopener" class="btn btn-outline" style="flex: 1; text-align: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            View Certificate
+          </a>
+          {% elif cert.certificate_pdf %}
+          <a href="{{ cert.certificate_pdf }}" target="_blank" rel="noopener" class="btn btn-outline" style="flex: 1; text-align: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            View Certificate
+          </a>
+          {% else %}
+          <button class="btn btn-outline" style="flex: 1;" disabled>Verified on File</button>
+          {% endif %}
+
+          {% if cert.certificate_pdf %}
+          <a href="{{ cert.certificate_pdf }}" download class="btn btn-primary" style="flex: 1; text-align: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download PDF
+          </a>
+          {% else %}
+          <a href="/contact?subject=Cert+Request+{{ cert.certificate_name | urlencode }}" class="btn btn-primary" style="flex: 1; text-align: center;">
+            Request Copy
+          </a>
+          {% endif %}
+        </div>
+      </article>
+      {% else %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: var(--space-3xl); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+        <p style="color: var(--color-text-muted); font-size: 1.1rem;">No industrial certifications currently published.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Vendor Qualification Card -->
+    <div style="margin-top: var(--space-3xl); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-2xl); text-align: center;">
+      <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-xs);">
+        Need Full Vendor Qualification Audit Dossier?
+      </h3>
+      <p style="color: var(--color-text-muted); font-size: 0.95rem; max-width: 640px; margin: 0 auto var(--space-lg); line-height: 1.6;">
+        We provide complete vendor registration packages including quality manuals, HSE policies, welder/operator qualifications, and third-party audit reports.
+      </p>
+      <a href="/contact" class="btn btn-accent">
+        Request Vendor Dossier &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

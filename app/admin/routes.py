@@ -81,18 +81,58 @@ async def admin_logout(request: Request):
     return response
 
 
+from app.models.product import Product, ProductCategory
+from app.models.capability import Capability
+from app.models.industry import Industry
+from app.models.infrastructure import Facility, Equipment
+from app.models.material import Material
+from app.models.quality import Certification
+from app.admin.products_admin import router as products_router
+from app.admin.capabilities_admin import router as capabilities_router
+from app.admin.industries_admin import router as industries_router
+from app.admin.infrastructure_admin import router as infrastructure_router
+from app.admin.materials_admin import router as materials_router
+from app.admin.quality_admin import router as quality_router
+
+
 @router.get("", response_class=HTMLResponse, summary="Super Admin Dashboard")
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def admin_dashboard(
     request: Request,
     current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
 ):
     """Renders the Super Admin console overview dashboard."""
+    counts = {
+        "products": db.query(Product).count(),
+        "categories": db.query(ProductCategory).count(),
+        "capabilities": db.query(Capability).count(),
+        "industries": db.query(Industry).count(),
+        "facilities": db.query(Facility).count(),
+        "equipment": db.query(Equipment).count(),
+        "materials": db.query(Material).count(),
+        "certifications": db.query(Certification).count(),
+    }
+    recent_products = db.query(Product).order_by(Product.id.desc()).limit(5).all()
+
     return templates.TemplateResponse(
         request=request,
         name="admin/dashboard.html",
         context={
             "request": request,
             "current_user": current_user,
+            "counts": counts,
+            "recent_products": recent_products,
+            "active_page": "dashboard",
         },
     )
+
+
+# Mount all CMS Module Routers
+router.include_router(products_router)
+router.include_router(capabilities_router)
+router.include_router(industries_router)
+router.include_router(infrastructure_router)
+router.include_router(materials_router)
+router.include_router(quality_router)
+

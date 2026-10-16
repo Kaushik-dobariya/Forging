@@ -1,0 +1,94 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Products</li>
+    </ul>
+    <h1 class="page-title">Forged & Precision Engineered Components</h1>
+    <p class="page-subtitle">
+      Manufactured to extreme industrial tolerances with continuous grain flow, advanced metallurgy, and strict quality control.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    
+    <!-- Category Filter Pills & Search -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md); margin-bottom: var(--space-xl);">
+      <div class="filter-pills" style="margin-bottom: 0;">
+        <a href="/products" class="filter-pill active">All Products</a>
+        {% for cat in categories %}
+        <a href="/products/{{ cat.slug }}" class="filter-pill">{{ cat.name }}</a>
+        {% endfor %}
+      </div>
+
+      <form method="GET" action="/products" style="display: flex; gap: var(--space-xs);">
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="Search products..." class="form-control" style="width: 220px; padding: 0.45rem 0.75rem;">
+        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      </form>
+    </div>
+
+    <!-- Products Catalog Grid -->
+    <div class="catalog-grid">
+      {% for p in products %}
+      <article class="catalog-card">
+        <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}">
+          <img src="{{ p.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ p.name }}" class="catalog-card-image" loading="lazy">
+        </a>
+        <div class="catalog-card-body">
+          <div>
+            <div class="catalog-card-category">{{ p.category.name if p.category else 'Engineered Component' }}</div>
+            <h2 class="catalog-card-title">
+              <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" style="color: inherit;">
+                {{ p.name }}
+              </a>
+            </h2>
+            <p class="catalog-card-desc">{{ p.short_description or '' }}</p>
+          </div>
+
+          <div>
+            <div class="catalog-card-specs">
+              {% if p.weight_range %}
+              <span class="spec-pill">&#9878; {{ p.weight_range }}</span>
+              {% endif %}
+              {% if p.material %}
+              <span class="spec-pill">&#9670; {{ p.material }}</span>
+              {% endif %}
+              {% if p.forging_capacity %}
+              <span class="spec-pill">&#9881; {{ p.forging_capacity }}</span>
+              {% endif %}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-sm);">
+              <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" class="btn btn-outline btn-sm" style="font-weight: 600;">
+                Technical Specs &rarr;
+              </a>
+              {% if p.downloads %}
+              <a href="{{ p.downloads }}" target="_blank" class="btn btn-primary btn-sm" title="Download PDF Spec Sheet">
+                PDF
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </article>
+      {% else %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--color-surface); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+        <h3 style="color: var(--color-primary); margin-bottom: var(--space-xs);">No Products Found</h3>
+        <p style="color: var(--color-text-muted);">No catalog items match your search criteria. Try a different term or view all categories.</p>
+        <a href="/products" class="btn btn-primary" style="margin-top: var(--space-md);">Clear Filters</a>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

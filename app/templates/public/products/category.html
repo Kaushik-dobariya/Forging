@@ -1,0 +1,89 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/products">Products</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">{{ category.name }}</li>
+    </ul>
+    <h1 class="page-title">{{ category.name }}</h1>
+    {% if category.description %}
+    <p class="page-subtitle">{{ category.description }}</p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    
+    <!-- Category Filter Pills -->
+    <div class="filter-pills">
+      <a href="/products" class="filter-pill">All Products</a>
+      {% for cat in categories %}
+      <a href="/products/{{ cat.slug }}" class="filter-pill {% if cat.id == category.id %}active{% endif %}">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
+
+    <!-- Products in this category -->
+    <div class="catalog-grid">
+      {% for p in products %}
+      <article class="catalog-card">
+        <a href="/products/{{ category.slug }}/{{ p.slug }}">
+          <img src="{{ p.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ p.name }}" class="catalog-card-image" loading="lazy">
+        </a>
+        <div class="catalog-card-body">
+          <div>
+            <div class="catalog-card-category">{{ category.name }}</div>
+            <h2 class="catalog-card-title">
+              <a href="/products/{{ category.slug }}/{{ p.slug }}" style="color: inherit;">
+                {{ p.name }}
+              </a>
+            </h2>
+            <p class="catalog-card-desc">{{ p.short_description or '' }}</p>
+          </div>
+
+          <div>
+            <div class="catalog-card-specs">
+              {% if p.weight_range %}
+              <span class="spec-pill">&#9878; {{ p.weight_range }}</span>
+              {% endif %}
+              {% if p.material %}
+              <span class="spec-pill">&#9670; {{ p.material }}</span>
+              {% endif %}
+              {% if p.forging_capacity %}
+              <span class="spec-pill">&#9881; {{ p.forging_capacity }}</span>
+              {% endif %}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border-subtle); padding-top: var(--space-sm);">
+              <a href="/products/{{ category.slug }}/{{ p.slug }}" class="btn btn-outline btn-sm" style="font-weight: 600;">
+                Technical Specs &rarr;
+              </a>
+              {% if p.downloads %}
+              <a href="{{ p.downloads }}" target="_blank" class="btn btn-primary btn-sm">
+                PDF
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </article>
+      {% else %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; background: var(--color-surface); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+        <h3 style="color: var(--color-primary); margin-bottom: var(--space-xs);">No Products in this Category</h3>
+        <p style="color: var(--color-text-muted);">Products for {{ category.name }} are being updated. Check back shortly.</p>
+        <a href="/products" class="btn btn-primary" style="margin-top: var(--space-md);">View All Products</a>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

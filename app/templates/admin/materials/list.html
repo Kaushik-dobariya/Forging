@@ -1,0 +1,113 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Forging Materials & Metallurgy Management{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Materials</span>
+    </nav>
+    <h1 class="page-title">Materials & Metallurgy</h1>
+    <p class="page-description">
+      Carbon steels, alloy steels, stainless steels, and superalloy grades with chemical and mechanical properties.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/materials/create" class="btn btn-accent">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Material Grade
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if materials %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 200px;">Material Name</th>
+          <th style="min-width: 180px;">Public URL Slug</th>
+          <th style="min-width: 200px;">Standard & Grades</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 130px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mat in materials %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ mat.display_order }}
+          </td>
+          <td>
+            <a href="/admin/materials/{{ mat.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ mat.name }}
+            </a>
+          </td>
+          <td>
+            <span class="table-subtext">/materials/{{ mat.slug }}</span>
+          </td>
+          <td style="font-size: 0.875rem;">
+            <strong>{{ mat.standard or '' }}</strong>{% if mat.grade %}: {{ mat.grade }}{% endif %}
+          </td>
+          <td>
+            {% if mat.status == 'published' %}
+            <span class="badge badge-published">Published</span>
+            {% elif mat.status == 'draft' %}
+            <span class="badge badge-draft">Draft</span>
+            {% else %}
+            <span class="badge badge-archived">{{ mat.status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+              <a href="/materials/{{ mat.slug }}" target="_blank" class="btn-icon" title="View Public Page" aria-label="View Public Page">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" x2="21" y1="14" y2="3"></line>
+                </svg>
+              </a>
+              <a href="/admin/materials/{{ mat.id }}/edit" class="btn-icon" title="Edit Material" aria-label="Edit Material">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </a>
+              <button type="button" class="btn-icon btn-icon-danger btn-delete-trigger" data-action="/admin/materials/{{ mat.id }}/delete" data-name="{{ mat.name }}" title="Delete Material" aria-label="Delete Material">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="6 2 18 2 22 8 12 22 2 8 6 2"></polygon>
+        <line x1="2" x2="22" y1="8" y2="8"></line>
+        <line x1="12" x2="12" y1="2" y2="22"></line>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No material grades configured</div>
+    <p class="table-empty-state-text">Add steel grades such as AISI 4140, 4340, SS316, or Titanium alloys.</p>
+    <a href="/admin/materials/create" class="btn btn-accent btn-sm">+ Add First Material</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

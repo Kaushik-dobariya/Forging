@@ -1,0 +1,120 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if equipment %}Edit Equipment: {{ equipment.name }}{% else %}Add Machinery / Equipment{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/facilities">Infrastructure</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/equipment">Equipment</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if equipment %}Edit Equipment{% else %}Add Equipment{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if equipment %}Edit Equipment: {{ equipment.name }}{% else %}Add Machinery / Equipment{% endif %}</h1>
+    <p class="page-description">
+      Configure rated capacity, technical parameters, manufacturer, facility assignment, and machinery photo.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/infrastructure/equipment" class="btn btn-outline">
+      &larr; Back to Equipment
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Machinery Specification & Operational Data</h3>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{% if equipment %}/admin/infrastructure/equipment/{{ equipment.id }}/edit{% else %}/admin/infrastructure/equipment/create{% endif %}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Equipment Name *</label>
+        <input type="text" name="name" value="{{ equipment.name if equipment else '' }}" required class="form-control" placeholder="e.g. Hydraulic Die Forging Press 4000 MT">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select name="category" class="form-control" required>
+          {% for cat in categories %}
+          <option value="{{ cat }}" {% if equipment and equipment.category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Manufacturer</label>
+        <input type="text" name="manufacturer" value="{{ equipment.manufacturer if equipment else '' }}" class="form-control" placeholder="e.g. Schuler / Siempelkamp">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Model</label>
+        <input type="text" name="model" value="{{ equipment.model if equipment else '' }}" class="form-control" placeholder="e.g. HDP-4000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacity Rating</label>
+        <input type="text" name="capacity" value="{{ equipment.capacity if equipment else '' }}" class="form-control" placeholder="e.g. 4000 Metric Tons">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ equipment.display_order if equipment else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if equipment and equipment.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if equipment and equipment.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description & Capabilities</label>
+      <textarea name="description" rows="3" class="form-control">{{ equipment.description if equipment else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Technical Specifications (Stroke, Bed size, Spindle speed, Pressure)</label>
+      <textarea name="specifications" rows="3" class="form-control">{{ equipment.specifications if equipment else '' }}</textarea>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Equipment Photo</label>
+        <input type="file" name="image_file" accept="image/*" class="form-control">
+        {% if equipment and equipment.image %}
+        <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+          <img src="{{ equipment.image }}" alt="Equipment" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+          <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ equipment.image }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Technical Brochure / Specification PDF</label>
+        <input type="file" name="pdf_file" accept=".pdf" class="form-control">
+        {% if equipment and equipment.pdf_url %}
+        <div style="margin-top: var(--space-xs); font-size: 0.85rem;">
+          Attached PDF: <a href="{{ equipment.pdf_url }}" target="_blank" style="color: var(--color-accent); font-weight: 600;">Download Spec Sheet</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if equipment %}Save Equipment Changes{% else %}Add Equipment{% endif %}
+      </button>
+      <a href="/admin/infrastructure/equipment" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

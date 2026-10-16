@@ -1,0 +1,107 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if category %}Edit Category: {{ category.name }}{% else %}Create Product Category{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/products">Products</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/categories">Categories</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if category %}Edit Category{% else %}Create Category{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if category %}Edit Category: {{ category.name }}{% else %}Create Product Category{% endif %}</h1>
+    <p class="page-description">
+      Configure category name, slug routing, industrial imagery, and search engine optimization.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/categories" class="btn btn-outline">
+      &larr; Back to Categories
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Category Details & Metadata</h3>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{% if category %}/admin/categories/{{ category.id }}/edit{% else %}/admin/categories/create{% endif %}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Category Name <span class="required-star">*</span></label>
+        <input type="text" name="name" value="{{ category.name if category else '' }}" required class="form-control" placeholder="e.g. Closed Die Forgings">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ category.slug if category else '' }}" class="form-control" placeholder="e.g. closed-die-forgings">
+        <div class="form-help">Forms URL: /products/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ category.display_order if category else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Active Status</label>
+        <select name="is_active" class="form-select">
+          <option value="true" {% if not category or category.is_active %}selected{% endif %}>Active</option>
+          <option value="false" {% if category and not category.is_active %}selected{% endif %}>Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category Description</label>
+      <textarea name="description" rows="3" class="form-control" placeholder="Technical description for category index and SEO header...">{{ category.description if category else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category Image / Banner</label>
+      <input type="file" name="image_file" accept="image/*" class="form-control">
+      {% if category and category.image %}
+      <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.75rem;">
+        <img src="{{ category.image }}" alt="Category" style="height: 60px; border-radius: 4px; border: 1px solid var(--admin-border); object-fit: cover;">
+        <span style="font-size: 0.8125rem; font-family: var(--font-mono); color: var(--admin-text-muted);">{{ category.image }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- SEO Fields -->
+    <div style="border-top: 1px solid var(--admin-border); margin: 1.5rem 0 1.25rem 0; padding-top: 1.25rem;">
+      <h4 style="font-size: 0.9375rem; font-weight: 700; margin-bottom: 1rem; color: var(--admin-text-primary);">Search Engine Optimization (SEO)</h4>
+
+      <div class="form-group">
+        <label class="form-label">Meta Title</label>
+        <input type="text" name="meta_title" value="{{ category.meta_title if category else '' }}" class="form-control">
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Meta Description</label>
+          <textarea name="meta_description" rows="2" class="form-control">{{ category.meta_description if category else '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meta Keywords</label>
+          <input type="text" name="meta_keywords" value="{{ category.meta_keywords if category else '' }}" class="form-control">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if category %}Save Changes{% else %}Create Category{% endif %}
+      </button>
+      <a href="/admin/categories" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if industry %}Edit Industry: {{ industry.name }}{% else %}Add Target Industry Sector{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/industries">Industries</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if industry %}Edit Industry{% else %}Add Industry{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if industry %}Edit Industry: {{ industry.name }}{% else %}Add Target Industry Sector{% endif %}</h1>
+    <p class="page-description">
+      Configure sector details, components manufactured, compliance standards, and banner graphics.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/industries" class="btn btn-outline">
+      &larr; Back to Industries
+    </a>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{% if industry %}/admin/industries/{{ industry.id }}/edit{% else %}/admin/industries/create{% endif %}">
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Industry Information</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Industry Name *</label>
+        <input type="text" name="name" value="{{ industry.name if industry else '' }}" required class="form-control" placeholder="e.g. Oil & Gas, Automotive, Defence">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ industry.slug if industry else '' }}" class="form-control" placeholder="e.g. oil-gas">
+        <div class="form-help">Forms URL: /industries/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ industry.display_order if industry else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if industry and industry.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if industry and industry.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon Name / Class</label>
+        <input type="text" name="icon_image" value="{{ industry.icon_image if industry else '' }}" class="form-control" placeholder="e.g. oil-gas-icon">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Short Summary</label>
+      <textarea name="short_description" rows="2" class="form-control">{{ industry.short_description if industry else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detailed Industry Overview</label>
+      <textarea name="detailed_description" rows="4" class="form-control">{{ industry.detailed_description if industry else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Key Forged Components</label>
+      <input type="text" name="key_components" value="{{ industry.key_components if industry else '' }}" class="form-control" placeholder="e.g. Crankshafts, Stub Axles, Steering Knuckles">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Hero / Showcase Image</label>
+      <input type="file" name="hero_image_file" accept="image/*" class="form-control">
+      {% if industry and industry.hero_image %}
+      <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+        <img src="{{ industry.hero_image }}" alt="Hero" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+        <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ industry.hero_image }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Associated Products & Capabilities</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Related Products</label>
+        <select name="product_ids" multiple class="form-control" style="height: 140px;">
+          {% for p in products %}
+          <option value="{{ p.id }}" {% if industry and p in industry.products %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Related Capabilities</label>
+        <select name="capability_ids" multiple class="form-control" style="height: 140px;">
+          {% for cap in capabilities %}
+          <option value="{{ cap.id }}" {% if industry and cap in industry.capabilities %}selected{% endif %}>{{ cap.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. SEO Metadata</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Meta Title</label>
+      <input type="text" name="meta_title" value="{{ industry.meta_title if industry else '' }}" class="form-control">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Meta Description</label>
+        <textarea name="meta_description" rows="2" class="form-control">{{ industry.meta_description if industry else '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meta Keywords</label>
+        <input type="text" name="meta_keywords" value="{{ industry.meta_keywords if industry else '' }}" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-accent">
+      {% if industry %}Save Industry Changes{% else %}Create Industry{% endif %}
+    </button>
+    <a href="/admin/industries" class="btn btn-outline">Cancel</a>
+  </div>
+</form>
+{% endblock %}

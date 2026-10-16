@@ -1,0 +1,226 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if capability %}Edit Capability: {{ capability.title }}{% else %}Create Manufacturing Capability{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/capabilities">Capabilities</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if capability %}Edit Capability{% else %}Create Capability{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if capability %}Edit Capability: {{ capability.title }}{% else %}Create Manufacturing Capability{% endif %}</h1>
+    <p class="page-description">
+      Configure process parameters, machinery capacity, dimensions, and metallurgical specifications.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/capabilities" class="btn btn-outline">
+      &larr; Back to Capabilities
+    </a>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{% if capability %}/admin/capabilities/{{ capability.id }}/edit{% else %}/admin/capabilities/create{% endif %}">
+  
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Capability Overview</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Capability Title *</label>
+        <input type="text" name="title" value="{{ capability.title if capability else '' }}" required class="form-control" placeholder="e.g. Open Die Forging">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ capability.slug if capability else '' }}" class="form-control" placeholder="e.g. open-die-forging">
+        <div class="form-help">Forms URL: /capabilities/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ capability.display_order if capability else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if capability and capability.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if capability and capability.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Short Description (Summary)</label>
+      <textarea name="short_description" rows="2" class="form-control">{{ capability.short_description if capability else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detailed Description</label>
+      <textarea name="detailed_description" rows="4" class="form-control">{{ capability.detailed_description if capability else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Hero / Showcase Image</label>
+      <input type="file" name="hero_image_file" accept="image/*" class="form-control">
+      {% if capability and capability.hero_image %}
+      <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+        <img src="{{ capability.hero_image }}" alt="Hero" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+        <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ capability.hero_image }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Engineering & Process Parameters</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Process Workflow & Methodology</label>
+      <textarea name="process" rows="3" class="form-control" placeholder="Step-by-step forging / manufacturing process steps...">{{ capability.process if capability else '' }}</textarea>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Capacity Parameters</label>
+        <input type="text" name="capacity" value="{{ capability.capacity if capability else '' }}" class="form-control" placeholder="e.g. Up to 15 MT piece weight">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dimensions & Geometric Envelope</label>
+        <input type="text" name="dimensions" value="{{ capability.dimensions if capability else '' }}" class="form-control" placeholder="e.g. Diameter up to 1200 mm, Length 6000 mm">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Technical Specifications & Standards</label>
+        <textarea name="technical_specifications" rows="2" class="form-control" placeholder="EN 10250, DIN 7527 tolerances...">{{ capability.technical_specifications if capability else '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Industrial Applications</label>
+        <textarea name="applications" rows="2" class="form-control" placeholder="Turbine rotors, marine propulsion, mining machinery...">{{ capability.applications if capability else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Frequently Asked Questions (FAQs) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. Capability FAQs</h3>
+    </div>
+
+    <div id="faq-container">
+      {% if faqs %}
+        {% for faq in faqs %}
+        <div class="faq-row" style="background: var(--color-surface-subtle); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.8rem;">Question</label>
+            <input type="text" name="faq_questions" value="{{ faq.question }}" class="form-control">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.8rem;">Answer</label>
+            <textarea name="faq_answers" rows="2" class="form-control">{{ faq.answer }}</textarea>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="faq-row" style="background: var(--color-surface-subtle); padding: var(--space-md); border-radius: var(--radius-sm); margin-bottom: var(--space-md);">
+          <div class="form-group">
+            <label class="form-label" style="font-size: 0.8rem;">Question</label>
+            <input type="text" name="faq_questions" placeholder="e.g. What is the maximum single-piece weight?" class="form-control">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.8rem;">Answer</label>
+            <textarea name="faq_answers" rows="2" placeholder="Answer..." class="form-control"></textarea>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Section 4: Module Relationships -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">4. Relationships</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Related Products</label>
+        <select name="product_ids" multiple class="form-control" style="height: 120px;">
+          {% for p in products %}
+          <option value="{{ p.id }}" {% if capability and p in capability.products %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Related Industries</label>
+        <select name="industry_ids" multiple class="form-control" style="height: 120px;">
+          {% for ind in industries %}
+          <option value="{{ ind.id }}" {% if capability and ind in capability.industries %}selected{% endif %}>{{ ind.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Related Materials</label>
+        <select name="material_ids" multiple class="form-control" style="height: 120px;">
+          {% for mat in materials %}
+          <option value="{{ mat.id }}" {% if capability and mat in capability.materials %}selected{% endif %}>{{ mat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Related Equipment / Press Lines</label>
+        <select name="equipment_ids" multiple class="form-control" style="height: 120px;">
+          {% for eq in equipment %}
+          <option value="{{ eq.id }}" {% if capability and eq in capability.equipment %}selected{% endif %}>{{ eq.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: SEO -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">5. Search Engine Optimization (SEO)</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Meta Title</label>
+      <input type="text" name="meta_title" value="{{ capability.meta_title if capability else '' }}" class="form-control">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Meta Description</label>
+        <textarea name="meta_description" rows="2" class="form-control">{{ capability.meta_description if capability else '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meta Keywords</label>
+        <input type="text" name="meta_keywords" value="{{ capability.meta_keywords if capability else '' }}" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-accent">
+      {% if capability %}Save Capability{% else %}Create Capability{% endif %}
+    </button>
+    <a href="/admin/capabilities" class="btn btn-outline">Cancel</a>
+  </div>
+</form>
+{% endblock %}

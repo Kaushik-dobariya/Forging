@@ -1,0 +1,96 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Testing & Metallurgical Inspection Facilities{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Quality & Testing</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Testing & Lab</span>
+    </nav>
+    <h1 class="page-title">Testing & Laboratory Facilities</h1>
+    <p class="page-description">
+      Overview of testing infrastructure, diagnostic instruments, and accredited metallurgical procedures.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/infrastructure/equipment/create" class="btn btn-accent">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Testing Equipment
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if testing_section %}
+  <div style="background: var(--admin-surface-muted); border-left: 4px solid var(--admin-accent); padding: 1.25rem; border-radius: 6px; margin-bottom: 1.75rem; border: 1px solid var(--admin-border);">
+    <h3 style="font-size: 1.0625rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.35rem;">{{ testing_section.title }}</h3>
+    <p style="font-size: 0.875rem; color: var(--admin-text-secondary); line-height: 1.5; margin: 0 0 0.75rem 0;">{{ testing_section.content }}</p>
+    <div>
+      <a href="/admin/quality/{{ testing_section.id }}/edit" style="color: var(--admin-accent); font-weight: 600; font-size: 0.8125rem; text-decoration: none;">
+        &rarr; Edit Testing Policy Content
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="admin-card-header" style="padding-bottom: 0.5rem; margin-bottom: 1rem;">
+    <h3 class="admin-card-title">Specialized Testing Equipment & Diagnostic Units</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="min-width: 220px;">Testing Machine</th>
+          <th style="min-width: 150px;">Category</th>
+          <th style="min-width: 180px;">Manufacturer & Model</th>
+          <th style="min-width: 140px;">Capacity / Detection Range</th>
+          <th style="width: 110px; text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eq in testing_equipment %}
+        <tr>
+          <td style="font-weight: 600;">
+            <a href="/admin/infrastructure/equipment/{{ eq.id }}/edit" style="color: var(--admin-text-primary); text-decoration: none;">
+              {{ eq.name }}
+            </a>
+          </td>
+          <td>
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ eq.category }}
+            </span>
+          </td>
+          <td style="font-size: 0.875rem;">{{ eq.manufacturer or '' }} {{ eq.model or '' }}</td>
+          <td style="font-size: 0.875rem; font-weight: 600; color: var(--admin-text-primary);">{{ eq.capacity or '&mdash;'|safe }}</td>
+          <td style="text-align: right;">
+            <a href="/admin/infrastructure/equipment/{{ eq.id }}/edit" class="btn btn-outline btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2rem; color: var(--admin-text-muted);">
+            No testing equipment found under Spectrometer, Ultrasonic, or Testing Equipment categories.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

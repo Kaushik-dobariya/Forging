@@ -1,0 +1,139 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if material %}Edit Material: {{ material.name }}{% else %}Add Forging Material Grade{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/materials">Materials</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if material %}Edit Material{% else %}Add Material{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if material %}Edit Material: {{ material.name }}{% else %}Add Forging Material Grade{% endif %}</h1>
+    <p class="page-description">
+      Configure chemical composition, mechanical properties, international standards, and heat treatment compatibility.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/materials" class="btn btn-outline">
+      &larr; Back to Materials
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Material Metallurgy & Properties</h3>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{% if material %}/admin/materials/{{ material.id }}/edit{% else %}/admin/materials/create{% endif %}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Material Name *</label>
+        <input type="text" name="name" value="{{ material.name if material else '' }}" required class="form-control" placeholder="e.g. Alloy Steel, Carbon Steel">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ material.slug if material else '' }}" class="form-control" placeholder="e.g. alloy-steel">
+        <div class="form-help">Forms URL: /materials/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Grades Covered</label>
+        <input type="text" name="grade" value="{{ material.grade if material else '' }}" class="form-control" placeholder="e.g. AISI 4140, 4340, 8620, EN19, EN24">
+      </div>
+      <div class="form-group">
+        <label class="form-label">International Standards</label>
+        <input type="text" name="standard" value="{{ material.standard if material else '' }}" class="form-control" placeholder="e.g. ASTM, EN, DIN, IS, JIS">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ material.display_order if material else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if material and material.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if material and material.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Chemical Composition Matrix</label>
+      <textarea name="chemical_composition" rows="3" class="form-control" placeholder="C: 0.38-0.45% | Cr: 0.90-1.20% | Mo: 0.15-0.30%...">{{ material.chemical_composition if material else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Mechanical Properties</label>
+      <textarea name="mechanical_properties" rows="3" class="form-control" placeholder="Tensile: 850-1000 MPa | Yield: >=680 MPa | Hardness: 260-320 HB...">{{ material.mechanical_properties if material else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Typical Engineering Applications</label>
+      <textarea name="applications" rows="2" class="form-control">{{ material.applications if material else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">General Description</label>
+      <textarea name="description" rows="3" class="form-control">{{ material.description if material else '' }}</textarea>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Microstructure / Material Photo</label>
+        <input type="file" name="image_file" accept="image/*" class="form-control">
+        {% if material and material.image %}
+        <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+          <img src="{{ material.image }}" alt="Material" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+          <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ material.image }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Material Data Sheet (PDF)</label>
+        <input type="file" name="doc_file" accept=".pdf" class="form-control">
+        {% if material and material.documents_url %}
+        <div style="margin-top: var(--space-xs); font-size: 0.85rem;">
+          Current PDF: <a href="{{ material.documents_url }}" target="_blank" style="color: var(--color-accent); font-weight: 600;">Download Spec Sheet</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="border-top: 1px solid var(--color-border); margin: var(--space-xl) 0 var(--space-lg) 0; padding-top: var(--space-lg);">
+      <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: var(--space-md); color: var(--color-primary);">SEO Metadata</h4>
+      <div class="form-group">
+        <label class="form-label">Meta Title</label>
+        <input type="text" name="meta_title" value="{{ material.meta_title if material else '' }}" class="form-control">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Meta Description</label>
+          <textarea name="meta_description" rows="2" class="form-control">{{ material.meta_description if material else '' }}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meta Keywords</label>
+          <input type="text" name="meta_keywords" value="{{ material.meta_keywords if material else '' }}" class="form-control">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if material %}Save Material Changes{% else %}Create Material{% endif %}
+      </button>
+      <a href="/admin/materials" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

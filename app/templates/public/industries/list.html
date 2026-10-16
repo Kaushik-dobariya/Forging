@@ -1,0 +1,56 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Industries</li>
+    </ul>
+    <h1 class="page-title">Industries & Mission-Critical Sectors</h1>
+    <p class="page-subtitle">
+      Specialized forging engineering meeting aerospace, automotive, energy, subsea oil & gas, rail, and defence compliance standards.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-xl);">
+      {% for ind in industries %}
+      <article class="admin-card" style="margin-bottom: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <a href="/industries/{{ ind.slug }}">
+          <img src="{{ ind.hero_image or '/static/images/hero_furnace.webp' }}" alt="{{ ind.name }}" style="width: 100%; height: 200px; object-fit: cover;" loading="lazy">
+        </a>
+        <div style="padding: var(--space-xl); flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <span class="brand-badge" style="background: var(--color-surface-subtle); color: var(--color-accent-dark); border: 1px solid var(--color-border); margin-bottom: var(--space-xs);">
+              SECTOR #0{{ ind.display_order }}
+            </span>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-xs);">
+              <a href="/industries/{{ ind.slug }}" style="color: inherit;">{{ ind.name }}</a>
+            </h2>
+            <p style="font-size: 0.9rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-md);">
+              {{ ind.short_description or '' }}
+            </p>
+            {% if ind.key_components %}
+            <div style="font-size: 0.8rem; color: var(--color-secondary); background: var(--color-surface-subtle); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-xs); margin-bottom: var(--space-md);">
+              <strong>Key Components:</strong> {{ ind.key_components }}
+            </div>
+            {% endif %}
+          </div>
+
+          <a href="/industries/{{ ind.slug }}" class="btn btn-primary" style="width: 100%; text-align: center;">
+            View Industry Solutions &rarr;
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

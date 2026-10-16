@@ -1,0 +1,198 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Quality & Testing</li>
+    </ul>
+    <h1 class="page-title">Quality Assurance & Metallurgical Testing</h1>
+    <p class="page-subtitle">
+      Zero-defect philosophy backed by 100% positive material identification, non-destructive ultrasonic testing, calibrated CMM metrology, and full raw-material-to-finished-forging heat traceability.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <!-- Key Assurance Metrics Strip -->
+    <div class="metrics-strip" style="margin-bottom: var(--space-2xl);">
+      <div class="metric-card">
+        <div class="metric-value">PPM &lt; 15</div>
+        <div class="metric-label">Customer Rejection PPM</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">100%</div>
+        <div class="metric-label">NDT Ultrasonic Testing</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">Level III</div>
+        <div class="metric-label">ASNT Certified NDT Inspectors</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">EN 10204</div>
+        <div class="metric-label">3.1 / 3.2 Inspection Mill Certs</div>
+      </div>
+    </div>
+
+    <!-- 6-Stage Quality Assurance Gate Process -->
+    <div class="detail-section" style="margin-bottom: var(--space-2xl); background: #FFFFFF;">
+      <span class="section-tag">CLOSED-LOOP QUALITY GATE SYSTEM</span>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-lg);">
+        6-Stage Quality Assurance Lifecycle
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-md);">
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 01</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">Raw Material Receipt</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Optical emission spectrometer verification, spark test, and ultrasonic internal soundness scan on raw ingots.
+          </p>
+        </div>
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 02</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">Hot Forging In-Process</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Pyrometer optical thermal monitoring, grain flow verification, and dimensional gauge inspection during forging.
+          </p>
+        </div>
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 03</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">Heat Treatment Validation</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Continuous SCADA thermocouple logging, Brinell/Rockwell hardness mapping, and tensile coupon testing.
+          </p>
+        </div>
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 04</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">NDT & Metallography</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Immersion ultrasonic testing, magnetic particle crack detection, and microstructure optical microscopy.
+          </p>
+        </div>
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 05</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">Precision Metrology</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Multi-axis coordinate measuring machine (CMM) verification, surface roughness (Ra) profiling, and geometric tolerances.
+          </p>
+        </div>
+        <div style="background: var(--color-surface-subtle); border-top: 3px solid var(--color-accent); padding: var(--space-md); border-radius: var(--radius-xs);">
+          <div style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 0.8rem; margin-bottom: 4px;">GATE 06</div>
+          <div style="font-weight: 700; color: var(--color-primary); font-size: 0.95rem; margin-bottom: 4px;">Dispatch & 3.1 MTR</div>
+          <p style="font-size: 0.8rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            Dot-peen laser marking with heat number, protective anti-corrosion coating, and EN 10204 3.1 inspection certification.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modular Quality Sections from DB -->
+    <div style="margin-bottom: var(--space-2xl);">
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-lg);">
+        Quality Pillars & Operational Governance
+      </h2>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--space-xl);">
+        {% for sec in sections %}
+        <div class="detail-section" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-xs);">
+              <span class="brand-badge" style="background: var(--color-surface-subtle); color: var(--color-accent-dark); border: 1px solid var(--color-border);">
+                {{ sec.section_key | upper }}
+              </span>
+              <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-text-muted);">
+                #0{{ sec.display_order }}
+              </span>
+            </div>
+
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-2xs); line-height: 1.3;">
+              {{ sec.title }}
+            </h3>
+
+            {% if sec.subtitle %}
+            <div style="font-size: 0.875rem; font-weight: 600; color: var(--color-accent-dark); margin-bottom: var(--space-sm);">
+              {{ sec.subtitle }}
+            </div>
+            {% endif %}
+
+            <div style="font-size: 0.925rem; color: var(--color-text); line-height: 1.7;">
+              {{ sec.content | safe }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Testing Facilities & Inspection Machinery Fleet -->
+    {% if testing_equipment %}
+    <div class="detail-section" style="margin-bottom: var(--space-2xl);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: var(--space-lg); flex-wrap: wrap; gap: var(--space-md);">
+        <div>
+          <span class="section-tag">IN-HOUSE METALLURGY & TESTING LAB</span>
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin: 0;">
+            Testing Machinery & Metrology Equipment
+          </h2>
+        </div>
+        <a href="/infrastructure" class="btn btn-outline">
+          Explore All Infrastructure Fleet &rarr;
+        </a>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg);">
+        {% for eq in testing_equipment %}
+        <div style="background: var(--color-surface-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-xs); padding: var(--space-md);">
+          {% if eq.image %}
+          <img src="{{ eq.image }}" alt="{{ eq.name }}" style="width: 100%; height: 160px; object-fit: cover; border-radius: var(--radius-2xs); margin-bottom: var(--space-sm);" loading="lazy">
+          {% endif %}
+          <span class="brand-badge" style="font-size: 0.65rem; margin-bottom: 4px;">{{ eq.category }}</span>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-2xs);">
+            {{ eq.name }}
+          </h4>
+          {% if eq.manufacturer or eq.model %}
+          <div style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted); margin-bottom: var(--space-xs);">
+            {{ eq.manufacturer or '' }} {{ eq.model or '' }}
+          </div>
+          {% endif %}
+          {% if eq.capacity %}
+          <div style="font-size: 0.825rem; font-weight: 600; color: var(--color-secondary); margin-bottom: var(--space-xs);">
+            Capacity: {{ eq.capacity }}
+          </div>
+          {% endif %}
+          <p style="font-size: 0.825rem; color: var(--color-text-muted); line-height: 1.5; margin: 0;">
+            {{ eq.description or '' }}
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Certifications Teaser Banner -->
+    <div style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: #FFFFFF; border-radius: var(--radius-sm); padding: var(--space-2xl); display: flex; flex-direction: column; md:flex-row; justify-content: space-between; align-items: center; gap: var(--space-xl);">
+      <div style="max-width: 650px;">
+        <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-xs);">
+          CERTIFIED QUALITY
+        </span>
+        <h3 style="color: #FFFFFF; font-size: 1.75rem; font-weight: 800; margin-bottom: var(--space-xs);">
+          Accredited to International Industrial Standards
+        </h3>
+        <p style="color: #D1D5DB; font-size: 0.95rem; line-height: 1.6; margin: 0;">
+          Our facilities operate under ISO 9001:2015, IATF 16949 for automotive components, and European Pressure Equipment Directive PED 2014/68/EU.
+        </p>
+      </div>
+      <div>
+        <a href="/certifications" class="btn btn-accent" style="white-space: nowrap;">
+          View & Download Certificates &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

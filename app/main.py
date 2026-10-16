@@ -33,12 +33,14 @@ async def lifespan(app: FastAPI):
     (upload_dir / "general").mkdir(parents=True, exist_ok=True)
     logger.info(f"Upload directory initialized: {upload_dir}")
 
-    # 3. Verify database connectivity & bootstrap initial super admin if required
+    # 3. Verify database connectivity & bootstrap initial super admin and seed data
     if check_db_connection():
         logger.info("Database connectivity established successfully.")
         db = SessionLocal()
         try:
             auth_service.bootstrap_superadmin(db)
+            from app.services.seed_service import seed_cms_data
+            seed_cms_data(db)
         finally:
             db.close()
     else:

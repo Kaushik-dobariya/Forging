@@ -1,0 +1,387 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if product %}Edit Product: {{ product.name }}{% else %}Create New Industrial Product{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/products">Products</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if product %}Edit Product{% else %}Create Product{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if product %}Edit Product: {{ product.name }}{% else %}Create New Industrial Product{% endif %}</h1>
+    <p class="page-description">
+      Configure comprehensive metallurgical parameters, applications, technical specifications, and imagery.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/products" class="btn btn-outline">
+      &larr; Back to Catalog
+    </a>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{% if product %}/admin/products/{{ product.id }}/edit{% else %}/admin/products/create{% endif %}">
+  
+  <!-- Section 1: Core Details -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Core Information & Categorization</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Product Name *</label>
+        <input type="text" name="name" value="{{ product.name if product else '' }}" required class="form-control" placeholder="e.g. Forged Heavy-Duty Crankshaft">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ product.slug if product else '' }}" class="form-control" placeholder="e.g. forged-heavy-duty-crankshaft">
+        <div class="form-help">Unique SEO slug used in URL: /products/{category}/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select name="category_id" class="form-control">
+          <option value="">-- Select Category --</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if product and product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if product and product.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if product and product.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ product.display_order if product else 0 }}" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Short Description (Summary)</label>
+      <textarea name="short_description" rows="2" class="form-control" placeholder="Brief technical summary displayed on catalog cards...">{{ product.short_description if product else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Detailed Engineering Description</label>
+      <textarea name="detailed_description" rows="5" class="form-control" placeholder="Full metallurgical overview, grain flow characteristics, and application context...">{{ product.detailed_description if product else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Key Applications</label>
+      <textarea name="applications" rows="2" class="form-control" placeholder="Commercial vehicles, turbine rotors, oilfield subsea assemblies...">{{ product.applications if product else '' }}</textarea>
+    </div>
+  </div>
+
+  <!-- Section 2: Technical & Manufacturing Attributes -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Manufacturing & Engineering Specifications</h3>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Material / Grade</label>
+        <input type="text" name="material" value="{{ product.material if product else '' }}" class="form-control" placeholder="e.g. AISI 4340, 42CrMo4, SS316L">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Weight Range</label>
+        <input type="text" name="weight_range" value="{{ product.weight_range if product else '' }}" class="form-control" placeholder="e.g. 15 kg to 140 kg">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dimensions</label>
+        <input type="text" name="dimensions" value="{{ product.dimensions if product else '' }}" class="form-control" placeholder="e.g. Length up to 1450 mm, Dia 95 mm">
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Manufacturing Process</label>
+        <input type="text" name="manufacturing_process" value="{{ product.manufacturing_process if product else '' }}" class="form-control" placeholder="e.g. Closed Die Drop Forged & Precision Machined">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Forging Capacity</label>
+        <input type="text" name="forging_capacity" value="{{ product.forging_capacity if product else '' }}" class="form-control" placeholder="e.g. 4000 MT Press Line">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Heat Treatment</label>
+        <input type="text" name="heat_treatment" value="{{ product.heat_treatment if product else '' }}" class="form-control" placeholder="e.g. Quenched & Tempered, Induction Hardened">
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Machining Capability</label>
+        <input type="text" name="machining" value="{{ product.machining if product else '' }}" class="form-control" placeholder="e.g. CNC turned and finish ground">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Surface Finish</label>
+        <input type="text" name="surface_finish" value="{{ product.surface_finish if product else '' }}" class="form-control" placeholder="e.g. Shot blasted Ra 3.2, anti-rust oiled">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Testing & Inspection</label>
+        <input type="text" name="testing" value="{{ product.testing if product else '' }}" class="form-control" placeholder="e.g. 100% MPI & Phased Array UT">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">General Technical Specifications Overview</label>
+      <textarea name="technical_specifications" rows="3" class="form-control" placeholder="Additional engineering notes, tolerance standards (EN 10243 Grade F), inspection levels...">{{ product.technical_specifications if product else '' }}</textarea>
+    </div>
+  </div>
+
+  <!-- Section 3: Media & Documentation -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. Media & Technical Downloads</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Featured Image</label>
+        <input type="file" name="featured_image_file" accept="image/*" class="form-control">
+        {% if product and product.featured_image %}
+        <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+          <img src="{{ product.featured_image }}" alt="Preview" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+          <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ product.featured_image }}</span>
+        </div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Product Specification Sheet (PDF)</label>
+        <input type="file" name="download_file" accept=".pdf" class="form-control">
+        {% if product and product.downloads %}
+        <div style="margin-top: var(--space-xs); font-size: 0.85rem;">
+          Current File: <a href="{{ product.downloads }}" target="_blank" style="color: var(--color-accent); font-weight: 600;">Download Technical Brochure</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Module Relationships -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">4. Relationships & Cross-Linking</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Related Capabilities (Ctrl+click to select multiple)</label>
+        <select name="capability_ids" multiple class="form-control" style="height: 120px;">
+          {% for cap in capabilities %}
+          <option value="{{ cap.id }}" {% if product and cap in product.capabilities %}selected{% endif %}>{{ cap.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Related Industries</label>
+        <select name="industry_ids" multiple class="form-control" style="height: 120px;">
+          {% for ind in industries %}
+          <option value="{{ ind.id }}" {% if product and ind in product.industries %}selected{% endif %}>{{ ind.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Related Materials</label>
+        <select name="material_ids" multiple class="form-control" style="height: 120px;">
+          {% for mat in materials %}
+          <option value="{{ mat.id }}" {% if product and mat in product.materials %}selected{% endif %}>{{ mat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Related Equipment / Press Lines</label>
+        <select name="equipment_ids" multiple class="form-control" style="height: 120px;">
+          {% for eq in equipment %}
+          <option value="{{ eq.id }}" {% if product and eq in product.equipment %}selected{% endif %}>{{ eq.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if all_products %}
+      <div class="form-group">
+        <label class="form-label">Related Products</label>
+        <select name="related_product_ids" multiple class="form-control" style="height: 120px;">
+          {% for rel in all_products %}
+          <option value="{{ rel.id }}" {% if product and rel in product.related_products %}selected{% endif %}>{{ rel.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Section 5: Search Engine Optimization (SEO) -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">5. Search Engine Optimization (SEO)</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Meta Title</label>
+      <input type="text" name="meta_title" value="{{ product.meta_title if product else '' }}" class="form-control" placeholder="Targeted primary title for search rankings...">
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Meta Description</label>
+        <textarea name="meta_description" rows="2" class="form-control" placeholder="Engaging summary for search snippet (150-160 characters)...">{{ product.meta_description if product else '' }}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Meta Keywords</label>
+        <input type="text" name="meta_keywords" value="{{ product.meta_keywords if product else '' }}" class="form-control" placeholder="forged crankshaft, closed die forging, 4340 alloy">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-accent" id="btn-save-product">
+      {% if product %}Update Product Details{% else %}Create Product{% endif %}
+    </button>
+    <a href="/admin/products" class="btn btn-outline">Cancel</a>
+  </div>
+</form>
+
+<!-- Section 6: In-line Product Specifications & Gallery (Only when editing) -->
+{% if product %}
+<div class="admin-card" style="margin-top: var(--space-2xl);">
+  <div class="admin-card-header">
+    <div>
+      <h3 class="admin-card-title">Product Flexible Specifications</h3>
+      <p style="color: var(--color-text-muted); font-size: 0.85rem;">Configurable parameters (e.g. Weight | 5 | kg, Length | 250 | mm, Capacity | 500 | MT)</p>
+    </div>
+  </div>
+
+  <!-- Specifications Table -->
+  <div class="table-responsive" style="margin-bottom: var(--space-lg);">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Specification Name</th>
+          <th>Value</th>
+          <th>Unit</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for spec in product.specifications %}
+        <tr>
+          <td>{{ spec.display_order }}</td>
+          <td style="font-weight: 600;">{{ spec.name }}</td>
+          <td>{{ spec.value }}</td>
+          <td><span class="badge badge-secondary">{{ spec.unit or '-' }}</span></td>
+          <td style="text-align: right;">
+            <form method="POST" action="/admin/products/{{ product.id }}/specifications/{{ spec.id }}/delete" onsubmit="return confirm('Delete this specification?');" style="display: inline;">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 1rem;">
+            No structured specifications added yet. Add one below!
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add Specification Inline Form -->
+  <form method="POST" action="/admin/products/{{ product.id }}/specifications/add" style="background: var(--color-surface-subtle); padding: var(--space-md); border-radius: var(--radius-sm);">
+    <h4 style="font-size: 0.95rem; margin-bottom: var(--space-sm); font-weight: 700;">+ Add New Specification</h4>
+    <div style="display: grid; grid-template-columns: 2fr 2fr 2fr 1fr auto; gap: var(--space-sm); align-items: flex-end;">
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Spec Name *</label>
+        <input type="text" name="name" required placeholder="e.g. Forging Tolerance" class="form-control" style="padding: 0.4rem 0.65rem;">
+      </div>
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Value *</label>
+        <input type="text" name="value" required placeholder="e.g. ±0.5" class="form-control" style="padding: 0.4rem 0.65rem;">
+      </div>
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Unit (from Measurement Units)</label>
+        <select name="unit" class="form-control" style="padding: 0.4rem 0.65rem;">
+          <option value="">No Unit</option>
+          {% for u in units %}
+          <option value="{{ u.symbol }}">{{ u.symbol }} ({{ u.name }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Order</label>
+        <input type="number" name="display_order" value="0" class="form-control" style="padding: 0.4rem 0.65rem;">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem;">Add</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Product Gallery Images -->
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Product Image Gallery</h3>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-lg);">
+    {% for img in product.images %}
+    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; background: #FFF;">
+      <img src="{{ img.image_url }}" alt="{{ img.alt_text or product.name }}" style="width: 100%; height: 120px; object-fit: cover;">
+      <div style="padding: var(--space-xs); font-size: 0.75rem;">
+        <div style="font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ img.caption or 'Gallery Item' }}</div>
+        <form method="POST" action="/admin/products/{{ product.id }}/images/{{ img.id }}/delete" onsubmit="return confirm('Remove this image?');" style="margin-top: 4px;">
+          <button type="submit" class="btn btn-danger btn-sm" style="width: 100%; padding: 2px 5px; font-size: 0.7rem;">Delete</button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div style="grid-column: 1 / -1; color: var(--color-text-muted); font-size: 0.85rem; padding: 1rem 0;">
+      No gallery photos uploaded for this product yet.
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="/admin/products/{{ product.id }}/images/add" style="background: var(--color-surface-subtle); padding: var(--space-md); border-radius: var(--radius-sm);">
+    <h4 style="font-size: 0.95rem; margin-bottom: var(--space-sm); font-weight: 700;">+ Upload Gallery Photo</h4>
+    <div style="display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: var(--space-sm); align-items: flex-end;">
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Image File *</label>
+        <input type="file" name="image_file" accept="image/*" required class="form-control" style="padding: 0.35rem 0.65rem;">
+      </div>
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Caption</label>
+        <input type="text" name="caption" placeholder="e.g. Finish ground spline profile" class="form-control" style="padding: 0.4rem 0.65rem;">
+      </div>
+      <div>
+        <label class="form-label" style="font-size: 0.75rem;">Order</label>
+        <input type="number" name="display_order" value="0" class="form-control" style="padding: 0.4rem 0.65rem;">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem;">Upload</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endif %}
+
+{% endblock %}

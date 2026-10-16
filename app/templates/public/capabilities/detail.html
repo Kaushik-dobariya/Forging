@@ -1,0 +1,199 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/capabilities">Capabilities</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">{{ capability.title }}</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      ENGINEERING CAPABILITY #0{{ capability.display_order }}
+    </span>
+    <h1 class="page-title">{{ capability.title }}</h1>
+    {% if capability.short_description %}
+    <p class="page-subtitle">{{ capability.short_description }}</p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+
+    <div class="product-detail-grid">
+      <!-- Media / Hero Image -->
+      <div>
+        <img src="{{ capability.hero_image or '/static/images/hero_furnace.webp' }}" alt="{{ capability.title }}" class="product-gallery-main">
+      </div>
+
+      <!-- Quick Parameters -->
+      <div>
+        <div class="detail-section" style="margin-bottom: var(--space-lg);">
+          <h2 class="detail-section-title">Capability Envelope</h2>
+          <table class="spec-table" style="margin-top: 0;">
+            <tbody>
+              {% if capability.capacity %}
+              <tr>
+                <th>Capacity / Tonnage</th>
+                <td><strong>{{ capability.capacity }}</strong></td>
+              </tr>
+              {% endif %}
+              {% if capability.dimensions %}
+              <tr>
+                <th>Dimensional Limits</th>
+                <td>{{ capability.dimensions }}</td>
+              </tr>
+              {% endif %}
+              {% if capability.technical_specifications %}
+              <tr>
+                <th>Governing Norms</th>
+                <td>{{ capability.technical_specifications }}</td>
+              </tr>
+              {% endif %}
+              {% if capability.applications %}
+              <tr>
+                <th>Key Sectors</th>
+                <td>{{ capability.applications }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+
+          <div style="margin-top: var(--space-lg);">
+            <a href="#contact" class="btn btn-accent" style="width: 100%; text-align: center;">
+              Consult Engineering Team &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Workflow -->
+    {% if capability.process %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Process Workflow & Metallurgy</h2>
+      <div style="line-height: 1.8; color: var(--color-text); font-size: 1rem;">
+        {{ capability.process }}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Overview -->
+    <div class="detail-section">
+      <h2 class="detail-section-title">Engineering Overview</h2>
+      <div style="line-height: 1.8; color: var(--color-text); font-size: 1rem;">
+        {{ capability.detailed_description or capability.short_description }}
+      </div>
+    </div>
+
+    <!-- Related Equipment, Materials, Industries -->
+    {% if capability.equipment or capability.materials or capability.industries %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Production Assets & Materials</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-xl);">
+        
+        {% if capability.equipment %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Deployed Equipment:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for eq in capability.equipment %}
+            <li style="margin-bottom: var(--space-2xs); font-size: 0.9rem; color: var(--color-text-muted);">
+              &bull; <strong>{{ eq.name }}</strong> ({{ eq.capacity }})
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if capability.materials %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Compatible Materials:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for mat in capability.materials %}
+            <li style="margin-bottom: var(--space-2xs);">
+              <a href="/materials/{{ mat.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.9rem;">
+                &bull; {{ mat.name }} ({{ mat.grade }}) &rarr;
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if capability.industries %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Served Industries:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for ind in capability.industries %}
+            <li style="margin-bottom: var(--space-2xs);">
+              <a href="/industries/{{ ind.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.9rem;">
+                &bull; {{ ind.name }} &rarr;
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- FAQs -->
+    {% if faqs %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Frequently Asked Questions (FAQs)</h2>
+      {% for faq in faqs %}
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>{{ faq.question }}</span>
+          <span>&#9662;</span>
+        </div>
+        <div class="faq-answer">
+          {{ faq.answer }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Related Products -->
+    {% if capability.products %}
+    <div style="margin-top: var(--space-2xl);">
+      <h2 class="section-title">Components Forged via this Capability</h2>
+      <div class="catalog-grid" style="margin-top: var(--space-lg);">
+        {% for p in capability.products %}
+        <article class="catalog-card">
+          <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}">
+            <img src="{{ p.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ p.name }}" class="catalog-card-image" loading="lazy">
+          </a>
+          <div class="catalog-card-body">
+            <div>
+              <div class="catalog-card-category">{{ p.category.name if p.category else 'Component' }}</div>
+              <h3 class="catalog-card-title">
+                <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" style="color: inherit;">
+                  {{ p.name }}
+                </a>
+              </h3>
+              <p class="catalog-card-desc">{{ p.short_description or '' }}</p>
+            </div>
+            <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" class="btn btn-outline btn-sm">
+              View Specifications &rarr;
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

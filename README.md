@@ -208,3 +208,4 @@ All 16 test cases cover:
 * 5-attempt brute-force account lockout
 * Public & Admin 404 error handlers
 * File upload validation (MIME type & Pillow raster verification)
+*

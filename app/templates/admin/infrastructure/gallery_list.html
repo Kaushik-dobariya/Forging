@@ -1,0 +1,111 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Infrastructure Gallery Showcase{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/facilities">Infrastructure</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Gallery</span>
+    </nav>
+    <h1 class="page-title">Plant & Infrastructure Gallery</h1>
+    <p class="page-description">
+      Curated photography of forge shop floor, heavy presses, CNC machining centers, and metallurgical laboratories.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/infrastructure" target="_blank" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" x2="21" y1="14" y2="3"></line>
+      </svg>
+      Public Infrastructure Page
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Upload Gallery Photo Card -->
+  <form method="POST" enctype="multipart/form-data" action="/admin/infrastructure/gallery/create" style="background: var(--admin-surface-muted); padding: 1.25rem; border-radius: 6px; border: 1px solid var(--admin-border); margin-bottom: 1.75rem;">
+    <h3 style="font-size: 0.9375rem; margin-bottom: 1rem; font-weight: 700; color: var(--admin-text-primary);">+ Upload New Gallery Photo</h3>
+    <div style="display: grid; grid-template-columns: 2fr 1.5fr 2fr 1fr auto; gap: 1rem; align-items: flex-end;">
+      <div>
+        <label class="form-label">Photo Title <span class="required-star">*</span></label>
+        <input type="text" name="title" required placeholder="e.g. 4000 MT Press Billet Descaling" class="form-control">
+      </div>
+      <div>
+        <label class="form-label">Category</label>
+        <select name="category" class="form-select">
+          <option value="Shop Floor">Shop Floor</option>
+          <option value="Machinery">Machinery</option>
+          <option value="Heat Treatment">Heat Treatment</option>
+          <option value="Quality Lab">Quality Lab</option>
+          <option value="Plant Overview">Plant Overview</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Image File <span class="required-star">*</span></label>
+        <input type="file" name="image_file" accept="image/*" required class="form-control" style="padding: 0.35rem 0.65rem;">
+      </div>
+      <div>
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="0" class="form-control">
+      </div>
+      <div>
+        <button type="submit" class="btn btn-accent" style="padding: 0.55rem 1.25rem;">Upload</button>
+      </div>
+    </div>
+    <div style="margin-top: 0.75rem;">
+      <input type="text" name="caption" placeholder="Optional caption describing the operation / facility..." class="form-control">
+    </div>
+  </form>
+
+  <!-- Gallery Grid -->
+  {% if items %}
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;">
+    {% for item in items %}
+    <div class="admin-card" style="margin-bottom: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+      <img src="{{ item.image_url }}" alt="{{ item.title }}" style="width: 100%; height: 180px; object-fit: cover; background: #000;">
+      <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ item.category or 'General' }}
+            </span>
+            <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--admin-text-muted);">#{{ item.display_order }}</span>
+          </div>
+          <h4 style="font-size: 0.9375rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 4px;">{{ item.title }}</h4>
+          {% if item.caption %}
+          <p style="font-size: 0.8125rem; color: var(--admin-text-muted); line-height: 1.4; margin: 0;">{{ item.caption }}</p>
+          {% endif %}
+        </div>
+        <div style="margin-top: 1rem; border-top: 1px solid var(--admin-border-subtle); padding-top: 0.75rem; display: flex; justify-content: flex-end;">
+          <button type="button" class="btn btn-danger btn-sm btn-delete-trigger" data-action="/admin/infrastructure/gallery/{{ item.id }}/delete" data-name="{{ item.title }}">
+            Remove Photo
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No gallery photos uploaded yet</div>
+    <p class="table-empty-state-text">Use the upload tool above to add plant photography to your public showcase.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

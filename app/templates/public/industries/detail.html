@@ -1,0 +1,114 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/industries">Industries</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">{{ industry.name }}</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      TARGET INDUSTRY SECTOR
+    </span>
+    <h1 class="page-title">{{ industry.name }} Forged Components</h1>
+    {% if industry.short_description %}
+    <p class="page-subtitle">{{ industry.short_description }}</p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+
+    <div class="product-detail-grid">
+      <!-- Media / Hero Image -->
+      <div>
+        <img src="{{ industry.hero_image or '/static/images/hero_furnace.webp' }}" alt="{{ industry.name }}" class="product-gallery-main">
+      </div>
+
+      <!-- Sector Focus & Components -->
+      <div>
+        <div class="detail-section">
+          <h2 class="detail-section-title">Critical Components Manufactured</h2>
+          {% if industry.key_components %}
+          <div style="font-size: 1.05rem; line-height: 1.8; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">
+            {{ industry.key_components }}
+          </div>
+          {% endif %}
+          <p style="color: var(--color-text-muted); line-height: 1.6; font-size: 0.95rem; margin-bottom: var(--space-lg);">
+            Every component is forged with continuous grain flow, zero voids, and heat-treated to withstand millions of severe duty cycles.
+          </p>
+
+          <a href="#contact" class="btn btn-accent" style="width: 100%; text-align: center;">
+            Request {{ industry.name }} Engineering Consultation &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Sector Engineering Overview -->
+    <div class="detail-section">
+      <h2 class="detail-section-title">Sector Engineering & Metallurgical Expertise</h2>
+      <div style="line-height: 1.8; color: var(--color-text); font-size: 1rem;">
+        {{ industry.detailed_description or industry.short_description }}
+      </div>
+    </div>
+
+    <!-- Related Capabilities -->
+    {% if industry.capabilities %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Manufacturing Capabilities Utilized in {{ industry.name }}</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md);">
+        {% for cap in industry.capabilities %}
+        <div style="border: 1px solid var(--color-border); border-radius: var(--radius-xs); padding: var(--space-md); background: var(--color-surface-subtle);">
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 4px;">{{ cap.title }}</h3>
+          <p style="font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">{{ cap.short_description or '' }}</p>
+          <a href="/capabilities/{{ cap.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.825rem;">
+            Explore Capability &rarr;
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Products for this Industry -->
+    {% if industry.products %}
+    <div style="margin-top: var(--space-2xl);">
+      <h2 class="section-title">Catalog Components for {{ industry.name }}</h2>
+      <div class="catalog-grid" style="margin-top: var(--space-lg);">
+        {% for p in industry.products %}
+        <article class="catalog-card">
+          <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}">
+            <img src="{{ p.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ p.name }}" class="catalog-card-image" loading="lazy">
+          </a>
+          <div class="catalog-card-body">
+            <div>
+              <div class="catalog-card-category">{{ p.category.name if p.category else 'Component' }}</div>
+              <h3 class="catalog-card-title">
+                <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" style="color: inherit;">
+                  {{ p.name }}
+                </a>
+              </h3>
+              <p class="catalog-card-desc">{{ p.short_description or '' }}</p>
+            </div>
+            <a href="/products/{% if p.category %}{{ p.category.slug }}{% else %}all{% endif %}/{{ p.slug }}" class="btn btn-outline btn-sm">
+              View Specifications &rarr;
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

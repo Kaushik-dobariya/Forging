@@ -18,7 +18,23 @@ def main():
     create_admin_parser.add_argument("--name", "-n", help="Super Admin Full Name")
     create_admin_parser.add_argument("--password", "-p", help="Super Admin Password (leave blank for secure prompt)")
 
+    # seed-cms command
+    subparsers.add_parser("seed-cms", help="Seed initial Phase 3 manufacturing CMS modules")
+
     args = parser.parse_args()
+
+    if args.command == "seed-cms":
+        if not check_db_connection():
+            print("ERROR: Database connection failed. Please check your DATABASE_URL configuration.")
+            sys.exit(1)
+        from app.services.seed_service import seed_cms_data
+        db = SessionLocal()
+        try:
+            stats = seed_cms_data(db)
+            print(f"SUCCESS: CMS seeded with initial data: {stats}")
+        finally:
+            db.close()
+        return
 
     if args.command == "create-superadmin":
         if not check_db_connection():

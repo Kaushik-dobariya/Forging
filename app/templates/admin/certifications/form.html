@@ -1,0 +1,112 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if certification %}Edit Certificate: {{ certification.certificate_name }}{% else %}Add Industrial Certification{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Quality & Testing</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/certifications">Certifications</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if certification %}Edit Certificate{% else %}Add Certificate{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if certification %}Edit Certificate: {{ certification.certificate_name }}{% else %}Add Industrial Certification{% endif %}</h1>
+    <p class="page-description">
+      Configure accredited standards, issuing authorities, validity dates, certificate badges, and audit PDFs.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/certifications" class="btn btn-outline">
+      &larr; Back to Certifications
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Certificate & Accreditation Details</h3>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{% if certification %}/admin/certifications/{{ certification.id }}/edit{% else %}/admin/certifications/create{% endif %}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Certificate Name *</label>
+        <input type="text" name="certificate_name" value="{{ certification.certificate_name if certification else '' }}" required class="form-control" placeholder="e.g. ISO 9001:2015 Quality Management System">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Issuing Registrar / Organization</label>
+        <input type="text" name="issuing_organization" value="{{ certification.issuing_organization if certification else '' }}" class="form-control" placeholder="e.g. TÜV NORD, Lloyd's Register, BSI">
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Certificate Number</label>
+        <input type="text" name="certificate_number" value="{{ certification.certificate_number if certification else '' }}" class="form-control" placeholder="e.g. 01 100 14352">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Issue Date</label>
+        <input type="date" name="issue_date" value="{{ certification.issue_date if certification else '' }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Expiry Date</label>
+        <input type="date" name="expiry_date" value="{{ certification.expiry_date if certification else '' }}" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ certification.display_order if certification else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if certification and certification.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if certification and certification.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Audit Scope & Certification Description</label>
+      <textarea name="description" rows="3" class="form-control" placeholder="Certified scope of manufacturing, forging, heat treatment, and machining...">{{ certification.description if certification else '' }}</textarea>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Certificate Badge / Scan Image</label>
+        <input type="file" name="cert_image_file" accept="image/*" class="form-control">
+        {% if certification and certification.certificate_image %}
+        <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+          <img src="{{ certification.certificate_image }}" alt="Cert Badge" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+          <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ certification.certificate_image }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Official Certificate Document (PDF)</label>
+        <input type="file" name="cert_pdf_file" accept=".pdf" class="form-control">
+        {% if certification and certification.certificate_pdf %}
+        <div style="margin-top: var(--space-xs); font-size: 0.85rem;">
+          Current PDF: <a href="{{ certification.certificate_pdf }}" target="_blank" style="color: var(--color-accent); font-weight: 600;">Download / View Certificate PDF</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if certification %}Save Certificate{% else %}Add Certificate{% endif %}
+      </button>
+      <a href="/admin/certifications" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/materials">Materials</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">{{ material.name }}</li>
+    </ul>
+
+    <div style="display: flex; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-xs); flex-wrap: wrap;">
+      <span class="brand-badge" style="background: var(--color-accent); color: #FFF;">
+        {{ material.standard or 'INTERNATIONAL STANDARD' }}
+      </span>
+      {% if material.grade %}
+      <span class="brand-badge" style="background: var(--color-surface-subtle); color: var(--color-primary); border: 1px solid var(--color-border);">
+        GRADE: {{ material.grade }}
+      </span>
+      {% endif %}
+    </div>
+
+    <h1 class="page-title">{{ material.name }}</h1>
+    <p class="page-subtitle">
+      Comprehensive chemical composition, mechanical performance standards, heat treatment response, and industrial forging applications.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    <div class="product-detail-grid">
+      <!-- Left Column: Visual & Metallurgy Overview -->
+      <div>
+        {% if material.image %}
+        <img src="{{ material.image }}" alt="{{ material.name }}" class="product-gallery-main" style="margin-bottom: var(--space-lg);">
+        {% else %}
+        <div style="height: 280px; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #FFF; border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: var(--space-lg);">
+          <div style="font-family: var(--font-heading); font-size: 2.5rem; font-weight: 800; color: var(--color-accent); letter-spacing: -0.02em;">
+            {{ material.grade or material.name }}
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.9rem; color: #D1D5DB; margin-top: var(--space-xs);">
+            {{ material.standard or 'FORGING SPECIFICATION' }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Spec Card -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Grade Metallurgy Overview</h3>
+          <table class="spec-table" style="margin-bottom: 0;">
+            <tbody>
+              <tr>
+                <th>Standard</th>
+                <td>{{ material.standard or 'N/A' }}</td>
+              </tr>
+              <tr>
+                <th>Designation Grade</th>
+                <td>{{ material.grade or material.name }}</td>
+              </tr>
+              {% if material.chemical_composition %}
+              <tr>
+                <th>Chemical Summary</th>
+                <td><code style="font-family: var(--font-mono); font-size: 0.85rem;">{{ material.chemical_composition }}</code></td>
+              </tr>
+              {% endif %}
+              {% if material.mechanical_properties %}
+              <tr>
+                <th>Key Properties</th>
+                <td>{{ material.mechanical_properties }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+
+          {% if material.documents_url %}
+          <div style="margin-top: var(--space-lg); border-top: 1px solid var(--color-border); padding-top: var(--space-md);">
+            <a href="{{ material.documents_url }}" target="_blank" rel="noopener" class="btn btn-accent" style="width: 100%; text-align: center;">
+              Download Official Technical Datasheet (PDF) &darr;
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Engineering Details -->
+      <div>
+        <!-- Material Description -->
+        <div class="detail-section">
+          <h2 class="detail-section-title">Engineering Description & Metallurgy</h2>
+          <div style="line-height: 1.8; color: var(--color-text); font-size: 0.95rem;">
+            {{ material.description or 'Specialized industrial forging grade engineered for demanding mechanical and fatigue stress applications.' }}
+          </div>
+        </div>
+
+        <!-- Applications -->
+        {% if material.applications %}
+        <div class="detail-section">
+          <h2 class="detail-section-title">Typical Forging Applications</h2>
+          <div style="line-height: 1.7; color: var(--color-text-muted); font-size: 0.925rem;">
+            {{ material.applications }}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Compatible Forging Capabilities -->
+        {% if material.capabilities %}
+        <div class="detail-section">
+          <h3 class="detail-section-title">Manufacturing Capabilities For This Grade</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+            {% for cap in material.capabilities %}
+            <a href="/capabilities/{{ cap.slug }}" class="spec-pill" style="padding: 6px 12px; font-weight: 600; text-decoration: none; color: var(--color-primary); background: var(--color-surface-subtle); border: 1px solid var(--color-border);">
+              {{ cap.title }} &rarr;
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Associated Forged Products -->
+        {% if material.products %}
+        <div class="detail-section">
+          <h3 class="detail-section-title">Forged Components Made In This Grade</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+            {% for prod in material.products %}
+            {% if prod.category %}
+            <a href="/products/{{ prod.category.slug }}/{{ prod.slug }}" class="spec-pill" style="padding: 6px 12px; font-weight: 600; text-decoration: none; color: var(--color-primary); background: var(--color-surface-subtle); border: 1px solid var(--color-border);">
+              {{ prod.name }} &rarr;
+            </a>
+            {% else %}
+            <span class="spec-pill">{{ prod.name }}</span>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- RFQ Consultation Banner -->
+        <div style="background: var(--color-primary); color: #FFF; border-radius: var(--radius-sm); padding: var(--space-xl); margin-top: var(--space-xl);">
+          <h3 style="color: #FFF; font-size: 1.25rem; font-weight: 800; margin-bottom: var(--space-xs);">
+            Custom Chemistry or Heat Treatment Required?
+          </h3>
+          <p style="color: #D1D5DB; font-size: 0.9rem; line-height: 1.6; margin-bottom: var(--space-md);">
+            Our in-house metallurgical engineers formulate custom melts, vacuum degassing, and tailored quench-and-temper heat treatment cycles for project-specific Charpy-V toughness standards.
+          </p>
+          <a href="/contact" class="btn btn-accent">
+            Request Metallurgical Consultation &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

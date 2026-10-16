@@ -73,6 +73,29 @@ class UploadService:
                     detail="Invalid or corrupt image content.",
                 )
 
+    def validate_document_file(self, upload_file: UploadFile, content: bytes) -> None:
+        """Validates MIME type, file extension, and PDF header signature."""
+        ext = Path(upload_file.filename or "").suffix.lower()
+        if ext not in ALLOWED_DOCUMENT_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported document extension '{ext}'. Allowed: {', '.join(ALLOWED_DOCUMENT_EXTENSIONS)}",
+            )
+
+        mime = upload_file.content_type
+        if mime and mime.lower() not in ALLOWED_DOCUMENT_MIMES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported document MIME type '{mime}'.",
+            )
+
+        # Validate PDF magic bytes (%PDF-)
+        if not content.startswith(b"%PDF-"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or corrupt PDF file signature.",
+            )
+
     def save_upload(
         self,
         upload_file: UploadFile,
@@ -88,6 +111,8 @@ class UploadService:
 
         if is_image:
             self.validate_image_file(upload_file, content)
+        else:
+            self.validate_document_file(upload_file, content)
 
         clean_name = sanitize_filename(upload_file.filename or "upload.bin")
         ext = Path(clean_name).suffix

@@ -1,0 +1,101 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if facility %}Edit Facility: {{ facility.name }}{% else %}Add Manufacturing Facility{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/facilities">Infrastructure</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/infrastructure/facilities">Facilities</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">{% if facility %}Edit Facility{% else %}Add Facility{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if facility %}Edit Facility: {{ facility.name }}{% else %}Add Manufacturing Facility{% endif %}</h1>
+    <p class="page-description">
+      Configure workshop layout, installed capacity, equipment specifications, and facility imagery.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/infrastructure/facilities" class="btn btn-outline">
+      &larr; Back to Facilities
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <div class="admin-card-header">
+    <h3 class="admin-card-title">Facility Information</h3>
+  </div>
+
+  <form method="POST" enctype="multipart/form-data" action="{% if facility %}/admin/infrastructure/facilities/{{ facility.id }}/edit{% else %}/admin/infrastructure/facilities/create{% endif %}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Facility Name *</label>
+        <input type="text" name="name" value="{{ facility.name if facility else '' }}" required class="form-control" placeholder="e.g. Heavy Forge Shop">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select name="category" class="form-control">
+          <option value="Forge Shop" {% if facility and facility.category == 'Forge Shop' %}selected{% endif %}>Forge Shop</option>
+          <option value="Machining Centre" {% if facility and facility.category == 'Machining Centre' %}selected{% endif %}>Machining Centre</option>
+          <option value="Heat Treatment Plant" {% if facility and facility.category == 'Heat Treatment Plant' %}selected{% endif %}>Heat Treatment Plant</option>
+          <option value="Metallurgical Lab" {% if facility and facility.category == 'Metallurgical Lab' %}selected{% endif %}>Metallurgical Lab</option>
+          <option value="Tool & Die Design" {% if facility and facility.category == 'Tool & Die Design' %}selected{% endif %}>Tool & Die Design</option>
+          <option value="Inspection Bay" {% if facility and facility.category == 'Inspection Bay' %}selected{% endif %}>Inspection Bay</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Installed Capacity</label>
+        <input type="text" name="capacity" value="{{ facility.capacity if facility else '' }}" class="form-control" placeholder="e.g. 45,000 MT Annual Capacity">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ facility.display_order if facility else 0 }}" class="form-control">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select name="status" class="form-control">
+          <option value="published" {% if facility and facility.status == 'published' %}selected{% endif %}>Published</option>
+          <option value="draft" {% if facility and facility.status == 'draft' %}selected{% endif %}>Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea name="description" rows="3" class="form-control">{{ facility.description if facility else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Technical Specifications (Covered area, cranes, power, atmosphere)</label>
+      <textarea name="specifications" rows="3" class="form-control" placeholder="Covered Area: 120,000 sq ft | 30 MT Cranes...">{{ facility.specifications if facility else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Facility Photo</label>
+      <input type="file" name="image_file" accept="image/*" class="form-control">
+      {% if facility and facility.image %}
+      <div style="margin-top: var(--space-xs); display: flex; align-items: center; gap: var(--space-sm);">
+        <img src="{{ facility.image }}" alt="Facility" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--color-border); object-fit: cover;">
+        <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--color-text-muted);">{{ facility.image }}</span>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-accent">
+        {% if facility %}Save Facility{% else %}Create Facility{% endif %}
+      </button>
+      <a href="/admin/infrastructure/facilities" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

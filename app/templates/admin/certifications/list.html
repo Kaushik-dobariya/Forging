@@ -1,0 +1,126 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Certifications & Accreditations{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Quality & Testing</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Certifications</span>
+    </nav>
+    <h1 class="page-title">Certifications & Accreditations</h1>
+    <p class="page-description">
+      ISO 9001, IATF 16949, AS9100D, PED 2014/68/EU certificates, validity dates, and official audit documentation.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/certifications/create" class="btn btn-accent">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Certification
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if certifications %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 200px;">Certificate Name</th>
+          <th style="min-width: 160px;">Issuing Registrar</th>
+          <th style="min-width: 140px;">Certificate No.</th>
+          <th style="min-width: 120px;">Validity / Expiry</th>
+          <th style="min-width: 120px;">Document</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 120px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cert in certifications %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ cert.display_order }}
+          </td>
+          <td>
+            <a href="/admin/certifications/{{ cert.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ cert.certificate_name }}
+            </a>
+          </td>
+          <td style="font-size: 0.875rem;">{{ cert.issuing_organization or '&mdash;'|safe }}</td>
+          <td>
+            {% if cert.certificate_number %}
+            <code style="font-family: var(--font-mono); font-size: 0.8125rem; background: var(--admin-surface-muted); padding: 2px 6px; border-radius: 4px;">
+              {{ cert.certificate_number }}
+            </code>
+            {% else %}
+            <span style="color: var(--admin-text-subtle);">&mdash;</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.875rem; white-space: nowrap;">{{ cert.expiry_date or 'Indefinite' }}</td>
+          <td>
+            {% if cert.certificate_pdf %}
+            <a href="{{ cert.certificate_pdf }}" target="_blank" style="color: var(--admin-accent); font-weight: 600; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              View PDF
+            </a>
+            {% else %}
+            <span style="color: var(--admin-text-subtle); font-size: 0.8125rem;">No PDF</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if cert.status == 'published' %}
+            <span class="badge badge-published">Published</span>
+            {% elif cert.status == 'draft' %}
+            <span class="badge badge-draft">Draft</span>
+            {% else %}
+            <span class="badge badge-archived">{{ cert.status|capitalize }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 0.35rem; justify-content: flex-end;">
+              <a href="/admin/certifications/{{ cert.id }}/edit" class="btn-icon" title="Edit Certificate" aria-label="Edit Certificate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </a>
+              <button type="button" class="btn-icon btn-icon-danger btn-delete-trigger" data-action="/admin/certifications/{{ cert.id }}/delete" data-name="{{ cert.certificate_name }}" title="Delete Certificate" aria-label="Delete Certificate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path>
+      </svg>
+    </div>
+    <div class="table-empty-state-title">No certifications added yet</div>
+    <p class="table-empty-state-text">Add your ISO 9001, IATF 16949, AS9100D, or PED quality certificates and audit documentation.</p>
+    <a href="/admin/certifications/create" class="btn btn-accent btn-sm">+ Add First Certificate</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

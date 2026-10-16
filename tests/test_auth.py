@@ -148,3 +148,8 @@ def test_account_lockout_after_max_attempts(client, db, superadmin_user):
     )
     assert resp6.status_code == 400
     assert "temporarily locked" in resp6.text
+
+    # Teardown: unlock account for subsequent tests
+    superadmin_user.failed_login_attempts = 0
+    superadmin_user.locked_until = None
+    db.commit()

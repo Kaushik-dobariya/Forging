@@ -1,0 +1,263 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block content %}
+<header class="page-header" style="padding-bottom: var(--space-xl);">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/products">Products</a></li>
+      <li><span class="separator">/</span></li>
+      {% if product.category %}
+      <li><a href="/products/{{ product.category.slug }}">{{ product.category.name }}</a></li>
+      <li><span class="separator">/</span></li>
+      {% endif %}
+      <li style="color: #FFF;">{{ product.name }}</li>
+    </ul>
+
+    <div style="display: flex; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-2xs);">
+      <span class="brand-badge" style="background: var(--color-accent); color: #FFF;">
+        {{ product.category.name if product.category else 'Engineered Component' }}
+      </span>
+      {% if product.material %}
+      <span class="badge" style="background: rgba(255,255,255,0.15); color: #FFF;">{{ product.material }}</span>
+      {% endif %}
+    </div>
+
+    <h1 class="page-title">{{ product.name }}</h1>
+    {% if product.short_description %}
+    <p class="page-subtitle">{{ product.short_description }}</p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="section" style="padding-top: 0;">
+  <div class="container">
+    
+    <!-- Top Grid: Gallery & High-Level Specifications -->
+    <div class="product-detail-grid">
+      <!-- Media Gallery -->
+      <div>
+        <img id="main-product-image" src="{{ product.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ product.name }}" class="product-gallery-main">
+        {% if product.images %}
+        <div class="product-thumbs">
+          {% if product.featured_image %}
+          <img src="{{ product.featured_image }}" alt="Thumbnail" class="product-thumb" onclick="document.getElementById('main-product-image').src=this.src;">
+          {% endif %}
+          {% for img in product.images %}
+          <img src="{{ img.image_url }}" alt="{{ img.alt_text or product.name }}" class="product-thumb" onclick="document.getElementById('main-product-image').src=this.src;">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Manufacturing Specifications & Actions -->
+      <div>
+        <div class="detail-section" style="margin-bottom: var(--space-lg);">
+          <h2 class="detail-section-title">Key Manufacturing Parameters</h2>
+          
+          <table class="spec-table" style="margin-top: 0;">
+            <tbody>
+              {% if product.weight_range %}
+              <tr>
+                <th>Weight Range</th>
+                <td><strong>{{ product.weight_range }}</strong></td>
+              </tr>
+              {% endif %}
+              {% if product.dimensions %}
+              <tr>
+                <th>Dimensions</th>
+                <td>{{ product.dimensions }}</td>
+              </tr>
+              {% endif %}
+              {% if product.manufacturing_process %}
+              <tr>
+                <th>Process</th>
+                <td>{{ product.manufacturing_process }}</td>
+              </tr>
+              {% endif %}
+              {% if product.forging_capacity %}
+              <tr>
+                <th>Forging Capacity</th>
+                <td>{{ product.forging_capacity }}</td>
+              </tr>
+              {% endif %}
+              {% if product.heat_treatment %}
+              <tr>
+                <th>Heat Treatment</th>
+                <td>{{ product.heat_treatment }}</td>
+              </tr>
+              {% endif %}
+              {% if product.machining %}
+              <tr>
+                <th>Machining Tolerance</th>
+                <td>{{ product.machining }}</td>
+              </tr>
+              {% endif %}
+              {% if product.surface_finish %}
+              <tr>
+                <th>Surface Finish</th>
+                <td>{{ product.surface_finish }}</td>
+              </tr>
+              {% endif %}
+              {% if product.testing %}
+              <tr>
+                <th>NDT & Inspection</th>
+                <td>{{ product.testing }}</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+
+          <div style="display: flex; gap: var(--space-md); flex-wrap: wrap;">
+            {% if product.downloads %}
+            <a href="{{ product.downloads }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">
+              &#128196; Download Technical Specification (PDF)
+            </a>
+            {% endif %}
+            <a href="#contact" class="btn btn-accent" style="flex: 1; text-align: center;">
+              Request Engineering Quote &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Structured Flexible Specifications Table -->
+    {% if product.specifications %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Technical Parameter Breakdown</h2>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th style="width: 45%;">Specification Parameter</th>
+              <th>Certified Value</th>
+              <th>Unit of Measure</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in product.specifications %}
+            <tr>
+              <td style="font-weight: 700; color: var(--color-primary);">{{ s.name }}</td>
+              <td style="font-weight: 600;">{{ s.value }}</td>
+              <td><span class="badge badge-secondary">{{ s.unit or '-' }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Descriptions & Applications -->
+    <div class="detail-section">
+      <h2 class="detail-section-title">Engineering Overview & Performance</h2>
+      <div style="color: var(--color-text); line-height: 1.8; font-size: 1rem; margin-bottom: var(--space-lg);">
+        {{ product.detailed_description or product.short_description or 'Engineered for high fatigue duty cycles and severe shock load resistance.' }}
+      </div>
+
+      {% if product.applications %}
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Target Applications:</h3>
+      <p style="color: var(--color-text-muted); line-height: 1.6; font-size: 0.95rem;">{{ product.applications }}</p>
+      {% endif %}
+
+      {% if product.technical_specifications %}
+      <div style="margin-top: var(--space-md); padding: var(--space-md); background: var(--color-surface-subtle); border-radius: var(--radius-xs); border-left: 3px solid var(--color-accent);">
+        <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-primary); margin-bottom: 4px;">Compliance & Tolerances</h4>
+        <p style="font-size: 0.875rem; color: var(--color-text-muted); margin: 0;">{{ product.technical_specifications }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Cross-Linked Capabilities & Industries -->
+    {% if product.capabilities or product.industries or product.materials %}
+    <div class="detail-section">
+      <h2 class="detail-section-title">Associated Manufacturing Capabilities & Sectors</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-xl);">
+        
+        {% if product.capabilities %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Forging Capabilities:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for cap in product.capabilities %}
+            <li style="margin-bottom: var(--space-2xs);">
+              <a href="/capabilities/{{ cap.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.9rem;">
+                &bull; {{ cap.title }} &rarr;
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if product.industries %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Key Industries Served:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for ind in product.industries %}
+            <li style="margin-bottom: var(--space-2xs);">
+              <a href="/industries/{{ ind.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.9rem;">
+                &bull; {{ ind.name }} &rarr;
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if product.materials %}
+        <div>
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs);">Material Specifications:</h3>
+          <ul style="list-style: none; padding: 0;">
+            {% for mat in product.materials %}
+            <li style="margin-bottom: var(--space-2xs);">
+              <a href="/materials/{{ mat.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.9rem;">
+                &bull; {{ mat.name }} ({{ mat.grade }}) &rarr;
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Related Products -->
+    {% if product.related_products %}
+    <div style="margin-top: var(--space-2xl);">
+      <h2 class="section-title">Related Forged Components</h2>
+      <div class="catalog-grid" style="margin-top: var(--space-lg);">
+        {% for rel in product.related_products %}
+        <article class="catalog-card">
+          <a href="/products/{% if rel.category %}{{ rel.category.slug }}{% else %}all{% endif %}/{{ rel.slug }}">
+            <img src="{{ rel.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ rel.name }}" class="catalog-card-image" loading="lazy">
+          </a>
+          <div class="catalog-card-body">
+            <div>
+              <div class="catalog-card-category">{{ rel.category.name if rel.category else 'Component' }}</div>
+              <h3 class="catalog-card-title">
+                <a href="/products/{% if rel.category %}{{ rel.category.slug }}{% else %}all{% endif %}/{{ rel.slug }}" style="color: inherit;">
+                  {{ rel.name }}
+                </a>
+              </h3>
+              <p class="catalog-card-desc">{{ rel.short_description or '' }}</p>
+            </div>
+            <a href="/products/{% if rel.category %}{{ rel.category.slug }}{% else %}all{% endif %}/{{ rel.slug }}" class="btn btn-outline btn-sm">
+              View Specifications &rarr;
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

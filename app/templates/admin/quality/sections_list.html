@@ -1,0 +1,97 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Quality Policy & QMS Sections{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/quality">Quality & Testing</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">Quality Sections</span>
+    </nav>
+    <h1 class="page-title">Quality Assurance Sections</h1>
+    <p class="page-description">
+      Database-driven quality policy, QMS architecture, NDT inspection standards, traceability rules, and QA gates.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/quality" target="_blank" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" x2="21" y1="14" y2="3"></line>
+      </svg>
+      Public Quality Page
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  {% if sections %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 150px;">Section Key</th>
+          <th style="min-width: 220px;">Section Title & Subtitle</th>
+          <th style="min-width: 260px;">Content Summary</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 110px; text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sec in sections %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ sec.display_order }}
+          </td>
+          <td>
+            <code style="font-family: var(--font-mono); font-size: 0.8125rem; background: var(--admin-surface-muted); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--admin-border-subtle); color: var(--admin-text-primary);">
+              {{ sec.section_key }}
+            </code>
+          </td>
+          <td>
+            <a href="/admin/quality/{{ sec.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ sec.title }}
+            </a>
+            {% if sec.subtitle %}
+            <div class="table-subtext">{{ sec.subtitle }}</div>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.8125rem; color: var(--admin-text-muted); max-width: 340px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+            {{ sec.content }}
+          </td>
+          <td>
+            {% if sec.is_active %}
+            <span class="badge badge-published">Active</span>
+            {% else %}
+            <span class="badge badge-draft">Disabled</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="/admin/quality/{{ sec.id }}/edit" class="btn btn-outline btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="table-empty-state">
+    <div class="table-empty-state-title">No quality sections configured</div>
+    <p class="table-empty-state-text">Quality sections define your company's metallurgical quality policy and inspection protocols.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
