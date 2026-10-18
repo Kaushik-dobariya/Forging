@@ -34,6 +34,10 @@ from app.models.page import CMSPage, PageStatus
 from app.models.menu import MenuItem, MenuLocation
 from app.models.redirect import URLRedirect
 
+# Phase 5 models
+from app.models.hero_slide import HeroSlide
+from app.models.timeline import TimelineMilestone
+
 __all__ = [
     "Base",
     "User",
@@ -80,5 +84,9 @@ __all__ = [
     "MenuItem",
     "MenuLocation",
     "URLRedirect",
+    # Phase 5
+    "HeroSlide",
+    "TimelineMilestone",
 ]
+
 

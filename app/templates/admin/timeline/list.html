@@ -1,0 +1,130 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Company History Timeline{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Company History Timeline</span>
+    </nav>
+    <h1 class="page-title">Company History Milestones</h1>
+    <p class="page-description">
+      Manage company milestones, founding years, facility expansions, technology investments, and international certifications for the public history page.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/timeline/create" class="btn btn-accent" id="btn-create-milestone">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Milestone
+    </a>
+  </div>
+</div>
+
+{% if request.query_params.get('created') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Success!</strong> New milestone added to company history.
+</div>
+{% endif %}
+
+{% if request.query_params.get('updated') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Updated!</strong> Milestone updated successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Deleted!</strong> Milestone removed successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('error') %}
+<div class="alert alert-danger" style="margin-bottom: 20px;">
+  <strong>Error:</strong> {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<div class="admin-card">
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 70px;">Order</th>
+          <th style="width: 100px;">Year</th>
+          <th>Milestone Headline & Details</th>
+          <th style="width: 130px;">Badge</th>
+          <th style="width: 110px;">Status</th>
+          <th style="width: 140px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in milestones %}
+        <tr>
+          <td>
+            <span class="badge badge-subtle">#{{ m.display_order }}</span>
+          </td>
+          <td>
+            <span style="font-weight: 800; font-size: 16px; color: var(--admin-primary); font-variant-numeric: tabular-nums;">
+              {{ m.year }}
+            </span>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--admin-text); font-size: 15px;">{{ m.title }}</div>
+            <div style="font-size: 12px; color: var(--admin-text-secondary); max-width: 500px; line-height: 1.4; margin-top: 2px;">
+              {{ m.description }}
+            </div>
+            {% if m.image_url %}
+            <div style="margin-top: 6px;">
+              <span style="font-size: 11px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">Photo attached</span>
+            </div>
+            {% endif %}
+          </td>
+          <td>
+            {% if m.badge_text %}
+            <span class="badge badge-accent">{{ m.badge_text }}</span>
+            {% else %}
+            <span style="font-size: 12px; color: var(--admin-text-secondary);">&mdash;</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="/admin/timeline/{{ m.id }}/toggle">
+              <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token if request.state.csrf_token else '' }}">
+              {% if m.is_active %}
+              <button type="submit" class="badge badge-success" style="cursor: pointer; border: none; background: #dcfce7; color: #15803d;" title="Click to disable">Active</button>
+              {% else %}
+              <button type="submit" class="badge badge-danger" style="cursor: pointer; border: none; background: #fee2e2; color: #b91c1c;" title="Click to enable">Inactive</button>
+              {% endif %}
+            </form>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <a href="/admin/timeline/{{ m.id }}/edit" class="btn btn-sm btn-secondary" title="Edit Milestone">
+                Edit
+              </a>
+              <form method="POST" action="/admin/timeline/{{ m.id }}/delete" onsubmit="return confirm('Are you sure you want to delete this milestone?');" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token if request.state.csrf_token else '' }}">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete Milestone">
+                  Delete
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 40px; color: var(--admin-text-secondary);">
+            No history milestones found. <a href="/admin/timeline/create" style="color: var(--admin-primary); font-weight: 600;">Add the founding milestone</a>.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

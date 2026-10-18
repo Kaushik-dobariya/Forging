@@ -1,0 +1,514 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Website Theme Customization | Super Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content-header">
+  <div>
+    <h1 class="page-title">Website Theme & Appearance</h1>
+    <p class="page-subtitle">Configure global colors, Aptos typography scales, header, footer, and component tokens across the public website.</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/" target="_blank" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+      </svg>
+      Preview Public Site
+    </a>
+  </div>
+</div>
+
+{% if saved %}
+<div class="alert alert-success" data-auto-dismiss style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span>Website theme customization saved successfully! Changes are active throughout the public site.</span>
+</div>
+{% endif %}
+
+{% if reset %}
+<div class="alert alert-info" data-auto-dismiss style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+  <span>Website theme has been reset to approved industrial engineering default values.</span>
+</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: 1fr 380px; gap: 1.75rem; align-items: start;">
+  <!-- Settings Form Column -->
+  <form id="themeForm" method="POST" action="/admin/settings/theme">
+    <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+    <!-- 1. Brand & Core Colors Card -->
+    <div class="admin-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 2px; background: var(--color-accent);"></span>
+        Brand & Surface Colors
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 1.25rem;">
+        Default palette: Industrial Deep Slate (<code>#17212B</code>), Graphite (<code>#28323C</code>), and Warm Copper (<code>#B7793F</code>).
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <!-- Primary Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_primary">Primary Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_primary_picker" value="{{ theme.theme_color_primary }}" onchange="syncColor(this, 'theme_color_primary')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_primary" name="theme_color_primary" value="{{ theme.theme_color_primary }}" class="form-control" oninput="syncPicker(this, 'theme_color_primary_picker')">
+          </div>
+        </div>
+
+        <!-- Secondary Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_secondary">Secondary Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_secondary_picker" value="{{ theme.theme_color_secondary }}" onchange="syncColor(this, 'theme_color_secondary')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_secondary" name="theme_color_secondary" value="{{ theme.theme_color_secondary }}" class="form-control" oninput="syncPicker(this, 'theme_color_secondary_picker')">
+          </div>
+        </div>
+
+        <!-- Accent Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_accent">Accent Color (Warm Copper)</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_accent_picker" value="{{ theme.theme_color_accent }}" onchange="syncColor(this, 'theme_color_accent')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_accent" name="theme_color_accent" value="{{ theme.theme_color_accent }}" class="form-control" oninput="syncPicker(this, 'theme_color_accent_picker')">
+          </div>
+        </div>
+
+        <!-- Background Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_background">Website Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_background_picker" value="{{ theme.theme_color_background }}" onchange="syncColor(this, 'theme_color_background')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_background" name="theme_color_background" value="{{ theme.theme_color_background }}" class="form-control" oninput="syncPicker(this, 'theme_color_background_picker')">
+          </div>
+        </div>
+
+        <!-- Section Background Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_section_bg">Section Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_section_bg_picker" value="{{ theme.theme_color_section_bg }}" onchange="syncColor(this, 'theme_color_section_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_section_bg" name="theme_color_section_bg" value="{{ theme.theme_color_section_bg }}" class="form-control" oninput="syncPicker(this, 'theme_color_section_bg_picker')">
+          </div>
+        </div>
+
+        <!-- Card & Surface Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_card_surface">Card & Surface Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_card_surface_picker" value="{{ theme.theme_color_card_surface }}" onchange="syncColor(this, 'theme_color_card_surface')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_card_surface" name="theme_color_card_surface" value="{{ theme.theme_color_card_surface }}" class="form-control" oninput="syncPicker(this, 'theme_color_card_surface_picker')">
+          </div>
+        </div>
+
+        <!-- Border Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_border">Border Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_border_picker" value="{{ theme.theme_color_border }}" onchange="syncColor(this, 'theme_color_border')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_border" name="theme_color_border" value="{{ theme.theme_color_border }}" class="form-control" oninput="syncPicker(this, 'theme_color_border_picker')">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Typography Colors & Sizing Card -->
+    <div class="admin-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
+        Text Colors & Aptos Typography Scale
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 1.25rem;">
+        Aptos is the mandatory default typography across all public pages and the admin panel.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <!-- Primary Text Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_text_primary">Primary Text Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_text_primary_picker" value="{{ theme.theme_color_text_primary }}" onchange="syncColor(this, 'theme_color_text_primary')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_text_primary" name="theme_color_text_primary" value="{{ theme.theme_color_text_primary }}" class="form-control" oninput="syncPicker(this, 'theme_color_text_primary_picker')">
+          </div>
+        </div>
+
+        <!-- Secondary Text Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_text_secondary">Secondary Text Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_text_secondary_picker" value="{{ theme.theme_color_text_secondary }}" onchange="syncColor(this, 'theme_color_text_secondary')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_text_secondary" name="theme_color_text_secondary" value="{{ theme.theme_color_text_secondary }}" class="form-control" oninput="syncPicker(this, 'theme_color_text_secondary_picker')">
+          </div>
+        </div>
+
+        <!-- Heading Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_heading">Heading Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_heading_picker" value="{{ theme.theme_color_heading }}" onchange="syncColor(this, 'theme_color_heading')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_heading" name="theme_color_heading" value="{{ theme.theme_color_heading }}" class="form-control" oninput="syncPicker(this, 'theme_color_heading_picker')">
+          </div>
+        </div>
+
+        <!-- Link Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_link">Link Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_link_picker" value="{{ theme.theme_color_link }}" onchange="syncColor(this, 'theme_color_link')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_link" name="theme_color_link" value="{{ theme.theme_color_link }}" class="form-control" oninput="syncPicker(this, 'theme_color_link_picker')">
+          </div>
+        </div>
+
+        <!-- Link Hover Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_link_hover">Link Hover Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_link_hover_picker" value="{{ theme.theme_color_link_hover }}" onchange="syncColor(this, 'theme_color_link_hover')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_link_hover" name="theme_color_link_hover" value="{{ theme.theme_color_link_hover }}" class="form-control" oninput="syncPicker(this, 'theme_color_link_hover_picker')">
+          </div>
+        </div>
+      </div>
+
+      <!-- Typography Settings -->
+      <div style="border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <div>
+            <label class="form-label" for="theme_font_family_base">Global Font Family</label>
+            <input type="text" id="theme_font_family_base" name="theme_font_family_base" value="{{ theme.theme_font_family_base }}" class="form-control" oninput="updateLivePreview()">
+            <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Default: Aptos, system-ui fallback</span>
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_family_heading">Heading Font Family</label>
+            <input type="text" id="theme_font_family_heading" name="theme_font_family_heading" value="{{ theme.theme_font_family_heading }}" class="form-control" oninput="updateLivePreview()">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_base">Base Font Size</label>
+            <input type="text" id="theme_font_size_base" name="theme_font_size_base" value="{{ theme.theme_font_size_base }}" class="form-control" placeholder="16px" oninput="updateLivePreview()">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_small">Small Text Size</label>
+            <input type="text" id="theme_font_size_small" name="theme_font_size_small" value="{{ theme.theme_font_size_small }}" class="form-control" placeholder="14px">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_medium">Medium Text Size</label>
+            <input type="text" id="theme_font_size_medium" name="theme_font_size_medium" value="{{ theme.theme_font_size_medium }}" class="form-control" placeholder="16px">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_large">Large Text Size</label>
+            <input type="text" id="theme_font_size_large" name="theme_font_size_large" value="{{ theme.theme_font_size_large }}" class="form-control" placeholder="18px">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_h1">Heading 1 (H1)</label>
+            <input type="text" id="theme_font_size_h1" name="theme_font_size_h1" value="{{ theme.theme_font_size_h1 }}" class="form-control" placeholder="2.75rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_h2">Heading 2 (H2)</label>
+            <input type="text" id="theme_font_size_h2" name="theme_font_size_h2" value="{{ theme.theme_font_size_h2 }}" class="form-control" placeholder="2.15rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_h3">Heading 3 (H3)</label>
+            <input type="text" id="theme_font_size_h3" name="theme_font_size_h3" value="{{ theme.theme_font_size_h3 }}" class="form-control" placeholder="1.65rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_paragraph">Paragraph Size</label>
+            <input type="text" id="theme_font_size_paragraph" name="theme_font_size_paragraph" value="{{ theme.theme_font_size_paragraph }}" class="form-control" placeholder="1rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_nav">Navigation Font Size</label>
+            <input type="text" id="theme_font_size_nav" name="theme_font_size_nav" value="{{ theme.theme_font_size_nav }}" class="form-control" placeholder="0.925rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_font_size_button">Button Font Size</label>
+            <input type="text" id="theme_font_size_button" name="theme_font_size_button" value="{{ theme.theme_font_size_button }}" class="form-control" placeholder="0.9rem">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_line_height">Line Height</label>
+            <input type="text" id="theme_line_height" name="theme_line_height" value="{{ theme.theme_line_height }}" class="form-control" placeholder="1.6">
+          </div>
+
+          <div>
+            <label class="form-label" for="theme_letter_spacing">Letter Spacing</label>
+            <input type="text" id="theme_letter_spacing" name="theme_letter_spacing" value="{{ theme.theme_letter_spacing }}" class="form-control" placeholder="-0.01em">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Header, Footer, Buttons & Forms Card -->
+    <div class="admin-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
+        Header, Footer, Buttons & Form Colors
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 1.25rem;">
+        Independent color controls for navigation headers, corporate footer, CTAs, and RFQ inputs.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <!-- Button Background -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_button_bg">Button Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_button_bg_picker" value="{{ theme.theme_color_button_bg }}" onchange="syncColor(this, 'theme_color_button_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_button_bg" name="theme_color_button_bg" value="{{ theme.theme_color_button_bg }}" class="form-control" oninput="syncPicker(this, 'theme_color_button_bg_picker')">
+          </div>
+        </div>
+
+        <!-- Button Text Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_button_text">Button Text Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_button_text_picker" value="{{ theme.theme_color_button_text }}" onchange="syncColor(this, 'theme_color_button_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_button_text" name="theme_color_button_text" value="{{ theme.theme_color_button_text }}" class="form-control" oninput="syncPicker(this, 'theme_color_button_text_picker')">
+          </div>
+        </div>
+
+        <!-- Button Hover Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_button_hover">Button Hover Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_button_hover_picker" value="{{ theme.theme_color_button_hover }}" onchange="syncColor(this, 'theme_color_button_hover')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_button_hover" name="theme_color_button_hover" value="{{ theme.theme_color_button_hover }}" class="form-control" oninput="syncPicker(this, 'theme_color_button_hover_picker')">
+          </div>
+        </div>
+
+        <!-- Header Background -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_header_bg">Header Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_header_bg_picker" value="{{ theme.theme_color_header_bg }}" onchange="syncColor(this, 'theme_color_header_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_header_bg" name="theme_color_header_bg" value="{{ theme.theme_color_header_bg }}" class="form-control" oninput="syncPicker(this, 'theme_color_header_bg_picker')">
+          </div>
+        </div>
+
+        <!-- Header Text Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_header_text">Header Text</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_header_text_picker" value="{{ theme.theme_color_header_text }}" onchange="syncColor(this, 'theme_color_header_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_header_text" name="theme_color_header_text" value="{{ theme.theme_color_header_text }}" class="form-control" oninput="syncPicker(this, 'theme_color_header_text_picker')">
+          </div>
+        </div>
+
+        <!-- Header Link Color -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_header_link">Header Nav Link</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_header_link_picker" value="{{ theme.theme_color_header_link }}" onchange="syncColor(this, 'theme_color_header_link')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_header_link" name="theme_color_header_link" value="{{ theme.theme_color_header_link }}" class="form-control" oninput="syncPicker(this, 'theme_color_header_link_picker')">
+          </div>
+        </div>
+
+        <!-- Footer Background -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_footer_bg">Footer Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_footer_bg_picker" value="{{ theme.theme_color_footer_bg }}" onchange="syncColor(this, 'theme_color_footer_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_footer_bg" name="theme_color_footer_bg" value="{{ theme.theme_color_footer_bg }}" class="form-control" oninput="syncPicker(this, 'theme_color_footer_bg_picker')">
+          </div>
+        </div>
+
+        <!-- Footer Heading -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_footer_heading">Footer Headings</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_footer_heading_picker" value="{{ theme.theme_color_footer_heading }}" onchange="syncColor(this, 'theme_color_footer_heading')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_footer_heading" name="theme_color_footer_heading" value="{{ theme.theme_color_footer_heading }}" class="form-control" oninput="syncPicker(this, 'theme_color_footer_heading_picker')">
+          </div>
+        </div>
+
+        <!-- Footer Text -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_footer_text">Footer Body Text</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_footer_text_picker" value="{{ theme.theme_color_footer_text }}" onchange="syncColor(this, 'theme_color_footer_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_footer_text" name="theme_color_footer_text" value="{{ theme.theme_color_footer_text }}" class="form-control" oninput="syncPicker(this, 'theme_color_footer_text_picker')">
+          </div>
+        </div>
+
+        <!-- Footer Link -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_footer_link">Footer Link</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_footer_link_picker" value="{{ theme.theme_color_footer_link }}" onchange="syncColor(this, 'theme_color_footer_link')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_footer_link" name="theme_color_footer_link" value="{{ theme.theme_color_footer_link }}" class="form-control" oninput="syncPicker(this, 'theme_color_footer_link_picker')">
+          </div>
+        </div>
+
+        <!-- Form Background -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_form_bg">Form / Input Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_form_bg_picker" value="{{ theme.theme_color_form_bg }}" onchange="syncColor(this, 'theme_color_form_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_form_bg" name="theme_color_form_bg" value="{{ theme.theme_color_form_bg }}" class="form-control" oninput="syncPicker(this, 'theme_color_form_bg_picker')">
+          </div>
+        </div>
+
+        <!-- Form Border -->
+        <div class="color-picker-group">
+          <label class="form-label" for="theme_color_form_border">Form Border Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="theme_color_form_border_picker" value="{{ theme.theme_color_form_border }}" onchange="syncColor(this, 'theme_color_form_border')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="theme_color_form_border" name="theme_color_form_border" value="{{ theme.theme_color_form_border }}" class="form-control" oninput="syncPicker(this, 'theme_color_form_border_picker')">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem;">
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 600;">
+        Save Website Theme
+      </button>
+      <a href="/admin/settings/theme" class="btn btn-outline">Discard Changes</a>
+    </div>
+  </form>
+
+  <!-- Live Preview Sidebar Column -->
+  <div style="position: sticky; top: 80px;">
+    <div class="admin-card" style="padding: 1.25rem; border-top: 4px solid var(--color-accent);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--admin-text-primary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">
+          Live Theme Preview
+        </h4>
+        <span class="badge badge-success" style="font-size: 0.7rem;">Real-Time</span>
+      </div>
+
+      <div id="livePreviewContainer" style="border: 1px solid #D9DDE1; border-radius: 6px; overflow: hidden; background: #F5F4F0; transition: all 0.2s ease;">
+        <!-- Header Mock -->
+        <div id="prevHeader" style="background: #17212B; color: #FFFFFF; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 0.85rem; letter-spacing: -0.02em;">FORGE METALLURGY</span>
+          <span id="prevHeaderLink" style="font-size: 0.75rem; color: #F5F4F0;">CAPABILITIES</span>
+        </div>
+
+        <!-- Body / Card Mock -->
+        <div id="prevBody" style="padding: 16px; background: #F5F4F0;">
+          <div id="prevCard" style="background: #FFFFFF; border: 1px solid #D9DDE1; border-radius: 4px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.04);">
+            <h5 id="prevHeading" style="font-size: 1.05rem; font-weight: 700; color: #17212B; margin-bottom: 6px;">
+              Precision Engineering Card
+            </h5>
+            <p id="prevParagraph" style="font-size: 0.825rem; color: #5B6470; line-height: 1.5; margin-bottom: 10px;">
+              Closed-die forgings manufactured with certified metallurgy and micro-tolerances.
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <a href="javascript:void(0)" id="prevLink" style="color: #B7793F; font-size: 0.8rem; font-weight: 600; text-decoration: none;">
+                Technical Specs &rarr;
+              </a>
+              <button type="button" id="prevBtn" style="background: #B7793F; color: #FFFFFF; border: none; padding: 5px 12px; border-radius: 3px; font-size: 0.75rem; font-weight: 600;">
+                Get Quote
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Mock -->
+        <div id="prevFooter" style="background: #17212B; color: #8E9BA8; padding: 10px 14px; font-size: 0.72rem; border-top: 1px solid rgba(255,255,255,0.08);">
+          <div id="prevFooterHead" style="color: #FFFFFF; font-weight: 700; margin-bottom: 2px;">FORGE Precision Ltd.</div>
+          <span>&copy; 2026 Certified Industrial Forgings</span>
+        </div>
+      </div>
+
+      <!-- Reset Form -->
+      <form method="POST" action="/admin/settings/theme/reset" onsubmit="return confirm('Are you sure you want to restore the default industrial theme? All custom color and font settings will be cleared.');" style="margin-top: 1.25rem;">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+        <button type="submit" class="btn btn-outline" style="width: 100%; color: #B91C1C; border-color: #FECACA; font-size: 0.825rem;">
+          Reset to Factory Defaults
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function syncColor(picker, inputId) {
+  const textInput = document.getElementById(inputId);
+  if (textInput) {
+    textInput.value = picker.value.toUpperCase();
+    updateLivePreview();
+  }
+}
+
+function syncPicker(textInput, pickerId) {
+  const picker = document.getElementById(pickerId);
+  const val = textInput.value.trim();
+  if (picker && /^#[0-9A-Fa-f]{6}$/.test(val)) {
+    picker.value = val;
+    updateLivePreview();
+  }
+}
+
+function updateLivePreview() {
+  const prim = document.getElementById('theme_color_primary')?.value || '#17212B';
+  const sec = document.getElementById('theme_color_secondary')?.value || '#28323C';
+  const accent = document.getElementById('theme_color_accent')?.value || '#B7793F';
+  const bg = document.getElementById('theme_color_background')?.value || '#F5F4F0';
+  const cardSurface = document.getElementById('theme_color_card_surface')?.value || '#FFFFFF';
+  const textPrim = document.getElementById('theme_color_text_primary')?.value || '#17212B';
+  const textSec = document.getElementById('theme_color_text_secondary')?.value || '#5B6470';
+  const heading = document.getElementById('theme_color_heading')?.value || '#17212B';
+  const link = document.getElementById('theme_color_link')?.value || '#B7793F';
+  const btnBg = document.getElementById('theme_color_button_bg')?.value || '#B7793F';
+  const btnText = document.getElementById('theme_color_button_text')?.value || '#FFFFFF';
+  const border = document.getElementById('theme_color_border')?.value || '#D9DDE1';
+  const headerBg = document.getElementById('theme_color_header_bg')?.value || '#17212B';
+  const headerLink = document.getElementById('theme_color_header_link')?.value || '#F5F4F0';
+  const footerBg = document.getElementById('theme_color_footer_bg')?.value || '#17212B';
+  const footerHead = document.getElementById('theme_color_footer_heading')?.value || '#FFFFFF';
+  const footerText = document.getElementById('theme_color_footer_text')?.value || '#8E9BA8';
+
+  // Apply to Preview Elements
+  const prevHeader = document.getElementById('prevHeader');
+  if (prevHeader) prevHeader.style.background = headerBg;
+
+  const prevHeaderLink = document.getElementById('prevHeaderLink');
+  if (prevHeaderLink) prevHeaderLink.style.color = headerLink;
+
+  const prevBody = document.getElementById('prevBody');
+  if (prevBody) prevBody.style.background = bg;
+
+  const prevCard = document.getElementById('prevCard');
+  if (prevCard) {
+    prevCard.style.background = cardSurface;
+    prevCard.style.borderColor = border;
+  }
+
+  const prevHeading = document.getElementById('prevHeading');
+  if (prevHeading) prevHeading.style.color = heading;
+
+  const prevParagraph = document.getElementById('prevParagraph');
+  if (prevParagraph) prevParagraph.style.color = textSec;
+
+  const prevLink = document.getElementById('prevLink');
+  if (prevLink) prevLink.style.color = link;
+
+  const prevBtn = document.getElementById('prevBtn');
+  if (prevBtn) {
+    prevBtn.style.background = btnBg;
+    prevBtn.style.color = btnText;
+  }
+
+  const prevFooter = document.getElementById('prevFooter');
+  if (prevFooter) {
+    prevFooter.style.background = footerBg;
+    prevFooter.style.color = footerText;
+  }
+
+  const prevFooterHead = document.getElementById('prevFooterHead');
+  if (prevFooterHead) prevFooterHead.style.color = footerHead;
+}
+
+document.addEventListener('DOMContentLoaded', updateLivePreview);
+</script>
+{% endblock %}

@@ -75,7 +75,7 @@
   min-height: 100vh;
   background-color: var(--admin-bg);
   color: var(--admin-text-primary);
-  font-family: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-family: var(--font-sans, 'Aptos', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif);
 }
 
 /* ==============================================================================

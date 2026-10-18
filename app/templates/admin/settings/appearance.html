@@ -1,0 +1,300 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Admin Panel Appearance | Super Admin{% endblock %}
+
+{% block content %}
+<div class="admin-content-header">
+  <div>
+    <h1 class="page-title">Admin Panel Appearance</h1>
+    <p class="page-subtitle">Customize the control panel independently: sidebar, header, cards, button accents, and Aptos typography.</p>
+  </div>
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/admin" class="btn btn-outline">Back to Dashboard</a>
+  </div>
+</div>
+
+{% if saved %}
+<div class="alert alert-success" data-auto-dismiss style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span>Admin panel appearance saved successfully! Your preferences are now active.</span>
+</div>
+{% endif %}
+
+{% if reset %}
+<div class="alert alert-info" data-auto-dismiss style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+  <span>Admin panel appearance has been reset to default values.</span>
+</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: 1fr 360px; gap: 1.75rem; align-items: start;">
+  <!-- Settings Form -->
+  <form id="appearanceForm" method="POST" action="/admin/settings/appearance">
+    <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+    <!-- Sidebar & Navigation Colors -->
+    <div class="admin-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
+        Sidebar & Header Navigation
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 1.25rem;">
+        Configure colors for the left navigation drawer and top administrative header.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div>
+          <label class="form-label" for="admin_theme_sidebar_bg">Sidebar Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_sidebar_bg_picker" value="{{ admin_theme.admin_theme_sidebar_bg }}" onchange="syncAdminColor(this, 'admin_theme_sidebar_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_sidebar_bg" name="admin_theme_sidebar_bg" value="{{ admin_theme.admin_theme_sidebar_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_sidebar_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_sidebar_text">Sidebar Text</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_sidebar_text_picker" value="{{ admin_theme.admin_theme_sidebar_text }}" onchange="syncAdminColor(this, 'admin_theme_sidebar_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_sidebar_text" name="admin_theme_sidebar_text" value="{{ admin_theme.admin_theme_sidebar_text }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_sidebar_text_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_sidebar_active_bg">Sidebar Active Item Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_sidebar_active_bg_picker" value="{{ admin_theme.admin_theme_sidebar_active_bg }}" onchange="syncAdminColor(this, 'admin_theme_sidebar_active_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_sidebar_active_bg" name="admin_theme_sidebar_active_bg" value="{{ admin_theme.admin_theme_sidebar_active_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_sidebar_active_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_sidebar_active_text">Sidebar Active Item Text</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_sidebar_active_text_picker" value="{{ admin_theme.admin_theme_sidebar_active_text }}" onchange="syncAdminColor(this, 'admin_theme_sidebar_active_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_sidebar_active_text" name="admin_theme_sidebar_active_text" value="{{ admin_theme.admin_theme_sidebar_active_text }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_sidebar_active_text_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_topbar_bg">Top Bar Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_topbar_bg_picker" value="{{ admin_theme.admin_theme_topbar_bg }}" onchange="syncAdminColor(this, 'admin_theme_topbar_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_topbar_bg" name="admin_theme_topbar_bg" value="{{ admin_theme.admin_theme_topbar_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_topbar_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_topbar_text">Top Bar Text Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_topbar_text_picker" value="{{ admin_theme.admin_theme_topbar_text }}" onchange="syncAdminColor(this, 'admin_theme_topbar_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_topbar_text" name="admin_theme_topbar_text" value="{{ admin_theme.admin_theme_topbar_text }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_topbar_text_picker')">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content, Surfaces & Accents -->
+    <div class="admin-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-primary); margin-bottom: 0.5rem;">
+        Surfaces, Buttons & Typography
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin-bottom: 1.25rem;">
+        Main dashboard background, cards, action buttons, and Aptos typography.
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div>
+          <label class="form-label" for="admin_theme_content_bg">Main Content Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_content_bg_picker" value="{{ admin_theme.admin_theme_content_bg }}" onchange="syncAdminColor(this, 'admin_theme_content_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_content_bg" name="admin_theme_content_bg" value="{{ admin_theme.admin_theme_content_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_content_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_card_bg">Card Surface Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_card_bg_picker" value="{{ admin_theme.admin_theme_card_bg }}" onchange="syncAdminColor(this, 'admin_theme_card_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_card_bg" name="admin_theme_card_bg" value="{{ admin_theme.admin_theme_card_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_card_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_border_color">Card & Table Border</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_border_color_picker" value="{{ admin_theme.admin_theme_border_color }}" onchange="syncAdminColor(this, 'admin_theme_border_color')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_border_color" name="admin_theme_border_color" value="{{ admin_theme.admin_theme_border_color }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_border_color_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_button_primary_bg">Primary Button Background</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_button_primary_bg_picker" value="{{ admin_theme.admin_theme_button_primary_bg }}" onchange="syncAdminColor(this, 'admin_theme_button_primary_bg')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_button_primary_bg" name="admin_theme_button_primary_bg" value="{{ admin_theme.admin_theme_button_primary_bg }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_button_primary_bg_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_button_text">Primary Button Text</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_button_text_picker" value="{{ admin_theme.admin_theme_button_text }}" onchange="syncAdminColor(this, 'admin_theme_button_text')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_button_text" name="admin_theme_button_text" value="{{ admin_theme.admin_theme_button_text }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_button_text_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_accent_color">Admin Accent Color</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="color" id="admin_theme_accent_color_picker" value="{{ admin_theme.admin_theme_accent_color }}" onchange="syncAdminColor(this, 'admin_theme_accent_color')" style="width: 44px; height: 38px; border: 1px solid var(--admin-border); border-radius: 4px; cursor: pointer; padding: 2px;">
+            <input type="text" id="admin_theme_accent_color" name="admin_theme_accent_color" value="{{ admin_theme.admin_theme_accent_color }}" class="form-control" oninput="syncAdminPicker(this, 'admin_theme_accent_color_picker')">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_font_family">Admin Font Family</label>
+          <input type="text" id="admin_theme_font_family" name="admin_theme_font_family" value="{{ admin_theme.admin_theme_font_family }}" class="form-control" oninput="updateAdminPreview()">
+          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Default: Aptos font</span>
+        </div>
+
+        <div>
+          <label class="form-label" for="admin_theme_base_font_size">Admin Base Font Size</label>
+          <input type="text" id="admin_theme_base_font_size" name="admin_theme_base_font_size" value="{{ admin_theme.admin_theme_base_font_size }}" class="form-control" placeholder="15px" oninput="updateAdminPreview()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem;">
+      <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem; font-weight: 600;">
+        Save Admin Appearance
+      </button>
+      <a href="/admin/settings/appearance" class="btn btn-outline">Discard Changes</a>
+    </div>
+  </form>
+
+  <!-- Live Mini Admin Preview -->
+  <div style="position: sticky; top: 80px;">
+    <div class="admin-card" style="padding: 1.25rem; border-top: 4px solid var(--admin-accent);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--admin-text-primary); text-transform: uppercase; margin: 0;">
+          Admin Mockup Preview
+        </h4>
+        <span class="badge badge-secondary" style="font-size: 0.7rem;">Live</span>
+      </div>
+
+      <div id="adminMockup" style="border: 1px solid #E2E8F0; border-radius: 6px; overflow: hidden; display: flex; height: 260px;">
+        <!-- Mock Sidebar -->
+        <div id="mockSidebar" style="width: 110px; background: #111827; padding: 12px 8px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="color: #B7793F; font-size: 0.7rem; font-weight: 800; margin-bottom: 6px;">FORGE CMS</div>
+          <div id="mockItemActive" style="background: #1F2937; color: #FFFFFF; font-size: 0.7rem; padding: 6px 8px; border-radius: 4px; font-weight: 600;">
+            Dashboard
+          </div>
+          <div id="mockItem1" style="color: #94A3B8; font-size: 0.7rem; padding: 6px 8px;">
+            Products
+          </div>
+          <div id="mockItem2" style="color: #94A3B8; font-size: 0.7rem; padding: 6px 8px;">
+            Leads (3)
+          </div>
+        </div>
+
+        <!-- Mock Content -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+          <!-- Mock Topbar -->
+          <div id="mockTopbar" style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span id="mockTopbarText" style="font-size: 0.75rem; font-weight: 600; color: #0F172A;">Admin Panel</span>
+            <span style="font-size: 0.65rem; color: #64748B;">Superadmin</span>
+          </div>
+          <!-- Mock Main -->
+          <div id="mockContent" style="background: #F8FAFC; padding: 12px; flex: 1;">
+            <div id="mockCard" style="background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 4px; padding: 10px; margin-bottom: 8px;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #0F172A; margin-bottom: 4px;">Metric Card</div>
+              <div style="font-size: 0.65rem; color: #64748B; margin-bottom: 6px;">18,000 MT Annual Capacity</div>
+              <button type="button" id="mockBtn" style="background: #B7793F; color: #FFFFFF; border: none; padding: 3px 8px; border-radius: 3px; font-size: 0.65rem;">
+                Action
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset Form -->
+      <form method="POST" action="/admin/settings/appearance/reset" onsubmit="return confirm('Restore default admin panel appearance settings?');" style="margin-top: 1.25rem;">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+        <button type="submit" class="btn btn-outline" style="width: 100%; color: #B91C1C; border-color: #FECACA; font-size: 0.825rem;">
+          Reset to Factory Defaults
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function syncAdminColor(picker, inputId) {
+  const textInput = document.getElementById(inputId);
+  if (textInput) {
+    textInput.value = picker.value.toUpperCase();
+    updateAdminPreview();
+  }
+}
+
+function syncAdminPicker(textInput, pickerId) {
+  const picker = document.getElementById(pickerId);
+  const val = textInput.value.trim();
+  if (picker && /^#[0-9A-Fa-f]{6}$/.test(val)) {
+    picker.value = val;
+    updateAdminPreview();
+  }
+}
+
+function updateAdminPreview() {
+  const sideBg = document.getElementById('admin_theme_sidebar_bg')?.value || '#111827';
+  const sideText = document.getElementById('admin_theme_sidebar_text')?.value || '#94A3B8';
+  const sideActiveBg = document.getElementById('admin_theme_sidebar_active_bg')?.value || '#1F2937';
+  const sideActiveText = document.getElementById('admin_theme_sidebar_active_text')?.value || '#FFFFFF';
+  const topBg = document.getElementById('admin_theme_topbar_bg')?.value || '#FFFFFF';
+  const topText = document.getElementById('admin_theme_topbar_text')?.value || '#0F172A';
+  const contentBg = document.getElementById('admin_theme_content_bg')?.value || '#F8FAFC';
+  const cardBg = document.getElementById('admin_theme_card_bg')?.value || '#FFFFFF';
+  const border = document.getElementById('admin_theme_border_color')?.value || '#E2E8F0';
+  const btnBg = document.getElementById('admin_theme_button_primary_bg')?.value || '#B7793F';
+  const btnText = document.getElementById('admin_theme_button_text')?.value || '#FFFFFF';
+
+  const mockSidebar = document.getElementById('mockSidebar');
+  if (mockSidebar) mockSidebar.style.background = sideBg;
+
+  const mockItemActive = document.getElementById('mockItemActive');
+  if (mockItemActive) {
+    mockItemActive.style.background = sideActiveBg;
+    mockItemActive.style.color = sideActiveText;
+  }
+
+  const mockItem1 = document.getElementById('mockItem1');
+  const mockItem2 = document.getElementById('mockItem2');
+  if (mockItem1) mockItem1.style.color = sideText;
+  if (mockItem2) mockItem2.style.color = sideText;
+
+  const mockTopbar = document.getElementById('mockTopbar');
+  if (mockTopbar) mockTopbar.style.background = topBg;
+
+  const mockTopbarText = document.getElementById('mockTopbarText');
+  if (mockTopbarText) mockTopbarText.style.color = topText;
+
+  const mockContent = document.getElementById('mockContent');
+  if (mockContent) mockContent.style.background = contentBg;
+
+  const mockCard = document.getElementById('mockCard');
+  if (mockCard) {
+    mockCard.style.background = cardBg;
+    mockCard.style.borderColor = border;
+  }
+
+  const mockBtn = document.getElementById('mockBtn');
+  if (mockBtn) {
+    mockBtn.style.background = btnBg;
+    mockBtn.style.color = btnText;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', updateAdminPreview);
+</script>
+{% endblock %}

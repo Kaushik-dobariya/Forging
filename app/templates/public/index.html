@@ -1,138 +1,566 @@
 {% extends "public/base_public.html" %}
 
-{% block title %}Heavy Precision Forging & Metallurgy Excellence{% endblock %}
+{% block title %}Heavy Precision Forging &amp; Metallurgy Excellence | Certified OEM Manufacturer{% endblock %}
+
+{% block meta_description %}Precision closed-die and open-die forgings up to 4,000 MT. Certified to ISO 9001:2015 and IATF 16949 for automotive, oil &amp; gas, railway, and aerospace leaders.{% endblock %}
+
+{% block extra_meta %}
+{% if faq_schema_ld %}
+<script type="application/ld+json">
+{{ faq_schema_ld | tojson | safe }}
+</script>
+{% endif %}
+{% endblock %}
 
 {% block content %}
-<!-- Industrial Hero Section -->
-<section class="hero-section">
+<!-- ==============================================================================
+     1. DYNAMIC CMS HERO SLIDER
+     ============================================================================== -->
+<section class="cms-hero-slider" id="home-hero-slider" aria-label="Featured Highlights Slider" style="position: relative; overflow: hidden; background: var(--color-primary); min-height: 85vh; display: flex; align-items: center;">
+  
+  <div class="hero-slider-track" style="width: 100%; height: 100%;">
+    {% if hero_slides %}
+      {% for slide in hero_slides %}
+      <div class="hero-slide {% if loop.first %}active{% endif %}" data-slide-index="{{ loop.index0 }}" style="display: {% if loop.first %}flex{% else %}none{% endif %}; align-items: center; min-height: 85vh; position: relative; padding: 5rem 0; width: 100%;">
+        
+        <!-- Background Image with Contrast Overlay -->
+        <div class="slide-bg" style="position: absolute; inset: 0; background-image: url('{{ slide.background_image_url or '/static/images/hero_slide_1.webp' }}'); background-size: cover; background-position: center; z-index: 1;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(23,33,43, {{ slide.overlay_opacity or 0.65 }}) 0%, rgba(15,22,29, {{ slide.overlay_opacity or 0.75 }}) 100%);"></div>
+        </div>
+
+        <div class="container" style="position: relative; z-index: 2; width: 100%;">
+          <div style="max-width: 860px; {% if slide.text_alignment == 'center' %}margin: 0 auto; text-align: center;{% elif slide.text_alignment == 'right' %}margin-left: auto; text-align: right;{% else %}text-align: left;{% endif %}">
+            
+            {% if slide.eyebrow %}
+            <div class="hero-eyebrow" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(183, 121, 63, 0.2); border: 1px solid var(--color-accent); color: var(--color-accent); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 14px; border-radius: 4px; margin-bottom: 20px;">
+              <span>{{ slide.eyebrow }}</span>
+            </div>
+            {% endif %}
+
+            <h1 class="hero-title" style="font-size: clamp(2.3rem, 5vw, 3.8rem); font-weight: 800; color: #FFFFFF; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 20px;">
+              {{ slide.title }}
+            </h1>
+
+            {% if slide.subtitle %}
+            <p class="hero-subtitle" style="font-size: clamp(1.05rem, 2vw, 1.25rem); color: rgba(255,255,255,0.88); line-height: 1.6; margin-bottom: 32px; max-width: 720px; {% if slide.text_alignment == 'center' %}margin-left: auto; margin-right: auto;{% endif %}">
+              {{ slide.subtitle }}
+            </p>
+            {% endif %}
+
+            <div class="hero-actions" style="display: flex; gap: 16px; flex-wrap: wrap; {% if slide.text_alignment == 'center' %}justify-content: center;{% elif slide.text_alignment == 'right' %}justify-content: flex-end;{% endif %}">
+              {% if slide.primary_cta_label %}
+              <a href="{{ slide.primary_cta_url or '/capabilities' }}" class="btn btn-accent" style="padding: 0.85rem 1.8rem; font-size: 1rem; font-weight: 700;">
+                {{ slide.primary_cta_label }}
+              </a>
+              {% endif %}
+              {% if slide.secondary_cta_label %}
+              <a href="{{ slide.secondary_cta_url or '/request-quote' }}" class="btn btn-outline" style="border-color: rgba(255,255,255,0.6); color: #FFFFFF; padding: 0.85rem 1.8rem; font-size: 1rem;">
+                {{ slide.secondary_cta_label }}
+              </a>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <!-- Fallback Hero Slide -->
+      <div class="hero-slide active" style="display: flex; align-items: center; min-height: 85vh; position: relative; padding: 5rem 0; width: 100%;">
+        <div class="slide-bg" style="position: absolute; inset: 0; background-image: url('/static/images/hero_slide_1.webp'); background-size: cover; background-position: center; z-index: 1;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(23,33,43,0.7) 0%, rgba(15,22,29,0.85) 100%);"></div>
+        </div>
+        <div class="container" style="position: relative; z-index: 2;">
+          <div style="max-width: 860px;">
+            <div style="display: inline-block; background: rgba(183, 121, 63, 0.2); border: 1px solid var(--color-accent); color: var(--color-accent); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 14px; border-radius: 4px; margin-bottom: 20px;">
+              ISO 9001:2015 &amp; IATF 16949 CERTIFIED
+            </div>
+            <h1 style="font-size: clamp(2.3rem, 5vw, 3.8rem); font-weight: 800; color: #FFFFFF; line-height: 1.15; margin-bottom: 20px;">
+              Precision Forged for Demanding Applications.
+            </h1>
+            <p style="font-size: 1.2rem; color: rgba(255,255,255,0.88); line-height: 1.6; margin-bottom: 32px; max-width: 720px;">
+              Engineering high-integrity closed-die and upset forgings up to 4,000 MT for critical automotive, railway, defense, and power systems.
+            </p>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <a href="/capabilities" class="btn btn-accent" style="padding: 0.85rem 1.8rem; font-size: 1rem; font-weight: 700;">Explore Capabilities</a>
+              <a href="/request-quote" class="btn btn-outline" style="border-color: rgba(255,255,255,0.6); color: #FFF; padding: 0.85rem 1.8rem; font-size: 1rem;">Request a Quote</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Slider Controls (Prev / Next & Dots) -->
+  {% if hero_slides and hero_slides|length > 1 %}
+  <button type="button" class="slider-btn slider-prev" aria-label="Previous Slide" style="position: absolute; left: 24px; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(23,33,43,0.6); border: 1px solid rgba(255,255,255,0.25); color: #FFF; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+  <button type="button" class="slider-btn slider-next" aria-label="Next Slide" style="position: absolute; right: 24px; top: 50%; transform: translateY(-50%); z-index: 10; background: rgba(23,33,43,0.6); border: 1px solid rgba(255,255,255,0.25); color: #FFF; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <div class="slider-indicators" style="position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 10px;">
+    {% for slide in hero_slides %}
+    <button type="button" class="slider-dot {% if loop.first %}active{% endif %}" data-target-slide="{{ loop.index0 }}" aria-label="Go to slide {{ loop.index }}" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #FFF; background: {% if loop.first %}var(--color-accent){% else %}transparent{% endif %}; cursor: pointer; padding: 0; transition: all 0.2s;"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+<!-- ==============================================================================
+     2. TRUST & CREDENTIALS STRIP
+     ============================================================================== -->
+<section style="background: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 2.5rem 0;">
   <div class="container">
-    <div class="hero-grid">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; text-align: center;">
+      <div style="padding: 12px; border-right: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;">4,000 MT</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Max Press Tonnage</div>
+      </div>
+      <div style="padding: 12px; border-right: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;">25,000+</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Annual Metric Tonnes</div>
+      </div>
+      <div style="padding: 12px; border-right: 1px solid var(--color-border-subtle);">
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); font-variant-numeric: tabular-nums;">&plusmn;0.015 mm</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Machining Tolerance</div>
+      </div>
+      <div style="padding: 12px;">
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--color-accent); font-variant-numeric: tabular-nums;">100% NDT</div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px;">Ultrasonic &amp; Magnetic Testing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     3. COMPANY INTRODUCTION
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-background);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3.5rem; align-items: center;">
       <div>
-        <div class="hero-tagline">
-          <span>PRECISION FORGED ENGINEERING</span>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          ENGINEERING EXPERTISE
         </div>
-        <h1 class="hero-title">
-          High-Integrity Forgings Engineered for Critical Stress Environments.
-        </h1>
-        <p class="hero-subtitle">
-          Specializing in closed-die and upset forgings from 0.5 kg to 150 kg in carbon, alloy, and stainless steels. Delivering certified metallurgical consistency to tier-1 automotive, railway, defense, and power transmission leaders.
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); line-height: 1.25; margin-bottom: 20px;">
+          High-Integrity Forgings with Superior Structural Density.
+        </h2>
+        <p style="color: var(--color-text-secondary); font-size: 1.05rem; line-height: 1.7; margin-bottom: 18px;">
+          We specialize in high-strength carbon, alloy, and stainless steel forgings, including precision Closed-Die Hot Forging, open-die shafts, and seamless rolled rings engineered to survive extreme torque, dynamic shock loads, and high-temperature thermal cycling.
         </p>
-
-        <div class="hero-actions">
-          <a href="#contact" class="btn btn-accent">Request Engineering Consultation</a>
-          <a href="/admin" class="btn btn-outline">Access CMS Administration</a>
-        </div>
-      </div>
-
-      <!-- Industrial Technical Card -->
-      <div style="background: var(--color-primary); color: #FFF; padding: var(--space-xl); border-radius: var(--radius-md); border-left: 4px solid var(--color-accent); box-shadow: var(--shadow-lg);">
-        <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-accent); margin-bottom: var(--space-xs); text-transform: uppercase;">
-          FACILITY METRICS
-        </div>
-        <h3 style="color: #FFF; font-size: 1.4rem; margin-bottom: var(--space-md);">Production Readiness</h3>
-        <p style="color: var(--color-text-light); font-size: 0.9rem; margin-bottom: var(--space-lg); line-height: 1.6;">
-          Fully integrated closed-die forge lines with automated induction billet heaters, PLC-controlled drop hammers, and in-house CNC tool & die manufacturing.
+        <p style="color: var(--color-text-secondary); font-size: 1.05rem; line-height: 1.7; margin-bottom: 24px;">
+          With in-house 3D CAD/CAM tool manufacturing, automated induction heating, and comprehensive CNC finish machining, we deliver production-ready components directly to global assembly lines.
         </p>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); border-top: 1px solid var(--color-secondary-light); padding-top: var(--space-md);">
-          <div>
-            <div style="font-size: 0.8rem; color: var(--color-text-light);">Press Line Capacity</div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #FFF;">1,000T - 4,000T</div>
-          </div>
-          <div>
-            <div style="font-size: 0.8rem; color: var(--color-text-light);">Metallurgy Lab</div>
-            <div style="font-size: 1.2rem; font-weight: 700; color: #FFF;">NABL Certified</div>
-          </div>
+        <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+          <a href="/about" class="btn btn-outline" style="border-color: var(--color-primary); color: var(--color-primary); font-weight: 600;">
+            Learn About Our Heritage &rarr;
+          </a>
+          <a href="/quality" class="btn btn-outline" style="border-color: var(--color-primary); color: var(--color-primary); font-weight: 600;">
+            Quality Assurance System &rarr;
+          </a>
         </div>
       </div>
-    </div>
 
-    <!-- Metrics Strip -->
-    <div class="metrics-strip" style="margin-top: var(--space-3xl);">
-      <div class="metric-card">
-        <div class="metric-value">4,000 T</div>
-        <div class="metric-label">Max Press Capacity</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">18,000+</div>
-        <div class="metric-label">Annual Metric Tonnes</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">0.015 mm</div>
-        <div class="metric-label">Machining Tolerance</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">100%</div>
-        <div class="metric-label">Ultrasonic Tested</div>
+      <div>
+        <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border); box-shadow: 0 16px 36px rgba(0,0,0,0.08);">
+          <img src="/static/images/open_die_forging.webp" alt="Heavy hydraulic press open die forging massive alloy steel shaft" style="width: 100%; height: 380px; object-fit: cover;">
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Engineering Capabilities Section -->
-<section id="capabilities" class="section">
+<!-- ==============================================================================
+     4. CORE CAPABILITIES (CMS DRIVEN)
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
   <div class="container">
-    <div class="section-header">
-      <span class="section-tag">ENGINEERING SPECS</span>
-      <h2 class="section-title">Core Manufacturing Capabilities</h2>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          MANUFACTURING VERTICALS
+        </div>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); margin: 0;">Our Core Capabilities</h2>
+      </div>
+      <a href="/capabilities" class="btn btn-outline" style="border-color: var(--color-secondary); color: var(--color-primary); font-weight: 600;">
+        All Capabilities &rarr;
+      </a>
     </div>
 
-    <div class="features-grid">
-      <article class="feature-box">
-        <div>
-          <div class="feature-number">01 // FORGE DIVISION</div>
-          <h3 class="feature-title">Closed-Die Hot Forging</h3>
-          <p class="feature-desc">
-            Computer-simulated grain flow orientation ensuring superior fatigue resistance and structural density for critical load-bearing automotive & heavy engineering shafts.
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px;">
+      {% for cap in capabilities %}
+      <div style="background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, box-shadow 0.2s;">
+        {% if cap.image_url %}
+        <img src="{{ cap.image_url }}" alt="{{ cap.title }}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid var(--color-border);">
+        {% endif %}
+        <div style="padding: 24px; flex: 1; display: flex; flex-direction: column;">
+          <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">
+            {{ cap.title }}
+          </h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 16px; flex: 1;">
+            {{ (cap.short_description or cap.description or '') | truncate(130) }}
           </p>
+          <a href="/capabilities/{{ cap.slug }}" style="font-weight: 700; color: var(--color-accent); font-size: 0.9rem; text-decoration: none; margin-top: auto;">
+            Explore Capability &rarr;
+          </a>
         </div>
-      </article>
-
-      <article class="feature-box">
-        <div>
-          <div class="feature-number">02 // THERMAL TREATMENT</div>
-          <h3 class="feature-title">Controlled Heat Treatment</h3>
-          <p class="feature-desc">
-            Continuous normalizing, isothermal annealing, and polymer quench-and-temper furnaces with continuous SCADA thermal logging and micro-structure analysis.
-          </p>
-        </div>
-      </article>
-
-      <article class="feature-box">
-        <div>
-          <div class="feature-number">03 // CNC MACHINING</div>
-          <h3 class="feature-title">Precision Finish Machining</h3>
-          <p class="feature-desc">
-            Multi-axis CNC turning and vertical machining centers delivering components ready for line assembly with automated coordinate measuring machine (CMM) verification.
-          </p>
-        </div>
-      </article>
+      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
 
-<!-- Quality Assurance Section -->
-<section id="quality" class="section" style="background-color: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+<!-- ==============================================================================
+     5. FEATURED PRODUCTS (CMS DRIVEN)
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-background);">
   <div class="container">
-    <div class="section-header">
-      <span class="section-tag">COMPLIANCE & TESTING</span>
-      <h2 class="section-title">Metallurgical Quality Assurance</h2>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          ENGINEERED CATALOG
+        </div>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); margin: 0;">Featured Forged Components</h2>
+      </div>
+      <a href="/products" class="btn btn-outline" style="border-color: var(--color-secondary); color: var(--color-primary); font-weight: 600;">
+        Browse All Products &rarr;
+      </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-lg);">
-      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
-        <h4 style="margin-bottom: var(--space-xs);">Optical Emission Spectrometer</h4>
-        <p style="font-size: 0.9rem; color: var(--color-text-muted);">24-channel chemical composition analysis verifying carbon, sulfur, phosphorus, and micro-alloy balance per heat lot.</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+      {% for prod in featured_products %}
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.03);">
+        {% if prod.featured_image %}
+        <img src="{{ prod.featured_image }}" alt="{{ prod.name }}" style="width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid var(--color-border);">
+        {% else %}
+        <div style="width: 100%; height: 200px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #64748b;">
+          Component Image
+        </div>
+        {% endif %}
+        <div style="padding: 22px; flex: 1; display: flex; flex-direction: column;">
+          <div style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--color-accent); text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">
+            {{ prod.category.name if prod.category else 'Engineered Component' }}
+          </div>
+          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">
+            {{ prod.name }}
+          </h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.55; margin-bottom: 16px; flex: 1;">
+            {{ (prod.short_description or prod.description or '') | truncate(110) }}
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 12px; margin-top: auto;">
+            <a href="/products/detail/{{ prod.slug }}" style="font-size: 0.88rem; font-weight: 700; color: var(--color-primary); text-decoration: none;">
+              Specifications &rarr;
+            </a>
+            <a href="/request-quote?product={{ prod.name }}" class="btn btn-sm btn-accent" style="padding: 4px 10px; font-size: 0.8rem;">
+              RFQ
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     6. TARGET INDUSTRIES
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="text-align: center; max-width: 680px; margin: 0 auto 3.5rem;">
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+        MISSION-CRITICAL SECTORS
+      </div>
+      <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary);">Industries We Supply Globally</h2>
+      <p style="color: var(--color-text-secondary); font-size: 1rem; line-height: 1.6; margin-top: 8px;">
+        Our forgings perform under high cyclic fatigue, corrosive exposure, and deep mechanical stresses across mission-critical equipment.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+      {% for ind in industries %}
+      <div style="border: 1px solid var(--color-border); border-radius: 8px; padding: 28px; background: var(--color-background); border-left: 4px solid var(--color-primary); transition: transform 0.2s;">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">
+          {{ ind.name }}
+        </h3>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px;">
+          {{ (ind.short_description or ind.description or '') | truncate(110) }}
+        </p>
+        <a href="/industries/{{ ind.slug }}" style="font-weight: 700; color: var(--color-accent); font-size: 0.88rem; text-decoration: none;">
+          View Components &rarr;
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     7. MANUFACTURING PROCESS TIMELINE
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-background);">
+  <div class="container">
+    <div style="text-align: center; max-width: 680px; margin: 0 auto 3.5rem;">
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+        END-TO-END EXECUTION
+      </div>
+      <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary);">Our Manufacturing Process</h2>
+      <p style="color: var(--color-text-secondary); font-size: 1rem; line-height: 1.6; margin-top: 8px;">
+        From 3D DEFORM metal flow simulations to ultrasonic inspection and robotic dispatch.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 01</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Die Design &amp; FEA Simulation</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Computer-modeled grain orientation preventing internal shear stresses and flash wastage.</p>
       </div>
 
-      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
-        <h4 style="margin-bottom: var(--space-xs);">Magnetic Particle (MPI) & Ultrasonic (UT)</h4>
-        <p style="font-size: 0.9rem; color: var(--color-text-muted);">100% volumetric and surface defect verification per ASTM & DIN aerospace standards before dispatch.</p>
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 02</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Induction Billet Heating</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Continuous optical pyrometry ensuring strict thermal window control to prevent grain boundary burning.</p>
       </div>
 
-      <div style="padding: var(--space-lg); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);">
-        <h4 style="margin-bottom: var(--space-xs);">Mechanical & Impact Testing</h4>
-        <p style="font-size: 0.9rem; color: var(--color-text-muted);">In-house tensile testing, Charpy V-notch impact down to -40°C, and Brinell/Rockwell hardness mapping.</p>
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 03</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">High-Energy Hot Forging</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Multi-strike press deformation delivering high grain density and superior tensile integrity.</p>
       </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 04</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Controlled Heat Treatment</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Automated normalizing, quenching, and tempering achieving specified metallurgical hardness.</p>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 05</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Precision CNC Machining</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Vertical CNC machining centers delivering assembly-ready components within &plusmn;0.015 mm tolerances.</p>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 24px;">
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); margin-bottom: 8px;">STEP 06</div>
+        <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Spectrometry &amp; NDT Testing</h4>
+        <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">100% volumetric ultrasonic testing, wet MPI, and EN 10204 3.1 inspection certification.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     8. METALLURGICAL QUALITY ASSURANCE
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3.5rem; align-items: center;">
+      <div>
+        <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border); box-shadow: 0 16px 36px rgba(0,0,0,0.08);">
+          <img src="/static/images/testing_lab.webp" alt="NABL certified metallurgical testing laboratory inspecting forged alloy steel" style="width: 100%; height: 360px; object-fit: cover;">
+        </div>
+      </div>
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          ZERO DEFECT RIGOR
+        </div>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); line-height: 1.25; margin-bottom: 20px;">
+          Certified Metallurgy &amp; Volumetric NDT Testing
+        </h2>
+        <p style="color: var(--color-text-secondary); font-size: 1.05rem; line-height: 1.7; margin-bottom: 16px;">
+          Our in-house NABL certified metallurgical laboratory operates 24-channel optical emission spectrometers, automated Brinell hardness testing, and Charpy impact testing down to -40&deg;C.
+        </p>
+        <p style="color: var(--color-text-secondary); font-size: 1.05rem; line-height: 1.7; margin-bottom: 24px;">
+          Every heat lot is accompanied by complete chemical composition and mechanical test certificates meeting EN 10204 3.1 requirements.
+        </p>
+        <a href="/quality" class="btn btn-accent" style="padding: 0.75rem 1.6rem; font-weight: 700;">
+          Inspect Quality Protocols &rarr;
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     9. INFRASTRUCTURE & MACHINERY HIGHLIGHT
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-background);">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          INTEGRATED FACILITIES
+        </div>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); margin: 0;">Modern Manufacturing Fleet</h2>
+      </div>
+      <a href="/infrastructure" class="btn btn-outline" style="border-color: var(--color-secondary); color: var(--color-primary); font-weight: 600;">
+        Explore Plant Infrastructure &rarr;
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px;">
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        <img src="/static/images/press_shop.webp" alt="Heavy hydraulic press line" style="width: 100%; height: 200px; object-fit: cover;">
+        <div style="padding: 22px;">
+          <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">Heavy Press Forge Shop</h4>
+          <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">Multi-station closed-die press lines with automated handling and high thermal efficiency furnaces.</p>
+        </div>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        <img src="/static/images/die_shop.webp" alt="Tool and die manufacturing center" style="width: 100%; height: 200px; object-fit: cover;">
+        <div style="padding: 22px;">
+          <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">Tool &amp; Die CNC Shop</h4>
+          <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">High-speed CNC die sinkers for rapid tooling turnaround and verified dimensional precision.</p>
+        </div>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        <img src="/static/images/heat_treatment.webp" alt="Heat treatment furnaces" style="width: 100%; height: 200px; object-fit: cover;">
+        <div style="padding: 22px;">
+          <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 6px;">Continuous Heat Treatment Line</h4>
+          <p style="font-size: 0.88rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;">SCADA-controlled normalizing, annealing, and polymer quenching with temperature data logging.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     10. ACCREDITED CERTIFICATIONS
+     ============================================================================== -->
+<section style="padding: 4rem 0; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container" style="text-align: center;">
+    <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+      GLOBAL QUALITY AUDITS
+    </div>
+    <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--color-primary); margin-bottom: 24px;">
+      Accredited Quality Certifications
+    </h2>
+    <div style="display: flex; justify-content: center; align-items: center; gap: 24px; flex-wrap: wrap;">
+      {% for cert in certifications %}
+      <div style="background: var(--color-background); border: 1px solid var(--color-border); padding: 14px 24px; border-radius: 6px; font-weight: 700; color: var(--color-primary); font-size: 1rem; display: flex; align-items: center; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>{{ cert.name }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top: 24px;">
+      <a href="/certifications" style="font-weight: 700; color: var(--color-accent); text-decoration: none; font-size: 0.95rem;">
+        View Certificate Registrations &amp; Audits &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     11. WHY CHOOSE US
+     ============================================================================== -->
+<section style="padding: 5rem 0; background: var(--color-background);">
+  <div class="container">
+    <div style="text-align: center; max-width: 680px; margin: 0 auto 3.5rem;">
+      <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+        VALUE PROPOSITION
+      </div>
+      <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary);">Why Industry Leaders Partner With Us</h2>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 28px; border-top: 4px solid var(--color-accent);">
+        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">Rapid Tooling Development</h4>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">In-house CAD/CAM tooling design enables first-article sample production in as fast as 3 to 4 weeks.</p>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 28px; border-top: 4px solid var(--color-accent);">
+        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">Single-Source Accountability</h4>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Raw bar shearing, die forging, heat treatment, finish machining, and testing under one single facility.</p>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 28px; border-top: 4px solid var(--color-accent);">
+        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">Zero-Defect Commitment</h4>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Automated statistical process control (SPC) and coordinate measuring machine (CMM) dimensional reports.</p>
+      </div>
+
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 28px; border-top: 4px solid var(--color-accent);">
+        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 10px;">Global OEM Supply Chains</h4>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">Exporting to tier-1 automotive and railway assemblies across North America, Europe, and Asia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==============================================================================
+     12. LATEST INSIGHTS & CASE STUDIES
+     ============================================================================== -->
+{% if recent_posts or featured_case_studies %}
+<section style="padding: 5rem 0; background: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">
+          TECHNICAL RESOURCES
+        </div>
+        <h2 style="font-size: 2.4rem; font-weight: 800; color: var(--color-primary); margin: 0;">Latest Engineering Insights</h2>
+      </div>
+      <a href="/blog" class="btn btn-outline" style="border-color: var(--color-secondary); color: var(--color-primary); font-weight: 600;">
+        All Articles &rarr;
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px;">
+      {% for post in recent_posts %}
+      <article style="background: var(--color-background); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column;">
+        {% if post.featured_image %}
+        <img src="{{ post.featured_image }}" alt="{{ post.title }}" style="width: 100%; height: 180px; object-fit: cover;">
+        {% endif %}
+        <div style="padding: 22px; flex: 1; display: flex; flex-direction: column;">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--color-accent); font-weight: 700; text-transform: uppercase; margin-bottom: 6px;">
+            {{ post.category or 'TECHNICAL ARTICLE' }}
+          </div>
+          <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">
+            <a href="/blog/{{ post.slug }}" style="color: inherit; text-decoration: none;">{{ post.title }}</a>
+          </h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.88rem; line-height: 1.55; margin-bottom: 16px; flex: 1;">
+            {{ (post.excerpt or post.content or '') | truncate(110) }}
+          </p>
+          <a href="/blog/{{ post.slug }}" style="font-size: 0.88rem; font-weight: 700; color: var(--color-primary); text-decoration: none; margin-top: auto;">
+            Read Full Article &rarr;
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ==============================================================================
+     13. FINAL CALL TO ACTION (RFQ & WHATSAPP)
+     ============================================================================== -->
+<section style="background: var(--color-primary); color: #FFF; padding: 5.5rem 0; text-align: center; position: relative;">
+  <div class="container" style="max-width: 820px;">
+    <div style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 12px;">
+      PRODUCTION READINESS
+    </div>
+    <h2 style="font-size: clamp(2.2rem, 4vw, 3rem); font-weight: 800; color: #FFF; line-height: 1.2; margin-bottom: 20px;">
+      Have a Forging Requirement?
+    </h2>
+    <p style="font-size: 1.15rem; color: rgba(255,255,255,0.85); line-height: 1.6; margin-bottom: 32px;">
+      Tell us about your component dimensions, material grade, and annual volume. Our metallurgical engineering team provides rapid DFM review and tooling estimates.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+      <a href="/request-quote" class="btn btn-accent" style="padding: 0.85rem 2.2rem; font-size: 1.05rem; font-weight: 700;">
+        Request a Quote
+      </a>
+      {% if whatsapp_cfg and whatsapp_cfg.enabled %}
+      <a href="{{ whatsapp_cfg.generate_cta() }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline" style="border-color: #25D366; color: #25D366; padding: 0.85rem 2rem; font-size: 1.05rem; display: inline-flex; align-items: center; gap: 8px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        WhatsApp Engineering
+      </a>
+      {% endif %}
     </div>
   </div>
 </section>

@@ -4,6 +4,9 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/css/admin.css">
+<style id="dynamic-admin-theme-vars">
+{{ get_dynamic_admin_theme_css() | safe }}
+</style>
 {% endblock %}
 
 {% block root_content %}
@@ -283,6 +286,29 @@
         </a>
       </li>
       <li class="admin-nav-item">
+        <a href="/admin/hero-slides" class="admin-nav-link {% if active_page == 'hero_slides' %}active{% endif %}" data-tooltip="Homepage Hero Slider">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </span>
+          <span class="nav-label">Homepage Hero Slider</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/admin/timeline" class="admin-nav-link {% if active_page == 'timeline' %}active{% endif %}" data-tooltip="Company History Timeline">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          <span class="nav-label">Company History</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
         <a href="/admin/pages" class="admin-nav-link {% if active_page == 'pages' %}active{% endif %}" data-tooltip="Pages Management">
           <span class="nav-icon" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -330,6 +356,16 @@
           <li>
             <a href="/admin/settings" class="admin-subnav-link {% if active_subpage == 'settings_hub' %}active{% endif %}">
               All Settings
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/theme" class="admin-subnav-link {% if active_subpage == 'theme' %}active{% endif %}">
+              Website Theme
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/appearance" class="admin-subnav-link {% if active_subpage == 'appearance' %}active{% endif %}">
+              Admin Appearance
             </a>
           </li>
           <li>

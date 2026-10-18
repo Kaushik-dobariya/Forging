@@ -20,6 +20,9 @@ from app.models.case_study import CaseStudy
 from app.models.faq import FAQ
 from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
 from app.models.setting import SiteSetting, SocialLink
+# Phase 5 models
+from app.models.hero_slide import HeroSlide
+from app.models.timeline import TimelineMilestone
 from app.services.settings_service import settings_service
 from app.core.logging import logger
 
@@ -1436,9 +1439,145 @@ def seed_phase_4_data(db: Session, stats: dict) -> None:
 
     # 6. Dynamic CMS Pages & Menus counts
     from app.models.page import CMSPage
+    # Ensure both 'about' and 'about-us' slugs exist for seamless routing
+    about_existing = db.query(CMSPage).filter(CMSPage.slug.in_(["about", "about-us"])).first()
+    if not db.query(CMSPage).filter(CMSPage.slug == "about").first():
+        if about_existing:
+            # Add 'about' page referencing the same content
+            db.add(CMSPage(
+                title=about_existing.title,
+                slug="about",
+                menu_display_name="About Us",
+                content=about_existing.content,
+                status=about_existing.status,
+                display_order=1,
+                meta_title=about_existing.meta_title or "About Us — FORGE Precision Engineering",
+                meta_description=about_existing.meta_description or "Learn about FORGE Precision Engineering: over 35 years of engineering excellence, world-class forging presses, and global delivery.",
+                menu_visibility=True,
+                footer_visibility=True,
+            ))
+            db.commit()
+
     from app.models.menu import MenuItem
     stats["cms_pages"] = db.query(CMSPage).count()
     stats["menu_items"] = db.query(MenuItem).count()
+
+    # 7. Phase 5: Hero Slider Slides
+    if db.query(HeroSlide).count() == 0:
+        hero_slides_seed = [
+            HeroSlide(
+                title="Precision Forged for Performance",
+                subtitle="Engineering high-strength forged components for demanding industries.",
+                eyebrow="PRECISION FORGED ENGINEERING",
+                background_image="/static/images/hero_slide_1.webp",
+                primary_cta_label="Explore Capabilities",
+                primary_cta_url="/capabilities",
+                secondary_cta_label="Request a Quote",
+                secondary_cta_url="/request-a-quote",
+                text_align="left",
+                overlay_opacity=65,
+                display_order=1,
+                is_active=True,
+                image_alt="Heavy hydraulic closed-die forging press operation",
+            ),
+            HeroSlide(
+                title="Built Around Your Engineering Requirements",
+                subtitle="Precision manufacturing solutions designed for demanding applications.",
+                eyebrow="CUSTOM CLOSED-DIE & OPEN-DIE",
+                background_image="/static/images/hero_slide_2.webp",
+                primary_cta_label="Explore Products",
+                primary_cta_url="/products",
+                secondary_cta_label="Contact Our Team",
+                secondary_cta_url="/contact",
+                text_align="left",
+                overlay_opacity=65,
+                display_order=2,
+                is_active=True,
+                image_alt="Precision CNC machined forged components and crankshafts",
+            ),
+            HeroSlide(
+                title="Quality at Every Stage",
+                subtitle="A commitment to manufacturing consistency, inspection, and reliable performance.",
+                eyebrow="CERTIFIED ISO 9001 & IATF 16949",
+                background_image="/static/images/hero_slide_3.webp",
+                primary_cta_label="Our Quality System",
+                primary_cta_url="/quality",
+                secondary_cta_label="Request a Quote",
+                secondary_cta_url="/request-a-quote",
+                text_align="left",
+                overlay_opacity=65,
+                display_order=3,
+                is_active=True,
+                image_alt="Spectrometry and ultrasonic NDT testing in metallurgical laboratory",
+            ),
+        ]
+        db.add_all(hero_slides_seed)
+        db.commit()
+        logger.info("Seeded default homepage Hero Slides.")
+    stats["hero_slides"] = db.query(HeroSlide).count()
+
+    # 8. Phase 5: Company History / Timeline Milestones
+    if db.query(TimelineMilestone).count() == 0:
+        milestones_seed = [
+            TimelineMilestone(
+                year="1988",
+                title="Founding & First Drop Hammer Forge",
+                description="Established as a specialized die-forging workshop with a 1,000T drop hammer line, supplying high-durability forged components to regional agricultural machinery and valve manufacturers.",
+                image="/static/images/plant_exterior.webp",
+                supporting_info="Initial plant area: 15,000 sq ft • Capacity: 1,200 MT/year",
+                display_order=1,
+                is_active=True,
+            ),
+            TimelineMilestone(
+                year="1996",
+                title="Heavy Press & Automotive Tier-1 Accreditation",
+                description="Commissioned a 2,500T hydraulic forging press and achieved formal tier-1 automotive supplier accreditation for heavy-duty commercial vehicle steering knuckles and transmission gears.",
+                image="/static/images/press_shop.webp",
+                supporting_info="Achieved QS-9000 certification • Expanded press fleet",
+                display_order=2,
+                is_active=True,
+            ),
+            TimelineMilestone(
+                year="2004",
+                title="In-House Metallurgy & NDT Testing Laboratory",
+                description="Inaugurated a dedicated NABL-accredited metallurgical testing laboratory with direct-reading optical emission spectrometry, mechanical tensile test rigs, and automated ultrasonic immersion scanning.",
+                image="/static/images/testing_lab.webp",
+                supporting_info="NABL accreditation • 100% internal chemical & micro verification",
+                display_order=3,
+                is_active=True,
+            ),
+            TimelineMilestone(
+                year="2012",
+                title="5-Axis CNC Precision Machining Center",
+                description="Expanded into precision finished assemblies with the addition of multi-axis DMG MORI CNC milling and Okuma CNC turning centers, delivering ready-to-assemble critical parts directly to OEM assembly lines.",
+                image="/static/images/cnc_machining.webp",
+                supporting_info="Machining tolerance: ±0.015 mm • ISO 9001:2008 & IATF 16949",
+                display_order=4,
+                is_active=True,
+            ),
+            TimelineMilestone(
+                year="2018",
+                title="6,300T Automated Press Line & Global Delivery",
+                description="Installed a state-of-the-art 6,300T automated press line with robotized billet transfer and continuous SCADA temperature control, growing global export volume to North America, Europe, and Japan.",
+                image="/static/images/closed_die_forging.webp",
+                supporting_info="Annual forging output reached 45,000 Metric Tons across 2 plants",
+                display_order=5,
+                is_active=True,
+            ),
+            TimelineMilestone(
+                year="2024",
+                title="Sustainable Metallurgy & AS9100D Aerospace Standard",
+                description="Attained AS9100D aerospace certification for flight-critical hardware and completed transition of 40% of plant thermal treatment furnaces to energy-efficient electric induction heating.",
+                image="/static/images/hero_furnace.webp",
+                supporting_info="AS9100D Certified • Carbon footprint reduced by 28%",
+                display_order=6,
+                is_active=True,
+            ),
+        ]
+        db.add_all(milestones_seed)
+        db.commit()
+        logger.info("Seeded default Company History Timeline Milestones.")
+    stats["timeline_milestones"] = db.query(TimelineMilestone).count()
 
     logger.info(f"CMS database bootstrap complete: {stats}")
     return stats

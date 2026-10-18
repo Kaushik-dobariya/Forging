@@ -1,0 +1,152 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if slide %}Edit Hero Slide{% else %}Add Hero Slide{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/hero-slides">Hero Slider</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{% if slide %}Edit Slide #{{ slide.id }}{% else %}New Slide{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if slide %}Edit Hero Slide{% else %}Create Homepage Hero Slide{% endif %}</h1>
+    <p class="page-description">Configure industrial typography, CTA buttons, background imagery, and overlay darkness.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/hero-slides" class="btn btn-secondary">Back to Slides</a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger" style="margin-bottom: 20px;">
+  <strong>Error:</strong> {{ error }}
+</div>
+{% endif %}
+
+<form method="POST" action="{% if slide %}/admin/hero-slides/{{ slide.id }}/edit{% else %}/admin/hero-slides/create{% endif %}" enctype="multipart/form-data" class="admin-form">
+  <input type="hidden" name="csrf_token" value="{{ request.state.csrf_token if request.state.csrf_token else '' }}">
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    <!-- Main Column -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="admin-card">
+        <h3 class="admin-card-title" style="margin-bottom: 16px;">Slide Typography & Content</h3>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="eyebrow">Eyebrow / Badge Text</label>
+          <input type="text" id="eyebrow" name="eyebrow" class="form-control" value="{{ slide.eyebrow if slide else '' }}" placeholder="e.g. ISO 9001:2015 CERTIFIED PRECISION FORGING">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label required" for="title">Headline Title</label>
+          <input type="text" id="title" name="title" class="form-control" value="{{ slide.title if slide else '' }}" placeholder="e.g. Precision Forged for Demanding Applications" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="subtitle">Supporting Description / Subtitle</label>
+          <textarea id="subtitle" name="subtitle" rows="3" class="form-control" placeholder="Brief technical summary highlighting forging capabilities, tolerances, and metallurgical standards.">{{ slide.subtitle if slide else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="alt_text">Accessibility Alt Text</label>
+          <input type="text" id="alt_text" name="alt_text" class="form-control" value="{{ slide.alt_text if slide else '' }}" placeholder="e.g. Heavy industrial hydraulic closed-die forging press shaping red-hot alloy steel component">
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3 class="admin-card-title" style="margin-bottom: 16px;">Calls to Action (CTAs)</h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="primary_cta_label">Primary CTA Label</label>
+            <input type="text" id="primary_cta_label" name="primary_cta_label" class="form-control" value="{{ slide.primary_cta_label if slide else 'Explore Capabilities' }}" placeholder="e.g. Explore Capabilities">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="primary_cta_url">Primary CTA Destination URL</label>
+            <input type="text" id="primary_cta_url" name="primary_cta_url" class="form-control" value="{{ slide.primary_cta_url if slide else '/capabilities' }}" placeholder="e.g. /capabilities">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label" for="secondary_cta_label">Secondary CTA Label</label>
+            <input type="text" id="secondary_cta_label" name="secondary_cta_label" class="form-control" value="{{ slide.secondary_cta_label if slide else 'Request a Quote' }}" placeholder="e.g. Request a Quote">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="secondary_cta_url">Secondary CTA Destination URL</label>
+            <input type="text" id="secondary_cta_url" name="secondary_cta_url" class="form-control" value="{{ slide.secondary_cta_url if slide else '/request-quote' }}" placeholder="e.g. /request-quote">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Column -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="admin-card">
+        <h3 class="admin-card-title" style="margin-bottom: 16px;">Status & Display Order</h3>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" name="is_active" value="1" {% if not slide or slide.is_active %}checked{% endif %}>
+            Published & Active on Homepage
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="display_order">Display Order Sequence</label>
+          <input type="number" id="display_order" name="display_order" class="form-control" value="{{ slide.display_order if slide else next_order }}" min="1">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="text_alignment">Text Alignment</label>
+          <select id="text_alignment" name="text_alignment" class="form-control">
+            <option value="left" {% if not slide or slide.text_alignment == 'left' %}selected{% endif %}>Left Aligned (Editorial)</option>
+            <option value="center" {% if slide and slide.text_alignment == 'center' %}selected{% endif %}>Centered</option>
+            <option value="right" {% if slide and slide.text_alignment == 'right' %}selected{% endif %}>Right Aligned</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="overlay_opacity">Dark Overlay Contrast (0.0 to 0.9)</label>
+          <input type="number" id="overlay_opacity" name="overlay_opacity" class="form-control" step="0.05" min="0" max="0.95" value="{{ slide.overlay_opacity if slide else 0.55 }}">
+          <small style="color: var(--admin-text-secondary); font-size: 11px;">Darkens background image to ensure text legibility.</small>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3 class="admin-card-title" style="margin-bottom: 16px;">Background Imagery</h3>
+
+        {% if slide and slide.background_image_url %}
+        <div style="margin-bottom: 12px;">
+          <img src="{{ slide.background_image_url }}" alt="Slide Background" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; border: 1px solid var(--admin-border);">
+          <div style="font-size: 11px; color: var(--admin-text-secondary); margin-top: 4px; word-break: break-all;">
+            Current: {{ slide.background_image_url }}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="background_image">Upload Background Image</label>
+          <input type="file" id="background_image" name="background_image" class="form-control" accept="image/png,image/jpeg,image/webp">
+          <small style="color: var(--admin-text-secondary); font-size: 11px;">Recommended size: 1920x1080px (WebP or JPG).</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="background_image_url">Or Static Image Path</label>
+          <input type="text" id="background_image_url" name="background_image_url" class="form-control" value="{{ slide.background_image_url if slide else '' }}" placeholder="/static/images/hero_slide_1.webp">
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button type="submit" class="btn btn-accent" style="flex: 1;">
+          {% if slide %}Update Slide{% else %}Publish Slide{% endif %}
+        </button>
+        <a href="/admin/hero-slides" class="btn btn-secondary">Cancel</a>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

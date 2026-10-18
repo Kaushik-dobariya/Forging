@@ -13,6 +13,9 @@
 
   <!-- Core Design Tokens & Styles -->
   <link rel="stylesheet" href="/static/css/theme.css">
+  <style id="dynamic-theme-vars">
+    {{ get_dynamic_theme_css() | safe }}
+  </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">

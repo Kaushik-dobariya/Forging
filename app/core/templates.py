@@ -138,6 +138,60 @@ def get_site_settings() -> Dict[str, str]:
         }
 
 
+def get_theme_settings() -> Dict[str, str]:
+    """Retrieves active public website theme settings."""
+    try:
+        from app.services.theme_service import theme_service
+        db = SessionLocal()
+        try:
+            return theme_service.get_public_theme(db)
+        finally:
+            db.close()
+    except Exception:
+        from app.services.theme_service import DEFAULT_PUBLIC_THEME
+        return dict(DEFAULT_PUBLIC_THEME)
+
+
+def get_dynamic_theme_css() -> str:
+    """Generates dynamic CSS custom properties for public website."""
+    try:
+        from app.services.theme_service import theme_service
+        db = SessionLocal()
+        try:
+            return theme_service.generate_public_css(db)
+        finally:
+            db.close()
+    except Exception:
+        return ""
+
+
+def get_admin_theme_settings() -> Dict[str, str]:
+    """Retrieves active admin panel appearance settings."""
+    try:
+        from app.services.theme_service import theme_service
+        db = SessionLocal()
+        try:
+            return theme_service.get_admin_theme(db)
+        finally:
+            db.close()
+    except Exception:
+        from app.services.theme_service import DEFAULT_ADMIN_THEME
+        return dict(DEFAULT_ADMIN_THEME)
+
+
+def get_dynamic_admin_theme_css() -> str:
+    """Generates dynamic CSS custom properties for admin panel."""
+    try:
+        from app.services.theme_service import theme_service
+        db = SessionLocal()
+        try:
+            return theme_service.generate_admin_css(db)
+        finally:
+            db.close()
+    except Exception:
+        return ""
+
+
 templates.env.globals["get_csrf_token"] = get_csrf_token
 templates.env.globals["get_public_csrf_token"] = get_public_csrf_token
 templates.env.globals["get_header_menu"] = get_header_menu
@@ -146,3 +200,8 @@ templates.env.globals["get_footer_cms_pages"] = get_footer_cms_pages
 templates.env.globals["get_social_links"] = get_social_links
 templates.env.globals["get_whatsapp_config"] = get_whatsapp_config
 templates.env.globals["get_site_settings"] = get_site_settings
+templates.env.globals["get_theme_settings"] = get_theme_settings
+templates.env.globals["get_dynamic_theme_css"] = get_dynamic_theme_css
+templates.env.globals["get_admin_theme_settings"] = get_admin_theme_settings
+templates.env.globals["get_dynamic_admin_theme_css"] = get_dynamic_admin_theme_css
+

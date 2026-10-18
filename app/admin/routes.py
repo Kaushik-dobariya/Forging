@@ -363,6 +363,10 @@ from app.admin.pages_admin import router as pages_router
 from app.admin.menus_admin import router as menus_router
 from app.models.page import CMSPage
 from app.models.menu import MenuItem
+from app.models.hero_slide import HeroSlide
+from app.models.timeline import TimelineMilestone
+from app.admin.hero_admin import router as hero_router
+from app.admin.timeline_admin import router as timeline_router
 
 
 @router.get("", response_class=HTMLResponse, summary="Super Admin Dashboard")
@@ -390,6 +394,8 @@ async def admin_dashboard(
         "quote_requests": db.query(QuoteRequest).count(),
         "cms_pages": db.query(CMSPage).count(),
         "menu_items": db.query(MenuItem).count(),
+        "hero_slides": db.query(HeroSlide).count(),
+        "timeline_milestones": db.query(TimelineMilestone).count(),
         "new_leads": db.query(ContactLead).filter(ContactLead.status == LeadStatus.NEW.value).count()
         + db.query(QuoteRequest).filter(QuoteRequest.status == LeadStatus.NEW.value).count(),
     }
@@ -427,5 +433,8 @@ router.include_router(leads_router)
 router.include_router(settings_router)
 router.include_router(pages_router)
 router.include_router(menus_router)
+router.include_router(hero_router)
+router.include_router(timeline_router)
+
 
 

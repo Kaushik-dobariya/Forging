@@ -1,0 +1,92 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}Machinery Fleet &amp; Hydraulic Presses | Manufacturing Capacity{% endblock %}
+
+{% block meta_description %}Explore our heavy industrial forging machinery fleet: 4,000 MT hydraulic presses, CNC vertical machining centers, ring rolling mills, and automated heat treatment lines.{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: #FFFFFF; padding: 4.5rem 0 3.5rem; border-bottom: 3px solid var(--color-accent); position: relative;">
+  <div class="container">
+    <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem; color: var(--color-accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">
+      <a href="/" style="color: rgba(255,255,255,0.7); text-decoration: none;">Home</a>
+      <span>/</span>
+      <a href="/infrastructure" style="color: rgba(255,255,255,0.7); text-decoration: none;">Infrastructure</a>
+      <span>/</span>
+      <span>Machinery Fleet</span>
+    </div>
+    <h1 style="font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 800; color: #FFFFFF; line-height: 1.15; max-width: 900px; margin-bottom: 16px;">
+      Heavy Machinery &amp; Production Fleet
+    </h1>
+    <p style="font-size: 1.15rem; color: rgba(255,255,255,0.85); max-width: 760px; line-height: 1.6;">
+      Integrated forging presses, precision CNC machining centers, and automated heat treatment furnaces delivering unyielding production capacity.
+    </p>
+  </div>
+</section>
+
+<!-- Equipment Catalog Grid -->
+<section style="padding: 4.5rem 0; background-color: var(--color-background);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px;">
+      {% for eq in equipment_list %}
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        {% if eq.image_url %}
+        <img src="{{ eq.image_url }}" alt="{{ eq.name }}" style="width: 100%; height: 220px; object-fit: cover; border-bottom: 1px solid var(--color-border);">
+        {% else %}
+        <div style="width: 100%; height: 180px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.9rem; font-weight: 600;">
+          Machinery Overview
+        </div>
+        {% endif %}
+
+        <div style="padding: 24px; flex: 1; display: flex; flex-direction: column;">
+          <div style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">
+            {{ eq.category }}
+          </div>
+          <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--color-primary); line-height: 1.3; margin-bottom: 10px;">
+            {{ eq.name }}
+          </h3>
+          {% if eq.capacity %}
+          <div style="background: var(--color-background); border: 1px solid var(--color-border-subtle); border-radius: 4px; padding: 6px 12px; font-size: 0.85rem; font-weight: 600; color: var(--color-secondary); margin-bottom: 12px;">
+            <strong>Capacity:</strong> {{ eq.capacity }}
+          </div>
+          {% endif %}
+          <p style="color: var(--color-text-secondary); font-size: 0.9rem; line-height: 1.6; margin-bottom: 16px; flex: 1;">
+            {{ eq.description }}
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-border); padding-top: 14px; margin-top: auto;">
+            {% if eq.manufacturer %}
+            <span style="font-size: 0.8rem; color: var(--color-text-secondary);">Mfr: <strong>{{ eq.manufacturer }}</strong></span>
+            {% else %}
+            <span></span>
+            {% endif %}
+            <a href="/request-quote" style="font-size: 0.85rem; font-weight: 700; color: var(--color-accent); text-decoration: none;">
+              Quote with this line &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--color-text-secondary);">
+        No equipment profiles currently published.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action -->
+<section style="background: var(--color-primary); color: #FFF; padding: 4.5rem 0; text-align: center;">
+  <div class="container" style="max-width: 800px;">
+    <h2 style="font-size: 2.2rem; font-weight: 800; color: #FFF; margin-bottom: 16px;">
+      Explore Production Readiness For Your Component
+    </h2>
+    <p style="font-size: 1.1rem; color: rgba(255,255,255,0.85); line-height: 1.6; margin-bottom: 28px;">
+      Our engineering fleet is equipped to handle closed-die, open-die, and machined parts with certified reliability.
+    </p>
+    <a href="/request-quote" class="btn btn-accent" style="padding: 0.75rem 1.8rem; font-size: 1rem; font-weight: 700;">
+      Submit Technical RFQ
+    </a>
+  </div>
+</section>
+{% endblock %}

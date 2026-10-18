@@ -1,24 +1,26 @@
-<footer class="site-footer">
+<footer class="site-footer" style="background-color: var(--footer-background); color: var(--footer-text); font-size: var(--footer-font-size); border-top: 1px solid var(--color-border); padding: 4rem 0 2rem;">
   <div class="container">
-    <div class="footer-grid">
+    <div class="footer-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 36px; margin-bottom: 3rem;">
       <!-- 1. Brand & Corporate Overview -->
       <div>
         {% set site = get_site_settings() if get_site_settings is defined else {} %}
-        <div class="footer-brand">{{ site.general_company_name|default(app_name|default('FORGE Precision Engineering Ltd.')) }}</div>
-        <p class="footer-desc">
+        <div class="footer-brand" style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: var(--footer-heading); margin-bottom: 12px; letter-spacing: -0.02em;">
+          {{ site.general_company_name|default(app_name|default('FORGE Precision Engineering Ltd.')) }}
+        </div>
+        <p class="footer-desc" style="color: var(--footer-text); line-height: 1.65; font-size: 0.9rem; margin-bottom: 16px;">
           High-integrity closed-die forging, open-die shafts, seamless rolled rings, precision CNC machining, and certified metallurgical excellence for critical global industries.
         </p>
 
         <!-- Social Media Channels (CMS Managed) -->
         {% set active_socials = social_links if social_links is defined else get_social_links() %}
         {% if active_socials %}
-        <div class="footer-social-links" style="margin-top: 1.25rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <div class="footer-social-links" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           {% for link in active_socials %}
             {% if link.is_enabled %}
             <a href="{{ link.url }}"
                {% if link.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% else %}target="_self"{% endif %}
                class="social-icon-btn" aria-label="{{ link.platform }}" title="{{ link.platform }}"
-               style="color: var(--color-text-muted); background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; transition: all 0.2s;">
+               style="color: var(--footer-link); background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 4px; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.12); text-decoration: none; transition: all 0.2s;">
               {{ link.platform }}
             </a>
             {% endif %}
@@ -29,88 +31,81 @@
 
       <!-- 2. Capabilities & Catalog -->
       <div>
-        <h4 class="footer-heading">Capabilities & Catalog</h4>
-        <ul class="footer-nav">
-          <li><a href="/products">Components Catalog</a></li>
-          <li><a href="/capabilities/closed-die-forging">Closed Die Forging</a></li>
-          <li><a href="/capabilities/open-die-forging">Open Die Forging</a></li>
-          <li><a href="/capabilities/ring-rolling">Seamless Ring Rolling</a></li>
-          <li><a href="/capabilities/precision-machining">Precision CNC Machining</a></li>
-          <li><a href="/materials">Materials & Metallurgy</a></li>
+        <h4 class="footer-heading" style="color: var(--footer-heading); font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Capabilities &amp; Catalog
+        </h4>
+        <ul class="footer-nav" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+          <li><a href="/products" style="color: var(--footer-link); text-decoration: none;">Components Catalog</a></li>
+          <li><a href="/capabilities/closed-die-forging" style="color: var(--footer-link); text-decoration: none;">Closed Die Forging</a></li>
+          <li><a href="/capabilities/open-die-forging" style="color: var(--footer-link); text-decoration: none;">Open Die Forging</a></li>
+          <li><a href="/capabilities/seamless-ring-rolling" style="color: var(--footer-link); text-decoration: none;">Seamless Ring Rolling</a></li>
+          <li><a href="/capabilities/cnc-finish-machining" style="color: var(--footer-link); text-decoration: none;">Precision CNC Machining</a></li>
+          <li><a href="/materials" style="color: var(--footer-link); text-decoration: none;">Materials &amp; Metallurgy</a></li>
         </ul>
       </div>
 
       <!-- 3. Plant & Infrastructure -->
       <div>
-        <h4 class="footer-heading">Plant & Infrastructure</h4>
-        <ul class="footer-nav">
-          <li><a href="/infrastructure">Plant & Infrastructure Overview</a></li>
-          <li><a href="/infrastructure#equipment">Forging Presses & Hammers</a></li>
-          <li><a href="/infrastructure#facilities">Heat Treatment Facilities</a></li>
-          <li><a href="/infrastructure#gallery">Infrastructure Gallery</a></li>
+        <h4 class="footer-heading" style="color: var(--footer-heading); font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Infrastructure &amp; Fleet
+        </h4>
+        <ul class="footer-nav" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+          <li><a href="/infrastructure" style="color: var(--footer-link); text-decoration: none;">Plant Overview</a></li>
+          <li><a href="/machinery" style="color: var(--footer-link); text-decoration: none;">Machinery &amp; Press Fleet</a></li>
+          <li><a href="/quality" style="color: var(--footer-link); text-decoration: none;">Quality Assurance System</a></li>
+          <li><a href="/certifications" style="color: var(--footer-link); text-decoration: none;">Certifications (ISO / IATF)</a></li>
         </ul>
       </div>
 
-      <!-- 4. Quality & Standards -->
+      <!-- 4. Resources & About -->
       <div>
-        <h4 class="footer-heading">Quality & Standards</h4>
-        <ul class="footer-nav">
-          <li><a href="/quality">Quality Assurance & QMS</a></li>
-          <li><a href="/certifications">Certificates (ISO / IATF)</a></li>
-          <li><a href="/quality#lab">Metallurgical & NDT Testing Lab</a></li>
-          <li><a href="/quality#inspection">Dimensional Metrology & CMM</a></li>
+        <h4 class="footer-heading" style="color: var(--footer-heading); font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Company &amp; Resources
+        </h4>
+        <ul class="footer-nav" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+          <li><a href="/about" style="color: var(--footer-link); text-decoration: none;">About Our Company</a></li>
+          <li><a href="/company-history" style="color: var(--footer-link); text-decoration: none;">Company History Timeline</a></li>
+          <li><a href="/blog" style="color: var(--footer-link); text-decoration: none;">Technical Blog</a></li>
+          <li><a href="/case-studies" style="color: var(--footer-link); text-decoration: none;">Case Studies</a></li>
+          <li><a href="/downloads" style="color: var(--footer-link); text-decoration: none;">Brochures &amp; Downloads</a></li>
+          <li><a href="/faqs" style="color: var(--footer-link); text-decoration: none;">FAQs Knowledgebase</a></li>
         </ul>
       </div>
 
-      <!-- 5. Resources & CMS Pages -->
+      <!-- 5. Inquiries & Contact -->
       <div>
-        <h4 class="footer-heading">Resources & Insights</h4>
-        <ul class="footer-nav">
-          <li><a href="/about-us">About Our Company</a></li>
-          <li><a href="/blog">Technical Blog & Insights</a></li>
-          <li><a href="/downloads">Brochures & CAD Downloads</a></li>
-          <li><a href="/case-studies">Engineering Case Studies</a></li>
-          {% set cms_footer = get_footer_cms_pages() if get_footer_cms_pages is defined else [] %}
-          {% for fp in cms_footer %}
-          <li><a href="{{ fp.url_path }}">{{ fp.effective_menu_title }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-
-      <!-- 6. Inquiries & Contact -->
-      <div>
-        <h4 class="footer-heading">Inquiries & Contact</h4>
-        <ul class="footer-nav">
-          <li><a href="/request-a-quote" style="color: var(--color-accent); font-weight: 600;">Request a Quote (RFQ)</a></li>
-          <li><a href="/contact">Contact Plant & Offices</a></li>
+        <h4 class="footer-heading" style="color: var(--footer-heading); font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Inquiries &amp; Contact
+        </h4>
+        <ul class="footer-nav" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+          <li><a href="/request-quote" style="color: var(--color-accent); font-weight: 700; text-decoration: none;">Request a Quote (RFQ)</a></li>
+          <li><a href="/contact" style="color: var(--footer-link); text-decoration: none;">Contact Plant &amp; Offices</a></li>
           {% set wa = whatsapp_cfg if whatsapp_cfg is defined else get_whatsapp_config() %}
           {% if wa and wa.enabled and wa.allow_footer %}
           <li>
-            <a href="{{ wa.generate_cta() }}" target="_blank" rel="noopener noreferrer" style="color: #25D366; display: inline-flex; align-items: center; gap: 0.35rem;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-              </svg>
-              Chat on WhatsApp
+            <a href="{{ wa.generate_cta() }}" target="_blank" rel="noopener noreferrer" style="color: #25D366; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+              {{ wa.label or 'Chat on WhatsApp' }}
             </a>
           </li>
           {% endif %}
-          <li><a href="/admin/login">Super Admin Console</a></li>
+          <li><a href="/admin/login" style="color: var(--footer-link); opacity: 0.7; font-size: 0.8rem; text-decoration: underline;">Super Admin Console</a></li>
         </ul>
       </div>
     </div>
 
-    <!-- Footer Bottom: Legal, Version & Cubeon Developer Attribution -->
-    <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem; color: var(--color-text-muted);">
+    <!-- Footer Bottom: Legal & Version -->
+    <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.82rem; color: var(--footer-text); opacity: 0.85;">
       <div>
-        {{ site.general_copyright_text|default('&copy; ' ~ now().year ~ ' ' ~ (site.general_company_name|default('FORGE Precision Engineering Ltd.')) ~ '. All rights reserved.') }}
+        {{ site.general_copyright_text|default('&copy; 2026 FORGE Precision Engineering Ltd. All rights reserved.') }}
       </div>
       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-        <span class="footer-version-tag" style="background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.78rem;">
+        <span style="background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.75rem;">
           Version {{ site.general_app_version|default(app_version|default('1.0.0')) }}
         </span>
-        <span style="color: rgba(255,255,255,0.2);">|</span>
-        <span class="footer-developer-credit">
-          Developed by <a href="{{ site.general_developer_website_url|default('https://www.cubeontechs.com/') }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); text-decoration: underline; font-weight: 500;">Cubeon Technologies</a>
+        <span>|</span>
+        <span>
+          Developed by <a href="{{ site.general_developer_website_url|default('https://www.cubeontechs.com/') }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); text-decoration: underline;">Cubeon Technologies</a>
         </span>
       </div>
     </div>
@@ -118,19 +113,20 @@
 </footer>
 
 <!-- Dynamic Floating WhatsApp Button (CMS Controlled) -->
-{% set wa = whatsapp_cfg if whatsapp_cfg is defined else get_whatsapp_config() %}
-{% if wa and wa.enabled and wa.allow_floating %}
+{% set wa_float = whatsapp_cfg if whatsapp_cfg is defined else get_whatsapp_config() %}
+{% if wa_float and wa_float.enabled and wa_float.allow_floating %}
 <a 
-  href="{{ wa.generate_cta() }}" 
+  href="{{ wa_float.generate_cta() }}" 
   target="_blank" 
   rel="noopener noreferrer" 
-  class="whatsapp-floating-btn" 
-  aria-label="{{ wa.label or 'Chat on WhatsApp' }}"
-  title="{{ wa.label or 'Chat on WhatsApp' }}"
+  class="floating-whatsapp-btn" 
+  aria-label="{{ wa_float.label or 'Chat on WhatsApp' }}"
+  title="{{ wa_float.label or 'Chat on WhatsApp' }}"
+  style="position: fixed; bottom: 85px; right: 24px; z-index: 999; background: #25D366; color: #FFFFFF; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s ease, box-shadow 0.2s ease;"
 >
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
   </svg>
-  <span>{{ wa.label or 'Chat on WhatsApp' }}</span>
+  <span style="display: inline-block; text-indent: -9999px; position: absolute;">{{ wa_float.label or 'Chat with Engineering Lead' }}</span>
 </a>
 {% endif %}

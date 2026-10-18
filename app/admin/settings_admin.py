@@ -12,6 +12,7 @@ from app.models.user import User
 from app.models.setting import SiteSetting, SocialLink, SocialPlatform
 from app.services.settings_service import settings_service
 from app.services.email_service import email_service
+from app.services.theme_service import theme_service, DEFAULT_PUBLIC_THEME, DEFAULT_ADMIN_THEME
 
 
 router = APIRouter(prefix="/settings", tags=["Admin Settings"])
@@ -363,33 +364,58 @@ async def admin_whatsapp_settings_view(
 @router.post("/whatsapp", summary="Save WhatsApp CTA Settings")
 async def admin_whatsapp_settings_save(
     request: Request,
-    whatsapp_number: str = Form(...),
+    whatsapp_number: Optional[str] = Form(None),
+    phone_number: Optional[str] = Form(None),
     whatsapp_country_code: Optional[str] = Form("+91"),
-    whatsapp_label: Optional[str] = Form("Chat on WhatsApp"),
-    whatsapp_default_message: str = Form(...),
-    whatsapp_position: str = Form("floating"),
-    whatsapp_enabled: bool = Form(False),
-    whatsapp_allow_header: bool = Form(False),
-    whatsapp_allow_floating: bool = Form(False),
-    whatsapp_allow_product: bool = Form(False),
-    whatsapp_allow_quote: bool = Form(False),
-    whatsapp_allow_footer: bool = Form(False),
-    whatsapp_allow_contact: bool = Form(False),
+    country_code: Optional[str] = Form(None),
+    whatsapp_label: Optional[str] = Form(None),
+    button_label: Optional[str] = Form(None),
+    whatsapp_default_message: Optional[str] = Form(None),
+    default_message: Optional[str] = Form(None),
+    whatsapp_position: Optional[str] = Form("floating"),
+    position: Optional[str] = Form(None),
+    whatsapp_enabled: Optional[bool] = Form(None),
+    enabled: Optional[bool] = Form(None),
+    whatsapp_allow_header: Optional[bool] = Form(None),
+    allow_header: Optional[bool] = Form(None),
+    whatsapp_allow_floating: Optional[bool] = Form(None),
+    allow_floating: Optional[bool] = Form(None),
+    whatsapp_allow_product: Optional[bool] = Form(None),
+    allow_product: Optional[bool] = Form(None),
+    whatsapp_allow_quote: Optional[bool] = Form(None),
+    allow_quote: Optional[bool] = Form(None),
+    whatsapp_allow_footer: Optional[bool] = Form(None),
+    allow_footer: Optional[bool] = Form(None),
+    whatsapp_allow_contact: Optional[bool] = Form(None),
+    allow_contact: Optional[bool] = Form(None),
     current_user: User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    settings_service.set_setting(db, "whatsapp_enabled", "true" if whatsapp_enabled else "false", "Enable global WhatsApp CTA", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_number", whatsapp_number.strip(), "WhatsApp Phone Number", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_country_code", whatsapp_country_code.strip() if whatsapp_country_code else "+91", "WhatsApp Country Code", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_label", whatsapp_label.strip() if whatsapp_label else "Chat on WhatsApp", "WhatsApp Button Label", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_default_message", whatsapp_default_message.strip(), "Default WhatsApp Message", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_position", whatsapp_position.strip() if whatsapp_position else "floating", "Button Position", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_header", "true" if whatsapp_allow_header else "false", "Header placement", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_floating", "true" if whatsapp_allow_floating else "false", "Floating button placement", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_product", "true" if whatsapp_allow_product else "false", "Product page placement", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_quote", "true" if whatsapp_allow_quote else "false", "Quote page placement", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_footer", "true" if whatsapp_allow_footer else "false", "Footer placement", "whatsapp")
-    settings_service.set_setting(db, "whatsapp_allow_contact", "true" if whatsapp_allow_contact else "false", "Contact page placement", "whatsapp")
+    final_number = whatsapp_number or phone_number or ""
+    final_country_code = country_code or whatsapp_country_code or "+91"
+    final_label = button_label or whatsapp_label or "Chat on WhatsApp"
+    final_message = default_message or whatsapp_default_message or ""
+    final_pos = position or whatsapp_position or "floating"
+    final_enabled = enabled if enabled is not None else (whatsapp_enabled if whatsapp_enabled is not None else False)
+    final_header = allow_header if allow_header is not None else (whatsapp_allow_header if whatsapp_allow_header is not None else False)
+    final_floating = allow_floating if allow_floating is not None else (whatsapp_allow_floating if whatsapp_allow_floating is not None else False)
+    final_product = allow_product if allow_product is not None else (whatsapp_allow_product if whatsapp_allow_product is not None else False)
+    final_quote = allow_quote if allow_quote is not None else (whatsapp_allow_quote if whatsapp_allow_quote is not None else False)
+    final_footer = allow_footer if allow_footer is not None else (whatsapp_allow_footer if whatsapp_allow_footer is not None else False)
+    final_contact = allow_contact if allow_contact is not None else (whatsapp_allow_contact if whatsapp_allow_contact is not None else False)
+
+    settings_service.set_setting(db, "whatsapp_enabled", "true" if final_enabled else "false", "Enable global WhatsApp CTA", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_number", final_number.strip(), "WhatsApp Phone Number", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_country_code", final_country_code.strip(), "WhatsApp Country Code", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_label", final_label.strip(), "WhatsApp Button Label", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_default_message", final_message.strip(), "Default WhatsApp Message", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_position", final_pos.strip(), "Button Position", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_header", "true" if final_header else "false", "Header placement", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_floating", "true" if final_floating else "false", "Floating button placement", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_product", "true" if final_product else "false", "Product page placement", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_quote", "true" if final_quote else "false", "Quote page placement", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_footer", "true" if final_footer else "false", "Footer placement", "whatsapp")
+    settings_service.set_setting(db, "whatsapp_allow_contact", "true" if final_contact else "false", "Contact page placement", "whatsapp")
 
     logger.info("Updated WhatsApp CTA settings.")
     return RedirectResponse(url="/admin/settings/whatsapp?saved=1", status_code=status.HTTP_302_FOUND)
@@ -471,3 +497,129 @@ async def admin_social_delete(
 ):
     settings_service.delete_social_link(db, link_id)
     return RedirectResponse(url="/admin/settings/social?deleted=1", status_code=status.HTTP_302_FOUND)
+
+
+# ==============================================================================
+# 2. GLOBAL WEBSITE THEME CUSTOMIZATION
+# ==============================================================================
+
+@router.get("/theme", response_class=HTMLResponse, summary="Public Website Theme Customization")
+async def admin_theme_settings_view(
+    request: Request,
+    saved: Optional[str] = None,
+    reset: Optional[str] = None,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Renders the centralized public website theme customization interface.
+    Controls global colors, Aptos typography scale, header/footer colors, buttons, and forms.
+    """
+    current_theme = theme_service.get_public_theme(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/settings/theme.html",
+        context={
+            "request": request,
+            "current_user": current_user,
+            "theme": current_theme,
+            "defaults": DEFAULT_PUBLIC_THEME,
+            "saved": bool(saved),
+            "reset": bool(reset),
+            "active_page": "settings",
+            "active_subpage": "settings_theme",
+        },
+    )
+
+
+@router.post("/theme", summary="Save Public Website Theme")
+async def admin_theme_settings_save(
+    request: Request,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Persists public website theme configuration safely in site_settings.
+    Validates all colors, dimensions, and font families to prevent XSS/injection.
+    """
+    form_data = await request.form()
+    data_dict = {k: v for k, v in form_data.items()}
+    theme_service.save_public_theme(db, data_dict)
+    return RedirectResponse(url="/admin/settings/theme?saved=1", status_code=status.HTTP_302_FOUND)
+
+
+@router.post("/theme/reset", summary="Reset Public Website Theme to Default")
+async def admin_theme_settings_reset(
+    request: Request,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Restores public website theme to approved industrial engineering default values.
+    """
+    theme_service.reset_public_theme(db)
+    return RedirectResponse(url="/admin/settings/theme?reset=1", status_code=status.HTTP_302_FOUND)
+
+
+# ==============================================================================
+# 22. ADMIN PANEL THEME / APPEARANCE SETTINGS
+# ==============================================================================
+
+@router.get("/appearance", response_class=HTMLResponse, summary="Admin Panel Appearance Settings")
+async def admin_appearance_settings_view(
+    request: Request,
+    saved: Optional[str] = None,
+    reset: Optional[str] = None,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Renders independent admin panel appearance customization interface.
+    Controls sidebar, topnav, content background, cards, buttons, and Aptos typography.
+    """
+    current_admin_theme = theme_service.get_admin_theme(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/settings/appearance.html",
+        context={
+            "request": request,
+            "current_user": current_user,
+            "admin_theme": current_admin_theme,
+            "defaults": DEFAULT_ADMIN_THEME,
+            "saved": bool(saved),
+            "reset": bool(reset),
+            "active_page": "settings",
+            "active_subpage": "settings_appearance",
+        },
+    )
+
+
+@router.post("/appearance", summary="Save Admin Panel Appearance")
+async def admin_appearance_settings_save(
+    request: Request,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Persists independent admin appearance settings.
+    """
+    form_data = await request.form()
+    data_dict = {k: v for k, v in form_data.items()}
+    theme_service.save_admin_theme(db, data_dict)
+    return RedirectResponse(url="/admin/settings/appearance?saved=1", status_code=status.HTTP_302_FOUND)
+
+
+@router.post("/appearance/reset", summary="Reset Admin Panel Appearance to Default")
+async def admin_appearance_settings_reset(
+    request: Request,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    Restores admin appearance to factory defaults.
+    """
+    theme_service.reset_admin_theme(db)
+    return RedirectResponse(url="/admin/settings/appearance?reset=1", status_code=status.HTTP_302_FOUND)
+

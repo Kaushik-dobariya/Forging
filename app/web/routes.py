@@ -17,7 +17,7 @@ from app.models.infrastructure import Facility, Equipment, InfrastructureGallery
 from app.models.material import Material
 from app.models.quality import QualitySection, Certification
 
-# Phase 4 models and services
+# Phase 4 and 5 models and services
 from app.models.blog import BlogPost, BlogCategory, BlogPostStatus
 from app.models.case_study import CaseStudy
 from app.models.faq import FAQ, generate_faq_schema_ld
@@ -26,6 +26,8 @@ from app.models.lead import ContactLead, QuoteRequest, LeadStatus
 from app.models.setting import SiteSetting, SocialLink
 from app.models.page import CMSPage, PageStatus
 from app.models.redirect import URLRedirect
+from app.models.hero_slide import HeroSlide
+from app.models.timeline import TimelineMilestone
 from app.services.settings_service import settings_service
 from app.services.email_service import email_service
 from app.services.upload_service import upload_service
@@ -50,12 +52,14 @@ router = APIRouter(tags=["Public Web"])
 @router.get("/", response_class=HTMLResponse, summary="Public Homepage")
 async def index_view(request: Request, db: Session = Depends(get_db)):
     """Renders the public corporate website homepage with dynamic CMS data."""
+    hero_slides = db.query(HeroSlide).filter(HeroSlide.is_active == True).order_by(HeroSlide.display_order.asc(), HeroSlide.id.asc()).all()
     capabilities = db.query(Capability).filter(Capability.status == "published").order_by(Capability.display_order.asc()).limit(6).all()
     industries = db.query(Industry).filter(Industry.status == "published").order_by(Industry.display_order.asc()).limit(6).all()
     featured_products = db.query(Product).filter(Product.status == "published").order_by(Product.display_order.asc()).limit(4).all()
     certifications = db.query(Certification).filter(Certification.status == "published").order_by(Certification.display_order.asc()).limit(4).all()
+    facilities = db.query(Facility).filter(Facility.status == "published").order_by(Facility.display_order.asc()).limit(3).all()
 
-    # Phase 4 dynamic data
+    # Dynamic marketing and resource data
     faqs = db.query(FAQ).filter(FAQ.related_entity.in_(["homepage", "general"]), FAQ.is_active == True).order_by(FAQ.display_order.asc()).limit(6).all()
     faq_schema_ld = generate_faq_schema_ld(faqs)
     whatsapp_cfg = settings_service.get_whatsapp_config(db)
@@ -68,10 +72,12 @@ async def index_view(request: Request, db: Session = Depends(get_db)):
         name="public/index.html",
         context={
             "request": request,
+            "hero_slides": hero_slides,
             "capabilities": capabilities,
             "industries": industries,
             "featured_products": featured_products,
             "certifications": certifications,
+            "facilities": facilities,
             "faqs": faqs,
             "faq_schema_ld": faq_schema_ld,
             "whatsapp_cfg": whatsapp_cfg,
@@ -80,6 +86,126 @@ async def index_view(request: Request, db: Session = Depends(get_db)):
             "featured_case_studies": featured_case_studies,
         },
     )
+
+
+# ==============================================================================
+# ABOUT US & COMPANY HISTORY
+# ==============================================================================
+
+@router.get("/about", response_class=HTMLResponse, summary="Public About Us")
+@router.get("/about-us", response_class=HTMLResponse, include_in_schema=False)
+async def public_about_view(request: Request, db: Session = Depends(get_db)):
+    """
+    Renders dedicated industrial About Us page with structured engineering sections,
+    overview, vision, mission, core values, leadership, manufacturing philosophy,
+    infrastructure preview, certifications, and milestone preview.
+    """
+    cms_page = page_service.get_page_by_slug(db, "about") or page_service.get_page_by_slug(db, "about-us")
+    certifications = db.query(Certification).filter(Certification.status == "published").order_by(Certification.display_order.asc()).limit(6).all()
+    facilities = db.query(Facility).filter(Facility.status == "published").order_by(Facility.display_order.asc()).limit(3).all()
+    equipment_sample = db.query(Equipment).filter(Equipment.status == "published").order_by(Equipment.display_order.asc()).limit(4).all()
+    milestones_preview = db.query(TimelineMilestone).filter(TimelineMilestone.is_active == True).order_by(TimelineMilestone.display_order.asc(), TimelineMilestone.year.asc()).limit(4).all()
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/about.html",
+        context={
+            "request": request,
+            "cms_page": cms_page,
+            "certifications": certifications,
+            "facilities": facilities,
+            "equipment_sample": equipment_sample,
+            "milestones_preview": milestones_preview,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "About Us | Heavy Forging & Precision Engineering Leaders",
+            "meta_description": "Learn about our precision forging legacy, cutting-edge hydraulic press plant, metallurgical laboratory, ISO certifications, and leadership team.",
+        },
+    )
+
+
+@router.get("/company-history", response_class=HTMLResponse, summary="Company History Timeline")
+async def public_company_history_view(request: Request, db: Session = Depends(get_db)):
+    """
+    Renders the company history milestone timeline: /company-history
+    """
+    milestones = db.query(TimelineMilestone).filter(TimelineMilestone.is_active == True).order_by(TimelineMilestone.display_order.asc(), TimelineMilestone.year.asc()).all()
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/company_history.html",
+        context={
+            "request": request,
+            "milestones": milestones,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Our Engineering Heritage & Timeline | 30+ Years of Forging Excellence",
+            "meta_description": "Explore the milestones, capacity expansions, press shop commissioning, and global exports shaping our metallurgical manufacturing journey.",
+        },
+    )
+
+
+# ==============================================================================
+# MACHINERY & FLEET ROUTE
+# ==============================================================================
+
+@router.get("/machinery", response_class=HTMLResponse, summary="Machinery & Equipment Fleet")
+async def public_machinery_view(request: Request, db: Session = Depends(get_db)):
+    """
+    Renders detailed machinery and equipment fleet catalog: /machinery
+    """
+    equipment_list = db.query(Equipment).filter(Equipment.status == "published").order_by(Equipment.display_order.asc()).all()
+    facilities = db.query(Facility).filter(Facility.status == "published").order_by(Facility.display_order.asc()).all()
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/machinery.html",
+        context={
+            "request": request,
+            "equipment_list": equipment_list,
+            "facilities": facilities,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Machinery & Equipment Fleet | Heavy Hydraulic Presses & CNC Centers",
+            "meta_description": "Complete equipment list: closed die hammers, open die hydraulic presses up to 4000T, 5-axis CNC machining centers, and heat treating furnaces.",
+        },
+    )
+
+
+# ==============================================================================
+# FAQS KNOWLEDGEBASE ROUTE
+# ==============================================================================
+
+@router.get("/faqs", response_class=HTMLResponse, summary="Frequently Asked Questions")
+async def public_faqs_view(request: Request, db: Session = Depends(get_db)):
+    """
+    Renders standalone technical and commercial FAQ knowledgebase: /faqs
+    """
+    faqs = db.query(FAQ).filter(FAQ.is_active == True).order_by(FAQ.display_order.asc()).all()
+    faq_schema_ld = generate_faq_schema_ld(faqs)
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/faqs.html",
+        context={
+            "request": request,
+            "faqs": faqs,
+            "faq_schema_ld": faq_schema_ld,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Forging Technical & Commercial FAQs | Customer Knowledgebase",
+            "meta_description": "Answers to common questions regarding forging tolerances, lead times, tooling development, MOQ, test certificates, and export logistics.",
+        },
+    )
+
 
 
 
@@ -930,6 +1056,7 @@ async def public_contact_post(
 # ==============================================================================
 
 @router.get("/request-a-quote", response_class=HTMLResponse, summary="Request a Quote View")
+@router.get("/request-quote", response_class=HTMLResponse, include_in_schema=False)
 async def public_quote_view(
     request: Request,
     product: Optional[str] = None,
@@ -969,7 +1096,9 @@ async def public_quote_view(
 
 
 @router.post("/request-a-quote", response_class=HTMLResponse, summary="Submit Quote Request")
+@router.post("/request-quote", response_class=HTMLResponse, include_in_schema=False)
 async def public_quote_post(
+
     request: Request,
     name: str = Form(""),
     company: str = Form(""),
