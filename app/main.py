@@ -187,9 +187,9 @@ def create_app() -> FastAPI:
     # --------------------------------------------------------------------------
     # MOUNT ROUTERS
     # --------------------------------------------------------------------------
-    app.include_router(web_router)
-    app.include_router(admin_router)
     app.include_router(api_router)
+    app.include_router(admin_router)
+    app.include_router(web_router)
 
     return app
 

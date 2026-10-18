@@ -30,6 +30,9 @@ from app.models.faq import FAQ, generate_faq_schema_ld
 from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
 from app.models.lead import ContactLead, QuoteRequest, LeadStatus
 from app.models.setting import SiteSetting, SocialLink, SocialPlatform
+from app.models.page import CMSPage, PageStatus
+from app.models.menu import MenuItem, MenuLocation
+from app.models.redirect import URLRedirect
 
 __all__ = [
     "Base",
@@ -72,4 +75,10 @@ __all__ = [
     "SiteSetting",
     "SocialLink",
     "SocialPlatform",
+    "CMSPage",
+    "PageStatus",
+    "MenuItem",
+    "MenuLocation",
+    "URLRedirect",
 ]
+

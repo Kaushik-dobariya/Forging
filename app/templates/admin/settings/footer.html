@@ -1,0 +1,95 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Footer & Version Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Footer Settings</span>
+    </nav>
+    <h1 class="page-title">Website Footer & Version Settings</h1>
+    <p class="page-description">
+      Manage footer copyright notices, application versioning, and developer attribution link to Cubeon Technologies.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
+  </div>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Saved!</strong> Footer settings updated successfully.
+</div>
+{% endif %}
+
+<form method="POST" action="/admin/settings/footer">
+
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Application Version & Copyright</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="appVersion">Application Version *</label>
+        <input type="text" id="appVersion" name="app_version" required class="form-control"
+               value="{{ general.general_app_version }}">
+        <div class="form-help">Current deployed release version. Displayed as "Version 1.0.0" in public footer.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="copyrightText">Copyright Notice *</label>
+        <input type="text" id="copyrightText" name="copyright_text" required class="form-control"
+               value="{{ general.general_copyright_text }}">
+        <div class="form-help">e.g. © 2026 FORGE Precision Engineering Ltd. All rights reserved.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Developer Attribution</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="devAttribution">Developer Attribution Text *</label>
+        <input type="text" id="devAttribution" name="developer_attribution" required class="form-control"
+               value="{{ general.general_footer_developer_attribution }}">
+        <div class="form-help">Default: Developed by Cubeon Technologies</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="devWebsiteUrl">Developer Website URL *</label>
+        <input type="url" id="devWebsiteUrl" name="developer_website_url" required class="form-control"
+               value="{{ general.general_developer_website_url }}">
+        <div class="form-help">Default: https://www.cubeontechs.com/ (Opens in a new tab with rel="noopener noreferrer").</div>
+      </div>
+    </div>
+
+    <!-- Live Preview Box -->
+    <div style="margin-top: 16px; padding: 16px; background: #0f172a; border-radius: 6px; color: #94a3b8; font-size: 0.85rem; text-align: center;">
+      <span style="color: #64748b; margin-right: 8px;">Footer Preview:</span>
+      <span>{{ general.general_copyright_text }}</span>
+      <span style="margin: 0 8px;">|</span>
+      <span>Version {{ general.general_app_version }}</span>
+      <span style="margin: 0 8px;">|</span>
+      <a href="{{ general.general_developer_website_url }}" target="_blank" rel="noopener noreferrer" style="color: #f59e0b; text-decoration: none;">
+        {{ general.general_footer_developer_attribution }}
+      </a>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px;">
+    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-footer">Save Footer Settings</button>
+    <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
+  </div>
+
+</form>
+{% endblock %}

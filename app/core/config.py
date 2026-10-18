@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     APP_ENV: str = Field(default="development", description="Environment: development, staging, production")
     APP_DEBUG: bool = Field(default=True, description="Enable debug mode")
     APP_NAME: str = Field(default="Forging CMS", description="Application Title")
+    APP_VERSION: str = Field(default="1.0.0", description="Application Version")
     SECRET_KEY: str = Field(
         default="development_insecure_secret_key_please_replace_in_env_file_32chars",
         description="Cryptographic secret key for signing cookies and tokens",

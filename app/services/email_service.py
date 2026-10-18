@@ -2,10 +2,14 @@ import smtplib
 from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import List, Dict, Any, Optional
+from email.utils import formataddr
+from typing import List, Dict, Any, Optional, Tuple
+from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.logging import logger
+from app.core.database import SessionLocal
 from app.models.lead import ContactLead, QuoteRequest
+from app.models.setting import SiteSetting
 
 
 class EmailServiceInterface(ABC):
@@ -18,32 +22,34 @@ class EmailServiceInterface(ABC):
         subject: str,
         body_text: str,
         body_html: Optional[str] = None,
+        reply_to: Optional[str] = None,
+        db: Optional[Session] = None,
     ) -> bool:
         pass
 
     @abstractmethod
-    def send_contact_notification(self, lead: ContactLead) -> bool:
+    def send_contact_notification(self, lead: ContactLead, db: Optional[Session] = None) -> bool:
         pass
 
     @abstractmethod
-    def send_contact_acknowledgment(self, lead: ContactLead) -> bool:
+    def send_contact_acknowledgment(self, lead: ContactLead, db: Optional[Session] = None) -> bool:
         pass
 
     @abstractmethod
-    def send_quote_notification(self, quote: QuoteRequest) -> bool:
+    def send_quote_notification(self, quote: QuoteRequest, db: Optional[Session] = None) -> bool:
         pass
 
     @abstractmethod
-    def send_quote_acknowledgment(self, quote: QuoteRequest) -> bool:
+    def send_quote_acknowledgment(self, quote: QuoteRequest, db: Optional[Session] = None) -> bool:
         pass
 
     @abstractmethod
-    def send_admin_notification(self, subject: str, message: str) -> bool:
+    def send_admin_notification(self, subject: str, message: str, db: Optional[Session] = None) -> bool:
         pass
 
 
 class SMTPEmailService(EmailServiceInterface):
-    """Production SMTP email delivery implementation."""
+    """Production SMTP email delivery implementation with dynamic database settings."""
 
     def __init__(self):
         self.sent_messages: List[Dict[str, Any]] = []
@@ -54,13 +60,75 @@ class SMTPEmailService(EmailServiceInterface):
     def get_sent_messages(self) -> List[Dict[str, Any]]:
         return self.sent_messages
 
+    def get_effective_config(self, db: Optional[Session] = None) -> Dict[str, Any]:
+        """Resolves dynamic SMTP settings from database with fallback to environment config."""
+        cfg = {
+            "receiving_email": settings.FIRST_SUPERADMIN_EMAIL,
+            "sender_name": "FORGE Industrial Forging",
+            "from_email": settings.MAIL_FROM or "notifications@forgingcms.com",
+            "reply_to": settings.MAIL_FROM or "sales@forgingcms.com",
+            "smtp_host": settings.MAIL_SERVER or "smtp.gmail.com",
+            "smtp_port": settings.MAIL_PORT or 587,
+            "smtp_user": settings.MAIL_USERNAME or "",
+            "smtp_pass": settings.MAIL_PASSWORD or "",
+            "smtp_encryption": "tls" if settings.MAIL_TLS else ("ssl" if settings.MAIL_SSL else "none"),
+            "notifications_enabled": True,
+        }
+
+        close_session = False
+        if db is None:
+            try:
+                db = SessionLocal()
+                close_session = True
+            except Exception:
+                db = None
+
+        if db:
+            try:
+                records = db.query(SiteSetting).filter(SiteSetting.group == "email").all()
+                for r in records:
+                    if r.key == "email_contact_receiving" and r.value:
+                        cfg["receiving_email"] = r.value.strip()
+                    elif r.key == "email_sender_name" and r.value:
+                        cfg["sender_name"] = r.value.strip()
+                    elif r.key == "email_from_address" and r.value:
+                        cfg["from_email"] = r.value.strip()
+                    elif r.key == "email_reply_to" and r.value:
+                        cfg["reply_to"] = r.value.strip()
+                    elif r.key == "email_smtp_host" and r.value:
+                        cfg["smtp_host"] = r.value.strip()
+                    elif r.key == "email_smtp_port" and r.value:
+                        try:
+                            cfg["smtp_port"] = int(r.value.strip())
+                        except ValueError:
+                            pass
+                    elif r.key == "email_smtp_username" and r.value:
+                        cfg["smtp_user"] = r.value.strip()
+                    elif r.key == "email_smtp_password" and r.value:
+                        cfg["smtp_pass"] = r.value.strip()
+                    elif r.key == "email_smtp_encryption" and r.value:
+                        cfg["smtp_encryption"] = r.value.strip().lower()
+                    elif r.key == "email_notifications_enabled":
+                        cfg["notifications_enabled"] = r.value.lower() == "true"
+            except Exception as e:
+                logger.warning(f"Could not load dynamic email settings from DB: {e}")
+            finally:
+                if close_session:
+                    db.close()
+
+        return cfg
+
     def send_email(
         self,
         to_email: str,
         subject: str,
         body_text: str,
         body_html: Optional[str] = None,
+        reply_to: Optional[str] = None,
+        db: Optional[Session] = None,
     ) -> bool:
+        cfg = self.get_effective_config(db)
+
         record = {
             "to": to_email,
             "to_email": to_email,
@@ -68,11 +136,16 @@ class SMTPEmailService(EmailServiceInterface):
             "body_text": body_text,
             "body_html": body_html,
             "html_body": body_html,
+            "reply_to": reply_to or cfg["reply_to"],
         }
         self.sent_messages.append(record)
 
-        # In dev or if credentials aren't set, log and return success
-        if not settings.MAIL_USERNAME or not settings.MAIL_SERVER or settings.is_development:
+        if not cfg["notifications_enabled"]:
+            logger.info(f"[EMAIL SERVICE - DISABLED] Suppressed email to {to_email} (notifications disabled)")
+            return True
+
+        # In dev or testing, or if credentials aren't set, log and return success
+        if settings.is_development or not cfg["smtp_user"] or not cfg["smtp_host"]:
             logger.info(
                 f"[EMAIL SERVICE - SIMULATED] To: {to_email} | Subject: '{subject}'"
             )
@@ -81,8 +154,10 @@ class SMTPEmailService(EmailServiceInterface):
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"] = settings.MAIL_FROM
+            msg["From"] = formataddr((cfg["sender_name"], cfg["from_email"]))
             msg["To"] = to_email
+            if reply_to or cfg["reply_to"]:
+                msg["Reply-To"] = reply_to or cfg["reply_to"]
 
             part1 = MIMEText(body_text, "plain")
             msg.attach(part1)
@@ -91,17 +166,18 @@ class SMTPEmailService(EmailServiceInterface):
                 part2 = MIMEText(body_html, "html")
                 msg.attach(part2)
 
-            if settings.MAIL_SSL:
-                server = smtplib.SMTP_SSL(settings.MAIL_SERVER, settings.MAIL_PORT, timeout=10)
+            encryption = cfg["smtp_encryption"]
+            if encryption == "ssl" or cfg["smtp_port"] == 465:
+                server = smtplib.SMTP_SSL(cfg["smtp_host"], cfg["smtp_port"], timeout=10)
             else:
-                server = smtplib.SMTP(settings.MAIL_SERVER, settings.MAIL_PORT, timeout=10)
-                if settings.MAIL_TLS:
+                server = smtplib.SMTP(cfg["smtp_host"], cfg["smtp_port"], timeout=10)
+                if encryption == "tls" or cfg["smtp_port"] == 587:
                     server.starttls()
 
-            if settings.MAIL_USERNAME and settings.MAIL_PASSWORD:
-                server.login(settings.MAIL_USERNAME, settings.MAIL_PASSWORD)
+            if cfg["smtp_user"] and cfg["smtp_pass"]:
+                server.login(cfg["smtp_user"], cfg["smtp_pass"])
 
-            server.sendmail(settings.MAIL_FROM, [to_email], msg.as_string())
+            server.sendmail(cfg["from_email"], [to_email], msg.as_string())
             server.quit()
             logger.info(f"Email dispatched successfully to {to_email}")
             return True
@@ -109,8 +185,85 @@ class SMTPEmailService(EmailServiceInterface):
             logger.error(f"Failed to dispatch email to {to_email}: {exc}")
             return False
 
-    def send_contact_notification(self, lead: Optional[ContactLead] = None, **kwargs) -> bool:
-        admin_email = settings.FIRST_SUPERADMIN_EMAIL
+    def send_test_email(self, to_email: str, db: Optional[Session] = None) -> Tuple[bool, str]:
+        """
+        Sends a test email to verify SMTP host, credentials, port, and sender identity.
+        Returns (success: bool, message: str).
+        """
+        if not to_email or "@" not in to_email:
+            return False, "Invalid destination email address."
+
+        cfg = self.get_effective_config(db)
+        subject = f"[Test] SMTP Configuration Check - {cfg['sender_name']}"
+        body_text = f"""Hello,
+
+This is a test email sent from the FORGE CMS administration settings dashboard.
+
+Current Configuration:
+- Sender Name: {cfg['sender_name']}
+- From Email: {cfg['from_email']}
+- Reply-To: {cfg['reply_to']}
+- Receiving Email: {cfg['receiving_email']}
+- SMTP Host: {cfg['smtp_host']}:{cfg['smtp_port']}
+- SMTP Encryption: {cfg['smtp_encryption'].upper()}
+- Outbound Notifications: {'Enabled' if cfg['notifications_enabled'] else 'Disabled'}
+
+If you received this message, your outbound email delivery is functioning properly.
+"""
+        body_html = f"""<div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #E2E8F0; border-radius: 6px;">
+<h2 style="color: #17212B; margin-top: 0;">SMTP Test Email</h2>
+<p>This is a test email sent from your website's CMS administration settings.</p>
+<table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+  <tr><td style="padding: 6px 0; color: #64748B;">Sender Name:</td><td><strong>{cfg['sender_name']}</strong></td></tr>
+  <tr><td style="padding: 6px 0; color: #64748B;">From Email:</td><td><strong>{cfg['from_email']}</strong></td></tr>
+  <tr><td style="padding: 6px 0; color: #64748B;">SMTP Host:</td><td>{cfg['smtp_host']}:{cfg['smtp_port']}</td></tr>
+  <tr><td style="padding: 6px 0; color: #64748B;">Encryption:</td><td>{cfg['smtp_encryption'].upper()}</td></tr>
+</table>
+<p style="color: #16A34A; font-weight: bold;">✔ Email configuration test successful.</p>
+</div>"""
+
+        # In testing or dev environment without live SMTP credentials
+        if settings.is_development or not cfg["smtp_user"] or not cfg["smtp_host"]:
+            self.sent_messages.append({
+                "to": to_email,
+                "subject": subject,
+                "body_text": body_text,
+                "body_html": body_html,
+            })
+            return True, f"Test email simulated successfully to {to_email} (Dev/Test mode active)."
+
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = formataddr((cfg["sender_name"], cfg["from_email"]))
+            msg["To"] = to_email
+            if cfg["reply_to"]:
+                msg["Reply-To"] = cfg["reply_to"]
+
+            msg.attach(MIMEText(body_text, "plain"))
+            msg.attach(MIMEText(body_html, "html"))
+
+            encryption = cfg["smtp_encryption"]
+            if encryption == "ssl" or cfg["smtp_port"] == 465:
+                server = smtplib.SMTP_SSL(cfg["smtp_host"], cfg["smtp_port"], timeout=10)
+            else:
+                server = smtplib.SMTP(cfg["smtp_host"], cfg["smtp_port"], timeout=10)
+                if encryption == "tls" or cfg["smtp_port"] == 587:
+                    server.starttls()
+
+            if cfg["smtp_user"] and cfg["smtp_pass"]:
+                server.login(cfg["smtp_user"], cfg["smtp_pass"])
+
+            server.sendmail(cfg["from_email"], [to_email], msg.as_string())
+            server.quit()
+            return True, f"Test email successfully dispatched to {to_email} via {cfg['smtp_host']}."
+        except Exception as exc:
+            logger.error(f"Test email failed: {exc}")
+            return False, f"SMTP Connection Failed: {str(exc)}"
+
+    def send_contact_notification(self, lead: Optional[ContactLead] = None, db: Optional[Session] = None, **kwargs) -> bool:
+        cfg = self.get_effective_config(db)
+        admin_email = cfg["receiving_email"]
         name = lead.name if lead else kwargs.get("name", "Website Visitor")
         company = (lead.company if lead else kwargs.get("company")) or "Individual"
         email = lead.email if lead else kwargs.get("email", "")
@@ -143,9 +296,9 @@ Message:
 <p><strong>Message:</strong></p>
 <p style="background: #F8FAFC; padding: 12px; border-radius: 4px; border-left: 3px solid #B7793F;">{message}</p>
 </div>"""
-        return self.send_email(admin_email, subject, text, html)
+        return self.send_email(admin_email, subject, text, html, reply_to=email, db=db)
 
-    def send_contact_acknowledgment(self, lead: Optional[ContactLead] = None, **kwargs) -> bool:
+    def send_contact_acknowledgment(self, lead: Optional[ContactLead] = None, db: Optional[Session] = None, **kwargs) -> bool:
         name = lead.name if lead else kwargs.get("name", "Valued Customer")
         to_email = lead.email if lead else kwargs.get("to_email", kwargs.get("email", ""))
         message = (lead.message if lead else kwargs.get("message")) or ""
@@ -170,10 +323,9 @@ Precision Engineering & Forging Team
 </div>
 <p style="color: #64748B; font-size: 0.9rem;">This is an automated acknowledgment. Please do not reply directly to this email.</p>
 </div>"""
-        return self.send_email(to_email, subject, text, html)
+        return self.send_email(to_email, subject, text, html, db=db)
 
-    def send_user_acknowledgment(self, to_email: Optional[str] = None, name: Optional[str] = None, submission_type: Optional[str] = None, lead: Optional[ContactLead] = None, **kwargs) -> bool:
-        """Alias for general acknowledgment notifications."""
+    def send_user_acknowledgment(self, to_email: Optional[str] = None, name: Optional[str] = None, submission_type: Optional[str] = None, lead: Optional[ContactLead] = None, db: Optional[Session] = None, **kwargs) -> bool:
         target_name = name or (lead.name if lead else "Valued Customer")
         target_email = to_email or (lead.email if lead else "")
         subject = f"Thank You for Contacting Us - {settings.APP_NAME}"
@@ -183,10 +335,11 @@ Precision Engineering & Forging Team
 <p>Hello {target_name},</p>
 <p>We have received your {submission_type or 'inquiry'} and our engineering team will follow up within 24 hours.</p>
 </div>"""
-        return self.send_email(target_email, subject, text, html)
+        return self.send_email(target_email, subject, text, html, db=db)
 
-    def send_quote_notification(self, quote: Optional[QuoteRequest] = None, **kwargs) -> bool:
-        admin_email = settings.FIRST_SUPERADMIN_EMAIL
+    def send_quote_notification(self, quote: Optional[QuoteRequest] = None, db: Optional[Session] = None, **kwargs) -> bool:
+        cfg = self.get_effective_config(db)
+        admin_email = cfg["receiving_email"]
         name = (quote.customer_name if quote else kwargs.get("name")) or "Prospective Client"
         company = (quote.company if quote else kwargs.get("company")) or "N/A"
         email = (quote.email if quote else kwargs.get("email")) or ""
@@ -234,9 +387,9 @@ Additional Requirements:
 <p><strong>Additional Requirements:</strong></p>
 <p style="background: #F8FAFC; padding: 12px; border-radius: 4px; border-left: 3px solid #B7793F;">{reqs}</p>
 </div>"""
-        return self.send_email(admin_email, subject, text, html)
+        return self.send_email(admin_email, subject, text, html, reply_to=email, db=db)
 
-    def send_quote_acknowledgment(self, quote: QuoteRequest) -> bool:
+    def send_quote_acknowledgment(self, quote: QuoteRequest, db: Optional[Session] = None) -> bool:
         subject = f"Quote Request Acknowledgment - {quote.company} | {settings.APP_NAME}"
         text = f"""Hello {quote.customer_name},
 
@@ -258,11 +411,12 @@ Estimation & Engineering Sales
 <p>Our engineering estimation team is reviewing your tolerances, manufacturing processes, and metallurgy. We will prepare an official commercial quotation within two business days.</p>
 <p style="color: #64748B; font-size: 0.9rem; margin-top: 30px;">Direct Engineering Contact: sales@forgingcms.com | +91 0000000000</p>
 </div>"""
-        return self.send_email(quote.email, subject, text, html)
+        return self.send_email(quote.email, subject, text, html, db=db)
 
-    def send_admin_notification(self, subject: str, message: str) -> bool:
-        admin_email = settings.FIRST_SUPERADMIN_EMAIL
-        return self.send_email(admin_email, subject, message)
+    def send_admin_notification(self, subject: str, message: str, db: Optional[Session] = None) -> bool:
+        cfg = self.get_effective_config(db)
+        admin_email = cfg["receiving_email"]
+        return self.send_email(admin_email, subject, message, db=db)
 
 
 email_service = SMTPEmailService()

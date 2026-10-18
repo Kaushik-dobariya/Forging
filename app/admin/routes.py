@@ -359,6 +359,10 @@ from app.admin.faqs_admin import router as faqs_router
 from app.admin.downloads_admin import router as downloads_router
 from app.admin.leads_admin import router as leads_router
 from app.admin.settings_admin import router as settings_router
+from app.admin.pages_admin import router as pages_router
+from app.admin.menus_admin import router as menus_router
+from app.models.page import CMSPage
+from app.models.menu import MenuItem
 
 
 @router.get("", response_class=HTMLResponse, summary="Super Admin Dashboard")
@@ -384,6 +388,8 @@ async def admin_dashboard(
         "downloads": db.query(DownloadResource).count(),
         "contact_leads": db.query(ContactLead).count(),
         "quote_requests": db.query(QuoteRequest).count(),
+        "cms_pages": db.query(CMSPage).count(),
+        "menu_items": db.query(MenuItem).count(),
         "new_leads": db.query(ContactLead).filter(ContactLead.status == LeadStatus.NEW.value).count()
         + db.query(QuoteRequest).filter(QuoteRequest.status == LeadStatus.NEW.value).count(),
     }
@@ -419,5 +425,7 @@ router.include_router(faqs_router)
 router.include_router(downloads_router)
 router.include_router(leads_router)
 router.include_router(settings_router)
+router.include_router(pages_router)
+router.include_router(menus_router)
 
 

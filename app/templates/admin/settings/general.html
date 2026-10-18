@@ -1,0 +1,119 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}General Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">General Settings</span>
+    </nav>
+    <h1 class="page-title">General Website Settings</h1>
+    <p class="page-description">
+      Configure company branding, logo, favicon, application version, and default contact points.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
+  </div>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Saved!</strong> General website settings have been successfully updated.
+</div>
+{% endif %}
+
+<form method="POST" action="/admin/settings/general">
+
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Company Identity & Branding</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="websiteName">Website Name *</label>
+        <input type="text" id="websiteName" name="website_name" required class="form-control"
+               value="{{ general.general_website_name }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="companyName">Corporate Legal Name *</label>
+        <input type="text" id="companyName" name="company_name" required class="form-control"
+               value="{{ general.general_company_name }}">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="logoUrl">Header Logo URL</label>
+        <input type="text" id="logoUrl" name="logo_url" class="form-control"
+               value="{{ general.general_logo_url }}">
+        <div class="form-help">Path or URL to primary corporate SVG/PNG logo.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="faviconUrl">Favicon URL</label>
+        <input type="text" id="faviconUrl" name="favicon_url" class="form-control"
+               value="{{ general.general_favicon_url }}">
+        <div class="form-help">Path to browser tab icon (.ico, .svg, .png).</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="contactEmail">Default Public Contact Email *</label>
+      <input type="email" id="contactEmail" name="default_contact_email" required class="form-control"
+             value="{{ general.general_default_contact_email }}">
+      <div class="form-help">Displayed across public pages and general inquiries.</div>
+    </div>
+  </div>
+
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Version & Footer Attribution</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="appVersion">Application Version *</label>
+        <input type="text" id="appVersion" name="app_version" required class="form-control"
+               value="{{ general.general_app_version }}">
+        <div class="form-help">e.g. 1.0.0. Rendered as "Version 1.0.0" in website footer.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="copyrightText">Copyright Notice *</label>
+        <input type="text" id="copyrightText" name="copyright_text" required class="form-control"
+               value="{{ general.general_copyright_text }}">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="devAttribution">Developer Attribution Text *</label>
+        <input type="text" id="devAttribution" name="developer_attribution" required class="form-control"
+               value="{{ general.general_footer_developer_attribution }}">
+        <div class="form-help">Default: Developed by Cubeon Technologies</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="devWebsiteUrl">Developer Website URL *</label>
+        <input type="url" id="devWebsiteUrl" name="developer_website_url" required class="form-control"
+               value="{{ general.general_developer_website_url }}">
+        <div class="form-help">Default: https://www.cubeontechs.com/</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px;">
+    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-general">Save General Settings</button>
+    <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
+  </div>
+
+</form>
+{% endblock %}

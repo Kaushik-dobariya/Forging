@@ -1,0 +1,200 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Email Configuration & SMTP Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Email & SMTP</span>
+    </nav>
+    <h1 class="page-title">Global Email Configuration</h1>
+    <p class="page-description">
+      Configure outbound SMTP mail server, lead receiving email, sender identity, and test live delivery.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
+  </div>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Saved!</strong> Email and SMTP settings successfully updated.
+</div>
+{% endif %}
+
+{% if request.query_params.get('test_success') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Test Email Success:</strong> {{ request.query_params.get('test_success') }}
+</div>
+{% endif %}
+
+{% if request.query_params.get('test_error') %}
+<div class="alert alert-danger" style="margin-bottom: 24px;">
+  <strong>Test Email Failed:</strong> {{ request.query_params.get('test_error') }}
+</div>
+{% endif %}
+
+{% if not cfg.email_smtp_username or not cfg.is_password_set %}
+<div class="alert alert-warning" style="margin-bottom: 24px;">
+  <strong>Action Required:</strong> SMTP credentials are not fully configured. Inbound contact leads and RFQ requests will be logged and simulated, but live external emails cannot be delivered until valid credentials are saved.
+</div>
+{% endif %}
+
+<div class="admin-grid-layout" style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; align-items: start;">
+
+  <!-- Left Column: Settings Form -->
+  <form method="POST" action="/admin/settings/email">
+
+    <!-- 1. Inbound Inquiries Routing -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">1. Inbound Inquiries & Lead Destination</h3>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="contactReceiving">Website Contact / Receiving Email Address *</label>
+        <input type="email" id="contactReceiving" name="contact_receiving" required class="form-control"
+               value="{{ cfg.email_contact_receiving }}">
+        <div class="form-help">
+          All public website contact forms, RFQ requests, and customer inquiries are dispatched to this address.
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Sender Identity & Reply-To -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">2. Outbound Sender Identity</h3>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="senderName">Default Sender Display Name *</label>
+          <input type="text" id="senderName" name="sender_name" required class="form-control"
+                 value="{{ cfg.email_sender_name }}">
+          <div class="form-help">e.g. FORGE Industrial Forging</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fromAddress">Default From Email Address *</label>
+          <input type="email" id="fromAddress" name="from_address" required class="form-control"
+                 value="{{ cfg.email_from_address }}">
+          <div class="form-help">Must be a verified sender authorized on your SMTP server.</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="replyTo">Reply-To Email Address *</label>
+        <input type="email" id="replyTo" name="reply_to" required class="form-control"
+               value="{{ cfg.email_reply_to }}">
+        <div class="form-help">Default address when recipients click Reply.</div>
+      </div>
+    </div>
+
+    <!-- 3. SMTP Mail Server -->
+    <div class="admin-card" style="margin-bottom: 24px;">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">3. SMTP Server Connection</h3>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="smtpHost">SMTP Host Server *</label>
+          <input type="text" id="smtpHost" name="smtp_host" required class="form-control"
+                 value="{{ cfg.email_smtp_host }}" placeholder="e.g. smtp.gmail.com or smtp.sendgrid.net">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="smtpPort">SMTP Port *</label>
+          <input type="number" id="smtpPort" name="smtp_port" required class="form-control"
+                 value="{{ cfg.email_smtp_port }}" placeholder="587">
+          <div class="form-help">Typical ports: 587 (TLS/STARTTLS), 465 (SSL), 25.</div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="smtpUser">SMTP Username</label>
+          <input type="text" id="smtpUser" name="smtp_username" class="form-control"
+                 value="{{ cfg.email_smtp_username }}" placeholder="username or api key">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="smtpPass">SMTP Password or App Key</label>
+          <input type="password" id="smtpPass" name="smtp_password" class="form-control"
+                 value="{{ cfg.email_smtp_password }}" placeholder="Leave blank to keep existing password" autocomplete="new-password">
+          <div class="form-help">
+            {% if cfg.is_password_set %}
+            <span style="color: #16a34a; font-weight: 500;">✔ Password is configured (masked).</span>
+            {% else %}
+            <span style="color: #d97706;">No password currently stored.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="smtpEncryption">Encryption Protocol *</label>
+          <select id="smtpEncryption" name="smtp_encryption" class="form-select">
+            <option value="tls" {% if cfg.email_smtp_encryption == 'tls' %}selected{% endif %}>TLS / STARTTLS (Recommended, Port 587)</option>
+            <option value="ssl" {% if cfg.email_smtp_encryption == 'ssl' %}selected{% endif %}>SSL (Port 465)</option>
+            <option value="none" {% if cfg.email_smtp_encryption == 'none' %}selected{% endif %}>None (Unencrypted, Port 25)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Dispatch Master Toggle</label>
+          <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+            <input type="checkbox" name="notifications_enabled" value="1"
+                   {% if cfg.email_notifications_enabled %}checked{% endif %}>
+            <span>Enable outbound notification emails</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <button type="submit" class="btn btn-accent btn-lg" id="btn-save-email">Save Email Settings</button>
+      <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
+    </div>
+
+  </form>
+
+  <!-- Right Column: Send Test Email -->
+  <div>
+    <div class="admin-card" style="position: sticky; top: 20px;">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">Send Test Email</h3>
+      </div>
+      <p style="font-size: 0.875rem; color: #475569; margin-bottom: 16px;">
+        Verify that the SMTP credentials, host connectivity, and sender identity are operational by sending a test message.
+      </p>
+
+      <form method="POST" action="/admin/settings/email/test">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label" for="testEmail">Recipient Email Address *</label>
+          <input type="email" id="testEmail" name="test_email" required class="form-control"
+                 value="{{ current_user.email }}" placeholder="recipient@example.com">
+          <div class="form-help">A test email with current configuration details will be sent here.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%;" id="btn-send-test-email">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Send Test Message
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

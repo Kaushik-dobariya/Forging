@@ -1,0 +1,217 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ page.effective_meta_title }} | {{ app_name|default('FORGE') }}{% endblock %}
+
+{% block meta_description %}{{ page.effective_meta_description }}{% endblock %}
+
+{% block extra_meta %}
+{% if page.meta_keywords %}
+<meta name="keywords" content="{{ page.meta_keywords }}">
+{% endif %}
+{% if page.canonical_url %}
+<link rel="canonical" href="{{ page.canonical_url }}">
+{% else %}
+<link rel="canonical" href="{{ site_url }}{{ page.url_path }}">
+{% endif %}
+
+<!-- Open Graph Meta -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ page.og_title or page.effective_meta_title }}">
+<meta property="og:description" content="{{ page.og_description or page.effective_meta_description }}">
+<meta property="og:url" content="{{ site_url }}{{ page.url_path }}">
+{% if page.og_image or page.featured_image %}
+<meta property="og:image" content="{{ page.og_image or page.featured_image }}">
+{% endif %}
+
+<!-- Schema.org Article / WebPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ page.title|e }}",
+  "description": "{{ page.effective_meta_description|e }}",
+  "url": "{{ site_url }}{{ page.url_path }}",
+  "datePublished": "{{ page.created_at.isoformat() if page.created_at else '' }}",
+  "dateModified": "{{ page.updated_at.isoformat() if page.updated_at else '' }}"
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.cms-content-body {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #334155;
+}
+.cms-content-body h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid rgba(183, 121, 63, 0.2);
+  padding-bottom: 0.5rem;
+}
+.cms-content-body h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.cms-content-body p {
+  margin-bottom: 1.25rem;
+}
+.cms-content-body ul, .cms-content-body ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+.cms-content-body li {
+  margin-bottom: 0.5rem;
+}
+.cms-content-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+}
+.cms-content-body th, .cms-content-body td {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+.cms-content-body th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  color: #0f172a;
+}
+.cms-content-body tr:nth-child(even) {
+  background-color: #fdfdfd;
+}
+.subpages-nav-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+.subpages-nav-box h4 {
+  font-size: 1.1rem;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.subpages-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.subpages-list li {
+  margin-bottom: 8px;
+}
+.subpages-list a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  text-decoration: none;
+  font-size: 0.925rem;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+.subpages-list a:hover {
+  background: rgba(183, 121, 63, 0.08);
+  color: var(--color-accent);
+}
+.subpages-list a.active {
+  background: rgba(183, 121, 63, 0.12);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Draft Preview Bar -->
+{% if not page.is_published %}
+<div style="background: #fef3c7; border-bottom: 1px solid #f59e0b; padding: 10px 0; color: #92400e; font-size: 0.875rem; text-align: center; font-weight: 600;">
+  ⚠ Draft Preview Mode: This page is unpublished and currently only visible to authenticated administrators.
+</div>
+{% endif %}
+
+<!-- Hero Header -->
+<section class="page-hero" style="background: #17212b; padding: 3rem 0; color: #ffffff; border-bottom: 3px solid var(--color-accent);">
+  <div class="container">
+    <nav class="public-breadcrumbs" aria-label="Breadcrumb" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem;">
+      <a href="/" style="color: #94a3b8; text-decoration: none;">Home</a>
+      <span style="margin: 0 6px;">/</span>
+      {% if page.parent %}
+      <a href="{{ page.parent.url_path }}" style="color: #94a3b8; text-decoration: none;">{{ page.parent.title }}</a>
+      <span style="margin: 0 6px;">/</span>
+      {% endif %}
+      <span style="color: var(--color-accent); font-weight: 500;">{{ page.title }}</span>
+    </nav>
+    <h1 style="font-size: 2.4rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; color: #ffffff;">
+      {{ page.title }}
+    </h1>
+  </div>
+</section>
+
+<!-- Content Section -->
+<section style="padding: 3.5rem 0; background: #ffffff;">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: {% if page.children or (page.parent and page.parent.children) %}3fr 1fr{% else %}1fr{% endif %}; gap: 40px; align-items: start;">
+
+      <!-- Main Content Column -->
+      <div>
+        {% if page.featured_image %}
+        <div style="margin-bottom: 2rem; border-radius: 8px; overflow: hidden; max-height: 400px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+          <img src="{{ page.featured_image }}" alt="{{ page.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        {% endif %}
+
+        <div class="cms-content-body">
+          {{ page.content|safe }}
+        </div>
+      </div>
+
+      <!-- Sidebar with Sub-Pages or Sibling Pages -->
+      {% set related_parent = page.parent if page.parent else (page if page.children else None) %}
+      {% if related_parent and (related_parent.children or related_parent.id != page.id) %}
+      <div>
+        <div class="subpages-nav-box" style="position: sticky; top: 100px;">
+          <h4>{{ related_parent.title }}</h4>
+          <ul class="subpages-list">
+            <li>
+              <a href="{{ related_parent.url_path }}" class="{% if page.id == related_parent.id %}active{% endif %}">
+                Overview & Summary
+              </a>
+            </li>
+            {% for child in related_parent.children %}
+              {% if child.is_published or not page.is_published %}
+              <li>
+                <a href="{{ child.url_path }}" class="{% if page.id == child.id %}active{% endif %}">
+                  {{ child.effective_menu_title }}
+                </a>
+              </li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+
+          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 0.85rem; color: #64748b;">
+            <div style="font-weight: 600; color: #0f172a; margin-bottom: 4px;">Need Technical Specs?</div>
+            <p style="margin-bottom: 12px; font-size: 0.8rem;">Speak directly with our engineering and forging metallurgy team.</p>
+            <a href="/request-a-quote" class="btn btn-accent btn-sm" style="width: 100%; text-align: center;">Request RFQ</a>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</section>
+{% endblock %}

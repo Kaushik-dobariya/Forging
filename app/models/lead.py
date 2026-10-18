@@ -1,4 +1,5 @@
 import enum
+from typing import Optional
 from sqlalchemy import Column, String, Text, Integer, DateTime
 from app.core.database import Base
 
@@ -27,6 +28,8 @@ class ContactLead(Base):
     source = Column(String(100), default="contact_page", nullable=False)
     client_ip = Column(String(100), nullable=True)
     status = Column(String(50), default=LeadStatus.NEW.value, nullable=False, index=True)
+    notes = Column(Text, nullable=True)
+
     @property
     def ip_address(self) -> Optional[str]:
         return self.client_ip

@@ -282,11 +282,37 @@
           <span class="nav-label">Downloads Library</span>
         </a>
       </li>
+      <li class="admin-nav-item">
+        <a href="/admin/pages" class="admin-nav-link {% if active_page == 'pages' %}active{% endif %}" data-tooltip="Pages Management">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Pages Management</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/admin/menus" class="admin-nav-link {% if active_page == 'menus' %}active{% endif %}" data-tooltip="Menu Management">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Navigation Menus</span>
+        </a>
+      </li>
 
       <!-- 10. Global Settings Group -->
       <div class="admin-nav-group-label">Site Configuration</div>
       <li class="admin-nav-item has-submenu {% if active_page == 'settings' %}open active-parent{% endif %}">
-        <a href="/admin/settings/contact" class="admin-nav-link {% if active_page == 'settings' and not active_subpage %}active{% endif %}" data-tooltip="Settings">
+        <a href="/admin/settings" class="admin-nav-link {% if active_page == 'settings' and not active_subpage %}active{% endif %}" data-tooltip="Settings">
           <span class="nav-icon" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
@@ -302,18 +328,43 @@
         </a>
         <ul class="admin-subnav">
           <li>
-            <a href="/admin/settings/contact" class="admin-subnav-link {% if active_subpage == 'contact' %}active{% endif %}">
+            <a href="/admin/settings" class="admin-subnav-link {% if active_subpage == 'settings_hub' %}active{% endif %}">
+              All Settings
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/general" class="admin-subnav-link {% if active_subpage == 'settings_general' %}active{% endif %}">
+              General
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/email" class="admin-subnav-link {% if active_subpage == 'settings_email' %}active{% endif %}">
+              Email & SMTP
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/contact" class="admin-subnav-link {% if active_subpage == 'settings_contact' %}active{% endif %}">
               Contact & Plant
             </a>
           </li>
           <li>
-            <a href="/admin/settings/whatsapp" class="admin-subnav-link {% if active_subpage == 'whatsapp' %}active{% endif %}">
+            <a href="/admin/settings/whatsapp" class="admin-subnav-link {% if active_subpage == 'settings_whatsapp' %}active{% endif %}">
               WhatsApp Engine
             </a>
           </li>
           <li>
-            <a href="/admin/settings/social" class="admin-subnav-link {% if active_subpage == 'social' %}active{% endif %}">
+            <a href="/admin/settings/social" class="admin-subnav-link {% if active_subpage == 'settings_social' %}active{% endif %}">
               Social Links
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/footer" class="admin-subnav-link {% if active_subpage == 'settings_footer' %}active{% endif %}">
+              Footer & Version
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/seo" class="admin-subnav-link {% if active_subpage == 'settings_seo' %}active{% endif %}">
+              SEO Defaults
             </a>
           </li>
         </ul>

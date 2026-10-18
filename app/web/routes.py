@@ -24,9 +24,13 @@ from app.models.faq import FAQ, generate_faq_schema_ld
 from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
 from app.models.lead import ContactLead, QuoteRequest, LeadStatus
 from app.models.setting import SiteSetting, SocialLink
+from app.models.page import CMSPage, PageStatus
+from app.models.redirect import URLRedirect
 from app.services.settings_service import settings_service
 from app.services.email_service import email_service
 from app.services.upload_service import upload_service
+from app.services.page_service import page_service
+from app.services.auth_service import auth_service
 from app.services.spam_protection import (
     rate_limiter,
     validate_honeypot,
@@ -1320,6 +1324,20 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
                 "lastmod": lastmod,
             })
 
+    # Published Dynamic CMS Pages
+    cms_pages = page_service.get_all_published_pages(db)
+    for p in cms_pages:
+        loc = f"{base_url}{p.url_path}"
+        if loc not in seen_urls:
+            seen_urls.add(loc)
+            lastmod = p.updated_at.strftime("%Y-%m-%d") if p.updated_at else None
+            entries.append({
+                "loc": loc,
+                "changefreq": "weekly",
+                "priority": "0.8",
+                "lastmod": lastmod,
+            })
+
     # Build XML
     xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
@@ -1354,5 +1372,57 @@ async def robots_txt(request: Request):
         "",
     ]
     return Response(content="\n".join(lines), media_type="text/plain")
+
+
+# ==============================================================================
+# DYNAMIC CMS PAGES & 301 REDIRECTS CATCH-ALL ROUTE
+# ==============================================================================
+
+@router.get("/{slug:path}", response_class=HTMLResponse, summary="Dynamic CMS Page & 301 Redirect Resolver")
+async def dynamic_page_view(
+    slug: str,
+    request: Request,
+    preview: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """
+    Resolves dynamic CMS pages by hierarchical slug (/about-us, /about-us/company-profile),
+    executes permanent 301 redirects for legacy URLs, and handles draft previews for admins.
+    """
+    clean_slug = slug.strip("/")
+
+    # 1. Attempt CMS Page Lookup
+    page_item = page_service.get_page_by_slug(db, clean_slug, include_draft=True)
+    if page_item:
+        if not page_item.is_published:
+            # Only authenticated admins may view draft pages
+            user = auth_service.get_current_user_from_cookie(db, request)
+            if not user or not user.is_active:
+                raise HTTPException(status_code=404, detail="Page not found.")
+
+        return templates.TemplateResponse(
+            request=request,
+            name="public/pages/detail.html",
+            context={
+                "request": request,
+                "page": page_item,
+                "is_preview": bool(preview),
+            },
+        )
+
+    # 2. Attempt Permanent 301 Redirect Resolution
+    redirect_rule = page_service.resolve_redirect(db, clean_slug)
+    if redirect_rule:
+        target_path = redirect_rule.target_path
+        if not target_path.startswith("/"):
+            target_path = f"/{target_path}"
+        return RedirectResponse(
+            url=target_path,
+            status_code=redirect_rule.status_code or 301,
+        )
+
+    # 3. Not Found
+    raise HTTPException(status_code=404, detail="Page not found.")
+
 
 

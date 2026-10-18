@@ -1,0 +1,79 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Global SEO Defaults{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">SEO Defaults</span>
+    </nav>
+    <h1 class="page-title">Global SEO & Search Defaults</h1>
+    <p class="page-description">
+      Configure default metadata fallbacks for pages without explicit custom SEO, and inspect the XML sitemap.
+    </p>
+  </div>
+  <div class="page-header-actions" style="display: flex; gap: 8px;">
+    <a href="/sitemap.xml" target="_blank" class="btn btn-outline">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+      View Live sitemap.xml
+    </a>
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
+  </div>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Saved!</strong> Global SEO default settings updated successfully.
+</div>
+{% endif %}
+
+<form method="POST" action="/admin/settings/seo">
+
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Search Engine Snippet Defaults</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="defaultMetaTitle">Default Meta Title *</label>
+      <input type="text" id="defaultMetaTitle" name="default_meta_title" required class="form-control"
+             value="{{ general.general_meta_title }}">
+      <div class="form-help">Displayed in browser title bar and search engine result titles when no page title override is set.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="defaultMetaDesc">Default Meta Description *</label>
+      <textarea id="defaultMetaDesc" name="default_meta_description" rows="3" required class="form-control">{{ general.general_meta_description }}</textarea>
+      <div class="form-help">Fallback description for search engine result snippets (recommended: 140-160 characters).</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="defaultKeywords">Default Meta Keywords (Optional)</label>
+      <input type="text" id="defaultKeywords" name="default_meta_keywords" class="form-control"
+             value="{{ general.general_meta_keywords if general.general_meta_keywords else '' }}"
+             placeholder="closed die forging, precision machining, metallurgical engineering">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="defaultOgImage">Default Open Graph Sharing Image URL</label>
+      <input type="text" id="defaultOgImage" name="default_og_image" class="form-control"
+             value="{{ general.general_og_image if general.general_og_image else '/static/images/hero_furnace.webp' }}">
+      <div class="form-help">Default image thumbnail when sharing links on LinkedIn, WhatsApp, or Twitter.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 12px;">
+    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-seo">Save SEO Defaults</button>
+    <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
+  </div>
+
+</form>
+{% endblock %}

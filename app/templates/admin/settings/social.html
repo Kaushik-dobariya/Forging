@@ -1,6 +1,6 @@
 {% extends "admin/base_admin.html" %}
 
-{% block page_title %}Social Media Links Management{% endblock %}
+{% block page_title %}Social Media Management{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -8,71 +8,196 @@
     <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
       <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
       <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item"><a href="/admin/settings/contact">Settings</a></span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
       <span class="breadcrumb-sep">/</span>
       <span class="breadcrumb-item breadcrumb-current">Social Media</span>
     </nav>
-    <h1 class="page-title">Social Media Channels</h1>
+    <h1 class="page-title">Social Media Management</h1>
     <p class="page-description">
-      Configure official corporate profiles across LinkedIn, Instagram, Facebook, YouTube, X, and Google Business.
+      Manage corporate social media profiles, display ordering, enabled status, and new tab behavior.
     </p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-accent" onclick="openAddSocialModal();">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Social Channel
+    </button>
   </div>
 </div>
 
-{% if request.query_params.get('success') %}
-<div style="background: #E8F5EE; border: 1px solid #C4E5D2; border-left: 4px solid #1E7E51; border-radius: var(--radius-sm); padding: var(--space-md); margin-bottom: var(--space-xl); color: #1E7E51; font-weight: 600;">
-  Social media channel updated successfully!
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Saved!</strong> Social media channel details successfully saved.
+</div>
+{% endif %}
+
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Deleted!</strong> Social link removed successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('toggled') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Status Updated!</strong> Channel visibility toggled.
 </div>
 {% endif %}
 
 <div class="admin-card">
-  <div class="admin-card-header">
-    <h3 class="admin-card-title">Corporate Social Media Channels</h3>
-  </div>
-
   <div class="table-responsive">
     <table class="admin-table">
       <thead>
         <tr>
+          <th style="width: 60px;">Order</th>
           <th style="width: 160px;">Platform</th>
-          <th style="min-width: 320px;">Profile URL</th>
-          <th style="width: 90px; text-align: center;">Order</th>
-          <th style="width: 100px; text-align: center;">Enabled</th>
-          <th style="width: 110px; text-align: right;">Action</th>
+          <th>Profile URL</th>
+          <th style="width: 110px; text-align: center;">New Tab</th>
+          <th style="width: 100px; text-align: center;">Status</th>
+          <th style="text-align: right; width: 160px;">Actions</th>
         </tr>
       </thead>
       <tbody>
-        {% for link in links %}
+        {% for link in social_links %}
         <tr>
-          <form method="POST" action="/admin/settings/social/{{ link.id }}">
-            <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
-            
-            <td>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-weight: 700; color: var(--admin-text-primary);">
-                  {{ link.platform.value }}
-                </span>
-              </div>
-            </td>
-            <td>
-              <input type="url" name="url" value="{{ link.url }}" class="form-control" style="font-size: 0.875rem;" placeholder="https://...">
-            </td>
-            <td style="text-align: center;">
-              <input type="number" name="display_order" value="{{ link.display_order }}" class="form-control" style="width: 65px; margin: 0 auto; text-align: center; font-size: 0.8125rem;">
-            </td>
-            <td style="text-align: center;">
-              <input type="checkbox" name="is_enabled" value="true" {% if link.is_enabled %}checked{% endif %}>
-            </td>
-            <td style="text-align: right;">
-              <button type="submit" class="btn btn-primary btn-sm">
-                Save
+          <td>{{ link.display_order }}</td>
+          <td>
+            <div style="font-weight: 600; color: #0f172a;">
+              {{ link.platform }}
+            </div>
+          </td>
+          <td>
+            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" style="color: #b45309; text-decoration: underline; font-size: 0.875rem;">
+              {{ link.url }}
+            </a>
+          </td>
+          <td style="text-align: center; font-size: 0.85rem;">
+            {% if link.open_in_new_tab %}
+              <span class="badge badge-success">Yes</span>
+            {% else %}
+              <span class="badge badge-secondary">No</span>
+            {% endif %}
+          </td>
+          <td style="text-align: center;">
+            <form method="POST" action="/admin/settings/social/{{ link.id }}/toggle" style="display: inline;">
+              <button type="submit" class="badge {% if link.is_enabled %}badge-success{% else %}badge-secondary{% endif %}" style="border: none; cursor: pointer;">
+                {{ 'Enabled' if link.is_enabled else 'Disabled' }}
               </button>
-            </td>
-          </form>
+            </form>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 6px;">
+              <button type="button" class="btn btn-sm btn-primary" onclick="openEditSocialModal({{ link.id }}, '{{ link.platform }}', '{{ link.url }}', '{{ link.icon or '' }}', {{ link.display_order }}, {{ 'true' if link.is_enabled else 'false' }}, {{ 'true' if link.open_in_new_tab else 'false' }});">
+                Edit
+              </button>
+              <form method="POST" action="/admin/settings/social/{{ link.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete social channel {{ link.platform }}?');">
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+
+<!-- Modal Form for Social Link Add/Edit -->
+<div id="socialModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: #ffffff; border-radius: 8px; width: 100%; max-width: 500px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 id="socialModalTitle" style="margin: 0; font-size: 1.2rem; color: #0f172a;">Add Social Channel</h3>
+      <button type="button" onclick="closeSocialModal();" style="border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+
+    <form id="socialForm" method="POST" action="/admin/settings/social/save">
+      <input type="hidden" id="socialLinkId" name="link_id" value="">
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="socialPlatform">Platform *</label>
+        <select id="socialPlatform" name="platform" class="form-select">
+          {% for p in platforms %}
+          <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="socialUrl">Profile URL *</label>
+        <input type="url" id="socialUrl" name="url" required class="form-control" placeholder="https://linkedin.com/company/...">
+      </div>
+
+      <div class="form-grid-2" style="margin-bottom: 16px;">
+        <div class="form-group">
+          <label class="form-label" for="socialIcon">Icon Identifier</label>
+          <input type="text" id="socialIcon" name="icon" class="form-control" placeholder="e.g. linkedin, facebook">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="socialOrder">Display Order</label>
+          <input type="number" id="socialOrder" name="display_order" value="1" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-grid-2" style="margin-bottom: 24px;">
+        <div class="form-group">
+          <label class="form-label">Visibility</label>
+          <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+            <input type="checkbox" id="socialEnabled" name="is_enabled" value="1" checked>
+            <span>Enabled in footer</span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tab Target</label>
+          <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+            <input type="checkbox" id="socialNewTab" name="open_in_new_tab" value="1" checked>
+            <span>Open in new tab</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="closeSocialModal();">Cancel</button>
+        <button type="submit" class="btn btn-accent" id="btnSaveSocial">Save Social Link</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openAddSocialModal() {
+  document.getElementById('socialModalTitle').textContent = 'Add Social Channel';
+  document.getElementById('socialLinkId').value = '';
+  document.getElementById('socialUrl').value = '';
+  document.getElementById('socialIcon').value = '';
+  document.getElementById('socialOrder').value = '1';
+  document.getElementById('socialEnabled').checked = true;
+  document.getElementById('socialNewTab').checked = true;
+  document.getElementById('socialModal').style.display = 'flex';
+}
+
+function openEditSocialModal(id, platform, url, icon, order, enabled, newTab) {
+  document.getElementById('socialModalTitle').textContent = 'Edit Social Channel';
+  document.getElementById('socialLinkId').value = id;
+  document.getElementById('socialPlatform').value = platform;
+  document.getElementById('socialUrl').value = url;
+  document.getElementById('socialIcon').value = icon;
+  document.getElementById('socialOrder').value = order;
+  document.getElementById('socialEnabled').checked = enabled;
+  document.getElementById('socialNewTab').checked = newTab;
+  document.getElementById('socialModal').style.display = 'flex';
+}
+
+function closeSocialModal() {
+  document.getElementById('socialModal').style.display = 'none';
+}
+</script>
 {% endblock %}

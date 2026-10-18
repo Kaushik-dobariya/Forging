@@ -1,18 +1,24 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer-grid">
+      <!-- 1. Brand & Corporate Overview -->
       <div>
-        <div class="footer-brand">{{ app_name|default('FORGING') }}</div>
+        {% set site = get_site_settings() if get_site_settings is defined else {} %}
+        <div class="footer-brand">{{ site.general_company_name|default(app_name|default('FORGE Precision Engineering Ltd.')) }}</div>
         <p class="footer-desc">
           High-integrity closed-die forging, open-die shafts, seamless rolled rings, precision CNC machining, and certified metallurgical excellence for critical global industries.
         </p>
 
-        <!-- Social Media Channels (CMS Controlled) -->
-        {% if social_links %}
+        <!-- Social Media Channels (CMS Managed) -->
+        {% set active_socials = social_links if social_links is defined else get_social_links() %}
+        {% if active_socials %}
         <div class="footer-social-links" style="margin-top: 1.25rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-          {% for link in social_links %}
+          {% for link in active_socials %}
             {% if link.is_enabled %}
-            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="social-icon-btn" aria-label="{{ link.platform }}" title="{{ link.platform }}" style="color: var(--color-text-muted); background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; transition: all 0.2s;">
+            <a href="{{ link.url }}"
+               {% if link.open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% else %}target="_self"{% endif %}
+               class="social-icon-btn" aria-label="{{ link.platform }}" title="{{ link.platform }}"
+               style="color: var(--color-text-muted); background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.1); text-decoration: none; transition: all 0.2s;">
               {{ link.platform }}
             </a>
             {% endif %}
@@ -21,6 +27,7 @@
         {% endif %}
       </div>
 
+      <!-- 2. Capabilities & Catalog -->
       <div>
         <h4 class="footer-heading">Capabilities & Catalog</h4>
         <ul class="footer-nav">
@@ -33,6 +40,7 @@
         </ul>
       </div>
 
+      <!-- 3. Plant & Infrastructure -->
       <div>
         <h4 class="footer-heading">Plant & Infrastructure</h4>
         <ul class="footer-nav">
@@ -43,6 +51,7 @@
         </ul>
       </div>
 
+      <!-- 4. Quality & Standards -->
       <div>
         <h4 class="footer-heading">Quality & Standards</h4>
         <ul class="footer-nav">
@@ -53,24 +62,31 @@
         </ul>
       </div>
 
+      <!-- 5. Resources & CMS Pages -->
       <div>
         <h4 class="footer-heading">Resources & Insights</h4>
         <ul class="footer-nav">
+          <li><a href="/about-us">About Our Company</a></li>
           <li><a href="/blog">Technical Blog & Insights</a></li>
           <li><a href="/downloads">Brochures & CAD Downloads</a></li>
           <li><a href="/case-studies">Engineering Case Studies</a></li>
-          <li><a href="/downloads">Tolerance Guides & Specs</a></li>
+          {% set cms_footer = get_footer_cms_pages() if get_footer_cms_pages is defined else [] %}
+          {% for fp in cms_footer %}
+          <li><a href="{{ fp.url_path }}">{{ fp.effective_menu_title }}</a></li>
+          {% endfor %}
         </ul>
       </div>
 
+      <!-- 6. Inquiries & Contact -->
       <div>
         <h4 class="footer-heading">Inquiries & Contact</h4>
         <ul class="footer-nav">
           <li><a href="/request-a-quote" style="color: var(--color-accent); font-weight: 600;">Request a Quote (RFQ)</a></li>
           <li><a href="/contact">Contact Plant & Offices</a></li>
-          {% if whatsapp_cfg and whatsapp_cfg.enabled and whatsapp_cfg.allow_footer %}
+          {% set wa = whatsapp_cfg if whatsapp_cfg is defined else get_whatsapp_config() %}
+          {% if wa and wa.enabled and wa.allow_footer %}
           <li>
-            <a href="{{ whatsapp_cfg.generate_cta() }}" target="_blank" rel="noopener noreferrer" style="color: #25D366; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <a href="{{ wa.generate_cta() }}" target="_blank" rel="noopener noreferrer" style="color: #25D366; display: inline-flex; align-items: center; gap: 0.35rem;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
               </svg>
@@ -79,51 +95,42 @@
           </li>
           {% endif %}
           <li><a href="/admin/login">Super Admin Console</a></li>
-          <li><a href="/health">API Health Status</a></li>
         </ul>
       </div>
     </div>
 
-    <div class="footer-bottom">
-      <div>&copy; 2026 {{ app_name|default('Forging CMS') }}. All rights reserved. Precision Manufacturing Enterprise.</div>
-      <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-accent);">
-        POWERED BY INDUSTRIAL FORGING PLATFORM
+    <!-- Footer Bottom: Legal, Version & Cubeon Developer Attribution -->
+    <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem; color: var(--color-text-muted);">
+      <div>
+        {{ site.general_copyright_text|default('&copy; ' ~ now().year ~ ' ' ~ (site.general_company_name|default('FORGE Precision Engineering Ltd.')) ~ '. All rights reserved.') }}
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span class="footer-version-tag" style="background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.78rem;">
+          Version {{ site.general_app_version|default(app_version|default('1.0.0')) }}
+        </span>
+        <span style="color: rgba(255,255,255,0.2);">|</span>
+        <span class="footer-developer-credit">
+          Developed by <a href="{{ site.general_developer_website_url|default('https://www.cubeontechs.com/') }}" target="_blank" rel="noopener noreferrer" style="color: var(--color-accent); text-decoration: underline; font-weight: 500;">Cubeon Technologies</a>
+        </span>
       </div>
     </div>
   </div>
 </footer>
 
 <!-- Dynamic Floating WhatsApp Button (CMS Controlled) -->
-{% if whatsapp_cfg and whatsapp_cfg.enabled and whatsapp_cfg.allow_floating %}
+{% set wa = whatsapp_cfg if whatsapp_cfg is defined else get_whatsapp_config() %}
+{% if wa and wa.enabled and wa.allow_floating %}
 <a 
-  href="{{ whatsapp_cfg.generate_cta() }}" 
+  href="{{ wa.generate_cta() }}" 
   target="_blank" 
   rel="noopener noreferrer" 
-  class="floating-whatsapp-btn" 
-  aria-label="Direct WhatsApp Engineering Chat"
-  title="Instant WhatsApp Engineering Inquiries"
-  style="position: fixed; bottom: 85px; right: 24px; z-index: 999; background: #25D366; color: #FFFFFF; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.2s ease, box-shadow 0.2s ease;"
-  onmouseover="this.style.transform='scale(1.1)';" 
-  onmouseout="this.style.transform='scale(1)';"
+  class="whatsapp-floating-btn" 
+  aria-label="{{ wa.label or 'Chat on WhatsApp' }}"
+  title="{{ wa.label or 'Chat on WhatsApp' }}"
 >
-  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
   </svg>
+  <span>{{ wa.label or 'Chat on WhatsApp' }}</span>
 </a>
 {% endif %}
-
-<!-- Mobile Sticky Quick Actions -->
-<aside class="mobile-sticky-bar" aria-label="Quick Action Bar">
-  <a href="/request-a-quote" class="mobile-cta-btn btn-primary">
-    <span>Request Quote</span>
-  </a>
-  {% if whatsapp_cfg and whatsapp_cfg.enabled %}
-  <a href="{{ whatsapp_cfg.generate_cta() }}" class="mobile-cta-btn btn-accent" target="_blank" rel="noopener noreferrer">
-    <span>WhatsApp</span>
-  </a>
-  {% else %}
-  <a href="/contact" class="mobile-cta-btn btn-accent">
-    <span>Contact</span>
-  </a>
-  {% endif %}
-</aside>

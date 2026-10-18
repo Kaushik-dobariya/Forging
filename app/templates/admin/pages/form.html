@@ -1,0 +1,321 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if page_item %}Edit CMS Page: {{ page_item.title }}{% else %}Create CMS Page{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/pages">CMS Pages</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{% if page_item %}Edit: {{ page_item.title }}{% else %}New Page{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if page_item %}Edit Page: {{ page_item.title }}{% else %}Create New Dynamic Page{% endif %}</h1>
+    <p class="page-description">
+      Configure page content, URL slugs, parent hierarchy, navigation placement, and SEO/OG metadata.
+    </p>
+  </div>
+  <div class="page-header-actions" style="display: flex; gap: 8px;">
+    {% if page_item %}
+    <a href="{{ page_item.url_path }}?preview=1" target="_blank" class="btn btn-outline" id="btn-preview-page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      Preview Page
+    </a>
+    {% endif %}
+    <a href="/admin/pages" class="btn btn-outline">Back to Pages</a>
+  </div>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger" style="margin-bottom: 24px;">
+  <strong>Error:</strong> {{ error_message }}
+</div>
+{% endif %}
+
+<form method="POST" action="{% if page_item %}/admin/pages/{{ page_item.id }}/edit{% else %}/admin/pages/create{% endif %}" enctype="multipart/form-data">
+
+  <!-- 1. Core Page Settings -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Page Identification & Hierarchy</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="pageTitle">Page Title / Display Name *</label>
+        <input type="text" id="pageTitle" name="title" required class="form-control"
+               value="{{ form_data.title if form_data else (page_item.title if page_item else '') }}"
+               placeholder="e.g. About Us, Company Profile, Quality Policy">
+        <div class="form-help">Primary heading and administrative identifier.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="pageSlug">Page URL / Slug *</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="pageSlug" name="slug" class="form-control" style="font-family: monospace;"
+                 value="{{ form_data.slug if form_data else (page_item.slug if page_item else '') }}"
+                 placeholder="e.g. about-us or about-us/company-profile">
+          <button type="button" class="btn btn-sm btn-outline" onclick="generateSlugFromTitle();" title="Auto-generate slug from title">
+            Generate
+          </button>
+        </div>
+        <div class="form-help">
+          Hierarchical URL path. If left empty, slug will be auto-generated from the page title.
+          {% if page_item and page_item.is_published %}
+          <span style="color: #b45309; font-weight: 500;">Note: Changing this will create a 301 redirect from the old URL.</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label" for="parentPage">Parent Page</label>
+        <select id="parentPage" name="parent_id" class="form-select">
+          <option value="">— None (Top-Level Page) —</option>
+          {% for p in potential_parents %}
+          <option value="{{ p.id }}" {% if (form_data and form_data.parent_id == p.id) or (page_item and page_item.parent_id == p.id) or (default_parent_id == p.id) %}selected{% endif %}>
+            {{ p.title }} ({{ p.url_path }})
+          </option>
+          {% endfor %}
+        </select>
+        <div class="form-help">Nests this page under another page for sub-navigation.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="menuDisplayName">Menu Display Name</label>
+        <input type="text" id="menuDisplayName" name="menu_display_name" class="form-control"
+               value="{{ form_data.menu_display_name if form_data else (page_item.menu_display_name if page_item else '') }}"
+               placeholder="Shorter label for navigation bar">
+        <div class="form-help">Optional concise label for header and footer menus.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="displayOrder">Display Order</label>
+        <input type="number" id="displayOrder" name="display_order" class="form-control"
+               value="{{ form_data.display_order if form_data else (page_item.display_order if page_item else 0) }}">
+        <div class="form-help">Ascending integer order in menus and listings.</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label" for="pageStatus">Publication Status *</label>
+        <select id="pageStatus" name="page_status" class="form-select">
+          <option value="published" {% if (form_data and form_data.status == 'published') or (page_item and page_item.status == 'published') or not page_item %}selected{% endif %}>
+            Published (Publicly Accessible)
+          </option>
+          <option value="draft" {% if (form_data and form_data.status == 'draft') or (page_item and page_item.status == 'draft') %}selected{% endif %}>
+            Draft (Admin Preview Only)
+          </option>
+        </select>
+        <div class="form-help">Draft pages return 404 for unauthenticated visitors.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Menu Visibility</label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+          <input type="checkbox" name="menu_visibility" value="1"
+                 {% if (form_data and form_data.menu_visibility) or (page_item and page_item.menu_visibility) or not page_item %}checked{% endif %}>
+          <span>Include in navigation menus</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Footer Visibility</label>
+        <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+          <input type="checkbox" name="footer_visibility" value="1"
+                 {% if (form_data and form_data.footer_visibility) or (page_item and page_item.footer_visibility) %}checked{% endif %}>
+          <span>Include in website footer links</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Rich Content Editor -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 class="admin-card-title">2. Page Content</h3>
+      <div class="editor-quick-tools" style="display: flex; gap: 6px;">
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertTag('h2', 'Section Heading')">H2</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertTag('h3', 'Subheading')">H3</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertTag('p', 'Paragraph text here...')">Paragraph</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertTag('strong', 'Bold text')">Bold</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertList()">List</button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="insertTable()">Table</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <textarea id="pageContent" name="content" rows="18" required class="form-control"
+                style="font-family: monospace; font-size: 0.9rem; line-height: 1.5;"
+                placeholder="Enter rich HTML content, headings, lists, tables, and formatted copy...">{{ form_data.content if form_data else (page_item.content if page_item else '') }}</textarea>
+      <div class="form-help">Supports standard semantic HTML elements (&lt;h2&gt;, &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;ol&gt;, &lt;table&gt;, &lt;blockquote&gt;, &lt;img&gt;).</div>
+    </div>
+  </div>
+
+  <!-- 3. Featured Image & Media -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. Imagery</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="featuredImageFile">Upload Featured Image</label>
+        <input type="file" id="featuredImageFile" name="featured_image_file" accept="image/*" class="form-control">
+        <div class="form-help">Recommended size: 1200x630 (WebP, JPG, PNG).</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="featuredImageUrl">Or Image URL</label>
+        <input type="text" id="featuredImageUrl" name="featured_image_url" class="form-control"
+               value="{{ form_data.featured_image if form_data else (page_item.featured_image if page_item else '') }}"
+               placeholder="/static/images/hero_furnace.webp">
+        {% if page_item and page_item.featured_image %}
+        <div style="margin-top: 8px;">
+          <img src="{{ page_item.featured_image }}" alt="Preview" style="height: 60px; border-radius: 4px; border: 1px solid #e2e8f0;">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. SEO & Open Graph Metadata -->
+  <div class="admin-card" style="margin-bottom: 24px;">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">4. SEO & Social Metadata</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="metaTitle">Meta Title</label>
+        <input type="text" id="metaTitle" name="meta_title" class="form-control"
+               value="{{ form_data.meta_title if form_data else (page_item.meta_title if page_item else '') }}"
+               placeholder="e.g. About Us | FORGE Precision Engineering">
+        <div class="form-help">Recommended length: 50-60 characters. Falls back to page title.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="canonicalUrl">Canonical URL</label>
+        <input type="text" id="canonicalUrl" name="canonical_url" class="form-control"
+               value="{{ form_data.canonical_url if form_data else (page_item.canonical_url if page_item else '') }}"
+               placeholder="e.g. https://www.forgingcms.com/about-us">
+        <div class="form-help">Self-referencing canonical URL prevents duplicate content issues.</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="metaDescription">Meta Description</label>
+      <textarea id="metaDescription" name="meta_description" rows="3" class="form-control"
+                placeholder="Brief summary of the page for search engine result snippets...">{{ form_data.meta_description if form_data else (page_item.meta_description if page_item else '') }}</textarea>
+      <div class="form-help">Recommended length: 140-160 characters.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="metaKeywords">Meta Keywords (Optional)</label>
+      <input type="text" id="metaKeywords" name="meta_keywords" class="form-control"
+             value="{{ form_data.meta_keywords if form_data else (page_item.meta_keywords if page_item else '') }}"
+             placeholder="precision forging, closed die forging, rajkot plant">
+    </div>
+
+    <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+    <h4 style="font-size: 0.95rem; font-weight: 600; color: #334155; margin-bottom: 12px;">Open Graph (Social Sharing)</h4>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="ogTitle">OG Title</label>
+        <input type="text" id="ogTitle" name="og_title" class="form-control"
+               value="{{ form_data.og_title if form_data else (page_item.og_title if page_item else '') }}"
+               placeholder="Leave empty to use Meta Title">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="ogImageUrl">OG Image URL or Upload</label>
+        <input type="text" id="ogImageUrl" name="og_image_url" class="form-control"
+               value="{{ form_data.og_image if form_data else (page_item.og_image if page_item else '') }}"
+               placeholder="/static/images/og-share.jpg">
+        <div style="margin-top: 6px;">
+          <input type="file" name="og_image_file" accept="image/*" class="form-control form-control-sm">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="ogDescription">OG Description</label>
+      <textarea id="ogDescription" name="og_description" rows="2" class="form-control"
+                placeholder="Leave empty to use Meta Description">{{ form_data.og_description if form_data else (page_item.og_description if page_item else '') }}</textarea>
+    </div>
+  </div>
+
+  <!-- Audit Info if editing -->
+  {% if page_item %}
+  <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 24px; display: flex; gap: 24px;">
+    <span>Created: <strong>{{ page_item.created_at.strftime('%Y-%m-%d %H:%M') if page_item.created_at else '—' }}</strong></span>
+    <span>Last Updated: <strong>{{ page_item.updated_at.strftime('%Y-%m-%d %H:%M') if page_item.updated_at else '—' }}</strong></span>
+  </div>
+  {% endif %}
+
+  <!-- Submit Toolbar -->
+  <div style="display: flex; gap: 12px; align-items: center;">
+    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-page">
+      {% if page_item %}Save Page Changes{% else %}Publish Page{% endif %}
+    </button>
+    <a href="/admin/pages" class="btn btn-outline btn-lg">Cancel</a>
+  </div>
+
+</form>
+
+<script>
+function generateSlugFromTitle() {
+  const title = document.getElementById('pageTitle').value.trim();
+  if (!title) return;
+  const parentSelect = document.getElementById('parentPage');
+  let slug = title.toLowerCase()
+                  .replace(/[^\w\s-]/g, '')
+                  .replace(/[\s_-]+/g, '-')
+                  .replace(/^-+|-+$/g, '');
+  
+  if (parentSelect && parentSelect.value) {
+    const selectedOption = parentSelect.options[parentSelect.selectedIndex].text;
+    const match = selectedOption.match(/\(([^)]+)\)/);
+    if (match && match[1]) {
+      const parentPath = match[1].replace(/^\/|\/$/g, '');
+      slug = parentPath + '/' + slug;
+    }
+  }
+  document.getElementById('pageSlug').value = slug;
+}
+
+function insertTag(tag, defaultText) {
+  const textarea = document.getElementById('pageContent');
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = textarea.value.substring(start, end) || defaultText;
+  const replacement = `<${tag}>${selected}</${tag}>`;
+  textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+  textarea.focus();
+}
+
+function insertList() {
+  const textarea = document.getElementById('pageContent');
+  const replacement = `<ul>\n  <li>List item 1</li>\n  <li>List item 2</li>\n  <li>List item 3</li>\n</ul>\n`;
+  const start = textarea.selectionStart;
+  textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(start);
+  textarea.focus();
+}
+
+function insertTable() {
+  const textarea = document.getElementById('pageContent');
+  const replacement = `<table class="content-table">\n  <thead>\n    <tr><th>Parameter</th><th>Specification</th></tr>\n  </thead>\n  <tbody>\n    <tr><td>Capacity</td><td>6,300 Metric Tons</td></tr>\n    <tr><td>Tolerance</td><td>±0.25 mm</td></tr>\n  </tbody>\n</table>\n`;
+  const start = textarea.selectionStart;
+  textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(start);
+  textarea.focus();
+}
+</script>
+{% endblock %}

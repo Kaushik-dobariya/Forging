@@ -1434,3 +1434,13 @@ def seed_phase_4_data(db: Session, stats: dict) -> None:
     db.commit()
     stats["downloads"] = db.query(DownloadResource).count()
 
+    # 6. Dynamic CMS Pages & Menus counts
+    from app.models.page import CMSPage
+    from app.models.menu import MenuItem
+    stats["cms_pages"] = db.query(CMSPage).count()
+    stats["menu_items"] = db.query(MenuItem).count()
+
+    logger.info(f"CMS database bootstrap complete: {stats}")
+    return stats
+
+

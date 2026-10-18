@@ -1,0 +1,311 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Navigation Menu Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Navigation Menus</span>
+    </nav>
+    <h1 class="page-title">Website Navigation & Menus</h1>
+    <p class="page-description">
+      Manage header and footer menus, dropdown hierarchies (submenus), link targets, and display ordering.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-accent" onclick="openNewMenuModal();">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Menu Item
+    </button>
+  </div>
+</div>
+
+{% if request.query_params.get('created') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Success!</strong> Menu item created successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('updated') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Updated!</strong> Menu item updated successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Deleted!</strong> Menu item deleted successfully.
+</div>
+{% endif %}
+
+<!-- Location Tabs -->
+<div class="tabs-nav" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+  <a href="/admin/menus?location=header" class="btn btn-sm {% if active_location == 'header' %}btn-primary{% else %}btn-outline{% endif %}">
+    Header Navigation
+  </a>
+  <a href="/admin/menus?location=footer" class="btn btn-sm {% if active_location == 'footer' %}btn-primary{% else %}btn-outline{% endif %}">
+    Footer Navigation
+  </a>
+</div>
+
+<div class="admin-card">
+  {% set current_tree = header_tree if active_location == 'header' else footer_tree %}
+
+  {% if current_tree %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">Order</th>
+          <th>Menu Title</th>
+          <th>Destination URL / Linked Page</th>
+          <th style="width: 100px; text-align: center;">Target</th>
+          <th style="width: 100px; text-align: center;">Status</th>
+          <th style="text-align: right; width: 180px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in current_tree %}
+        <tr style="background: #fafafa; font-weight: 600;">
+          <td>{{ item.display_order }}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="color: #0f172a; font-size: 0.95rem;">{{ item.title }}</span>
+              {% if item.children %}
+              <span class="badge" style="background: #e2e8f0; color: #475569; font-size: 0.75rem;">
+                {{ item.children|length }} sub-items
+              </span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <span style="font-family: monospace; color: #b45309; font-weight: normal;">
+              {{ item.effective_url }}
+            </span>
+            {% if item.page %}
+            <span class="badge badge-outline" style="margin-left: 6px; font-weight: normal; font-size: 0.75rem;">
+              CMS: {{ item.page.title }}
+            </span>
+            {% endif %}
+          </td>
+          <td style="text-align: center; font-weight: normal; font-size: 0.85rem;">
+            {{ 'New Tab' if item.target == '_blank' else 'Same Tab' }}
+          </td>
+          <td style="text-align: center;">
+            <form method="POST" action="/admin/menus/{{ item.id }}/toggle" style="display: inline;">
+              <input type="hidden" name="location" value="{{ active_location }}">
+              <button type="submit" class="badge {% if item.is_enabled %}badge-success{% else %}badge-secondary{% endif %}" style="border: none; cursor: pointer;">
+                {{ 'Enabled' if item.is_enabled else 'Disabled' }}
+              </button>
+            </form>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 6px;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="openAddSubmenuModal({{ item.id }}, '{{ item.title }}');" title="Add Child Item">
+                + Child
+              </button>
+              <button type="button" class="btn btn-sm btn-primary" onclick="openEditModal({{ item.id }}, '{{ item.title }}', '{{ item.url }}', '{{ item.page_id or '' }}', '{{ item.parent_id or '' }}', '{{ item.location }}', {{ item.display_order }}, {{ 'true' if item.is_enabled else 'false' }}, '{{ item.target }}');">
+                Edit
+              </button>
+              <form method="POST" action="/admin/menus/{{ item.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete \'{{ item.title }}\' and any child items?');">
+                <input type="hidden" name="location" value="{{ active_location }}">
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Children Submenus -->
+        {% for child in item.children %}
+        <tr>
+          <td style="padding-left: 28px; color: #94a3b8; font-size: 0.85rem;">
+            ↳ {{ child.display_order }}
+          </td>
+          <td style="padding-left: 36px;">
+            <span style="color: #334155;">{{ child.title }}</span>
+          </td>
+          <td>
+            <span style="font-family: monospace; color: #b45309; font-size: 0.85rem;">
+              {{ child.effective_url }}
+            </span>
+            {% if child.page %}
+            <span class="badge badge-outline" style="margin-left: 6px; font-weight: normal; font-size: 0.75rem;">
+              CMS: {{ child.page.title }}
+            </span>
+            {% endif %}
+          </td>
+          <td style="text-align: center; font-size: 0.85rem;">
+            {{ 'New Tab' if child.target == '_blank' else 'Same Tab' }}
+          </td>
+          <td style="text-align: center;">
+            <form method="POST" action="/admin/menus/{{ child.id }}/toggle" style="display: inline;">
+              <input type="hidden" name="location" value="{{ active_location }}">
+              <button type="submit" class="badge {% if child.is_enabled %}badge-success{% else %}badge-secondary{% endif %}" style="border: none; cursor: pointer;">
+                {{ 'Enabled' if child.is_enabled else 'Disabled' }}
+              </button>
+            </form>
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 6px;">
+              <button type="button" class="btn btn-sm btn-outline" onclick="openEditModal({{ child.id }}, '{{ child.title }}', '{{ child.url }}', '{{ child.page_id or '' }}', '{{ child.parent_id or '' }}', '{{ child.location }}', {{ child.display_order }}, {{ 'true' if child.is_enabled else 'false' }}, '{{ child.target }}');">
+                Edit
+              </button>
+              <form method="POST" action="/admin/menus/{{ child.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete \'{{ child.title }}\'?');">
+                <input type="hidden" name="location" value="{{ active_location }}">
+                <button type="submit" class="btn btn-sm btn-danger">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding: 40px; text-align: center; color: #64748b;">
+    <p>No navigation menu items configured for this location.</p>
+    <button type="button" class="btn btn-accent" onclick="openNewMenuModal();">Add First Menu Item</button>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal Form for Create / Edit -->
+<div id="menuModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div style="background: #ffffff; border-radius: 8px; width: 100%; max-width: 550px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 id="modalTitle" style="margin: 0; font-size: 1.2rem; color: #0f172a;">Add Menu Item</h3>
+      <button type="button" onclick="closeMenuModal();" style="border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+    </div>
+
+    <form id="menuForm" method="POST" action="/admin/menus/create">
+      <input type="hidden" id="formLocation" name="location" value="{{ active_location }}">
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="itemTitle">Item Title *</label>
+        <input type="text" id="itemTitle" name="title" required class="form-control" placeholder="e.g. About Us, Quality Policy">
+      </div>
+
+      <div class="form-grid-2" style="margin-bottom: 16px;">
+        <div class="form-group">
+          <label class="form-label" for="itemParent">Parent Menu Item</label>
+          <select id="itemParent" name="parent_id" class="form-select">
+            <option value="">— None (Top-Level) —</option>
+            {% for r_item in (root_header_items if active_location == 'header' else root_footer_items) %}
+            <option value="{{ r_item.id }}">{{ r_item.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="itemOrder">Display Order</label>
+          <input type="number" id="itemOrder" name="display_order" value="1" class="form-control">
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="itemPage">Link to CMS Page</label>
+        <select id="itemPage" name="page_id" class="form-select" onchange="handlePageSelect(this);">
+          <option value="">— Custom URL / None —</option>
+          {% for cp in cms_pages %}
+          <option value="{{ cp.id }}" data-url="{{ cp.url_path }}">{{ cp.title }} ({{ cp.url_path }})</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">Select a CMS page to automatically sync the URL.</div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="itemUrl">Destination URL</label>
+        <input type="text" id="itemUrl" name="url" class="form-control" placeholder="e.g. /about-us or https://external.com">
+      </div>
+
+      <div class="form-grid-2" style="margin-bottom: 24px;">
+        <div class="form-group">
+          <label class="form-label" for="itemTarget">Link Target</label>
+          <select id="itemTarget" name="target" class="form-select">
+            <option value="_self">Same Tab (_self)</option>
+            <option value="_blank">New Tab (_blank)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Visibility</label>
+          <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+            <input type="checkbox" id="itemEnabled" name="is_enabled" value="1" checked>
+            <span>Enabled on site</span>
+          </label>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="closeMenuModal();">Cancel</button>
+        <button type="submit" class="btn btn-accent" id="btnModalSubmit">Save Menu Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openNewMenuModal() {
+  document.getElementById('modalTitle').textContent = 'Add Menu Item';
+  document.getElementById('menuForm').action = '/admin/menus/create';
+  document.getElementById('itemTitle').value = '';
+  document.getElementById('itemParent').value = '';
+  document.getElementById('itemPage').value = '';
+  document.getElementById('itemUrl').value = '';
+  document.getElementById('itemOrder').value = '1';
+  document.getElementById('itemTarget').value = '_self';
+  document.getElementById('itemEnabled').checked = true;
+  document.getElementById('menuModal').style.display = 'flex';
+}
+
+function openAddSubmenuModal(parentId, parentTitle) {
+  openNewMenuModal();
+  document.getElementById('modalTitle').textContent = `Add Child Item under "${parentTitle}"`;
+  document.getElementById('itemParent').value = parentId;
+}
+
+function openEditModal(id, title, url, pageId, parentId, location, order, enabled, target) {
+  document.getElementById('modalTitle').textContent = 'Edit Menu Item';
+  document.getElementById('menuForm').action = `/admin/menus/${id}/edit`;
+  document.getElementById('itemTitle').value = title;
+  document.getElementById('itemParent').value = parentId;
+  document.getElementById('itemPage').value = pageId;
+  document.getElementById('itemUrl').value = url;
+  document.getElementById('formLocation').value = location;
+  document.getElementById('itemOrder').value = order;
+  document.getElementById('itemTarget').value = target;
+  document.getElementById('itemEnabled').checked = enabled;
+  document.getElementById('menuModal').style.display = 'flex';
+}
+
+function closeMenuModal() {
+  document.getElementById('menuModal').style.display = 'none';
+}
+
+function handlePageSelect(select) {
+  const selected = select.options[select.selectedIndex];
+  const url = selected.getAttribute('data-url');
+  if (url) {
+    document.getElementById('itemUrl').value = url;
+  }
+}
+</script>
+{% endblock %}

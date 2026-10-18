@@ -1,6 +1,6 @@
 {% extends "admin/base_admin.html" %}
 
-{% block page_title %}WhatsApp CTA Engine Configuration{% endblock %}
+{% block page_title %}WhatsApp CTA Configuration{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -8,134 +8,134 @@
     <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
       <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
       <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item"><a href="/admin/settings/contact">Settings</a></span>
+      <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
       <span class="breadcrumb-sep">/</span>
       <span class="breadcrumb-item breadcrumb-current">WhatsApp Engine</span>
     </nav>
-    <h1 class="page-title">WhatsApp CTA Engine</h1>
+    <h1 class="page-title">WhatsApp Communication Settings</h1>
     <p class="page-description">
-      Globally configure dynamic WhatsApp buttons, numbers, and custom messaging across header, floating widget, products, and quotation pages.
+      Configure dynamic WhatsApp numbers, prefilled inquiry text, button labels, and public website placement.
     </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
   </div>
 </div>
 
-{% if request.query_params.get('success') %}
-<div style="background: #E8F5EE; border: 1px solid #C4E5D2; border-left: 4px solid #1E7E51; border-radius: var(--radius-sm); padding: var(--space-md); margin-bottom: var(--space-xl); color: #1E7E51; font-weight: 600;">
-  WhatsApp settings and placement toggles successfully saved!
+{% if request.query_params.get('saved') %}
+<div class="alert alert-success" style="margin-bottom: 24px;">
+  <strong>Saved!</strong> WhatsApp configuration updated successfully.
 </div>
 {% endif %}
 
 <form method="POST" action="/admin/settings/whatsapp">
-  <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
 
-  <!-- 1. Number & Default Message -->
-  <div class="admin-card">
+  <!-- 1. Phone Number & Label -->
+  <div class="admin-card" style="margin-bottom: 24px;">
     <div class="admin-card-header">
-      <h3 class="admin-card-title">1. Number & Message Generation</h3>
+      <h3 class="admin-card-title">1. WhatsApp Number & Button Identity</h3>
     </div>
 
-    <div class="form-grid-2">
+    <div class="form-grid-3">
       <div class="form-group">
-        <label class="form-label">WhatsApp Contact Number *</label>
-        <input type="text" name="phone_number" value="{{ whatsapp_cfg.phone_number }}" required class="form-control" placeholder="+1 (555) 438-2905">
-        <div class="form-help">Any format accepted (dashes, spaces, plus sign); cleaned automatically to digits only.</div>
+        <label class="form-label" for="countryCode">Country Code *</label>
+        <input type="text" id="countryCode" name="whatsapp_country_code" required class="form-control"
+               value="{{ cfg.country_code or '+91' }}" placeholder="+91">
       </div>
 
       <div class="form-group">
-        <label class="form-label">Default Pre-filled Message</label>
-        <input type="text" name="default_message" value="{{ whatsapp_cfg.default_message }}" class="form-control" placeholder="Hello, I would like to inquire about industrial forging components.">
-        <div class="form-help">Automatically URL-encoded into wa.me link.</div>
+        <label class="form-label" for="whatsappNumber">WhatsApp Phone Number *</label>
+        <input type="text" id="whatsappNumber" name="whatsapp_number" required class="form-control"
+               value="{{ cfg.phone_number }}" placeholder="+91 98765 43210">
+        <div class="form-help">Normalized automatically to numeric digits for wa.me URL generation.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="whatsappLabel">Button Display Label</label>
+        <input type="text" id="whatsappLabel" name="whatsapp_label" class="form-control"
+               value="{{ cfg.label or 'Chat on WhatsApp' }}" placeholder="Chat on WhatsApp">
       </div>
     </div>
 
-    <!-- Live Preview Test Link -->
-    {% if whatsapp_cfg.phone_number %}
-    <div style="margin-top: var(--space-md); padding: var(--space-md); background: #1B2B20; border-radius: var(--radius-sm); border: 1px solid #2B4E34; display: flex; justify-content: space-between; align-items: center;">
+    <div class="form-group">
+      <label class="form-label" for="defaultMessage">Default Prefilled Inquiry Message</label>
+      <input type="text" id="defaultMessage" name="whatsapp_default_message" class="form-control"
+             value="{{ cfg.default_message }}" placeholder="Hello, I am interested in your precision forging and machining capabilities.">
+      <div class="form-help">URL-encoded automatically into the wa.me destination link.</div>
+    </div>
+
+    <!-- Live Test Link Preview -->
+    {% if cfg.phone_number %}
+    <div style="margin-top: 16px; padding: 14px; background: #0f172a; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
       <div>
-        <div style="color: #4ADE80; font-weight: 700; font-size: 0.875rem;">Dynamic Generated URL Preview:</div>
-        <div style="color: #A3E635; font-family: var(--font-mono); font-size: 0.8125rem;">
-          {{ whatsapp_cfg.generate_cta() }}
+        <div style="color: #4ade80; font-weight: 600; font-size: 0.85rem;">Generated Dynamic WhatsApp URL:</div>
+        <div style="color: #a3e635; font-family: monospace; font-size: 0.8rem; margin-top: 2px;">
+          {{ cfg.generate_cta() }}
         </div>
       </div>
-      <a href="{{ whatsapp_cfg.generate_cta() }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: #25D366; color: #FFF; font-weight: 700; border: none;">
+      <a href="{{ cfg.generate_cta() }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background: #25d366; color: #fff; border: none; font-weight: 600;">
         Test Live Link &rarr;
       </a>
     </div>
     {% endif %}
   </div>
 
-  <!-- 2. Placement Controls -->
-  <div class="admin-card">
+  <!-- 2. Master Toggle & Placements -->
+  <div class="admin-card" style="margin-bottom: 24px;">
     <div class="admin-card-header">
-      <h3 class="admin-card-title">2. Website Placement Controls</h3>
-      <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin: 0;">Select where WhatsApp buttons and fast-track CTAs appear on public pages.</p>
+      <h3 class="admin-card-title">2. Display Location & Placement Controls</h3>
     </div>
 
-    <!-- Master Switch -->
-    <div style="padding: var(--space-md); background: var(--admin-surface-muted); border-radius: var(--radius-sm); border: 1px solid var(--admin-border); margin-bottom: var(--space-lg); display: flex; align-items: center; gap: 10px;">
-      <input type="checkbox" id="is_enabled" name="is_enabled" value="true" {% if whatsapp_cfg.is_enabled %}checked{% endif %}>
-      <label for="is_enabled" style="font-weight: 700; font-size: 1rem; color: var(--admin-text-primary); cursor: pointer;">
-        Master Toggle: Enable WhatsApp CTAs across website
+    <div style="padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 16px;">
+      <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; color: #0f172a;">
+        <input type="checkbox" name="whatsapp_enabled" value="1" {% if cfg.is_enabled %}checked{% endif %}>
+        <span>Master Toggle: Enable WhatsApp CTA button on public website</span>
       </label>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-md);">
-      
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_header" name="allow_header" value="true" {% if whatsapp_cfg.allow_header %}checked{% endif %}>
-        <div>
-          <label for="allow_header" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Header Bar</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Small WhatsApp icon button in top navigation bar</span>
-        </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="btnPosition">Primary Button Position / Location</label>
+        <select id="btnPosition" name="whatsapp_position" class="form-select">
+          <option value="floating" {% if cfg.position == 'floating' %}selected{% endif %}>Floating Corner Widget (Bottom-Right)</option>
+          <option value="header" {% if cfg.position == 'header' %}selected{% endif %}>Header Bar Only</option>
+          <option value="footer" {% if cfg.position == 'footer' %}selected{% endif %}>Footer Links Only</option>
+        </select>
       </div>
+    </div>
 
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_floating" name="allow_floating" value="true" {% if whatsapp_cfg.allow_floating %}checked{% endif %}>
-        <div>
-          <label for="allow_floating" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Floating Quick Action Widget</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Fixed corner button bottom-right on all public pages</span>
-        </div>
-      </div>
-
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_product_page" name="allow_product_page" value="true" {% if whatsapp_cfg.allow_product_page %}checked{% endif %}>
-        <div>
-          <label for="allow_product_page" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Product Specification Pages</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Inquire button on component detail pages</span>
-        </div>
-      </div>
-
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_quote_page" name="allow_quote_page" value="true" {% if whatsapp_cfg.allow_quote_page %}checked{% endif %}>
-        <div>
-          <label for="allow_quote_page" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Quote Request (RFQ) Page</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Fast-track emergency consultation box</span>
-        </div>
-      </div>
-
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_footer" name="allow_footer" value="true" {% if whatsapp_cfg.allow_footer %}checked{% endif %}>
-        <div>
-          <label for="allow_footer" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Footer Section</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Direct WhatsApp contact link in main footer</span>
-        </div>
-      </div>
-
-      <div style="padding: var(--space-md); border: 1px solid var(--admin-border); border-radius: var(--radius-sm); display: flex; align-items: flex-start; gap: 8px;">
-        <input type="checkbox" id="allow_contact_page" name="allow_contact_page" value="true" {% if whatsapp_cfg.allow_contact_page %}checked{% endif %}>
-        <div>
-          <label for="allow_contact_page" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary); display: block;">Contact Page</label>
-          <span style="font-size: 0.75rem; color: var(--admin-text-muted);">Under direct phone telephone numbers</span>
-        </div>
-      </div>
-
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_floating" value="1" {% if cfg.allow_floating %}checked{% endif %}>
+        <span>Floating action button</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_header" value="1" {% if cfg.allow_header %}checked{% endif %}>
+        <span>Header navigation CTA</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_footer" value="1" {% if cfg.allow_footer %}checked{% endif %}>
+        <span>Footer contact link</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_contact" value="1" {% if cfg.allow_contact %}checked{% endif %}>
+        <span>Contact page block</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_product" value="1" {% if cfg.allow_product %}checked{% endif %}>
+        <span>Product detail pages</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.875rem;">
+        <input type="checkbox" name="whatsapp_allow_quote" value="1" {% if cfg.allow_quote %}checked{% endif %}>
+        <span>Quotation RFQ page</span>
+      </label>
     </div>
   </div>
 
-  <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-bottom: var(--space-2xl);">
-    <button type="submit" class="btn btn-accent">
-      Save WhatsApp Configuration
-    </button>
+  <div style="display: flex; gap: 12px;">
+    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-whatsapp">Save WhatsApp Settings</button>
+    <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
   </div>
+
 </form>
 {% endblock %}

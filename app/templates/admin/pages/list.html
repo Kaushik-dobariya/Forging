@@ -1,0 +1,227 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}CMS Pages Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">CMS Pages</span>
+    </nav>
+    <h1 class="page-title">Dynamic Website Pages</h1>
+    <p class="page-description">
+      Create and manage dynamic content pages, sub-pages, hierarchical URLs, SEO metadata, and navigation visibility.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/pages/create" class="btn btn-accent" id="btn-create-page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Create New Page
+    </a>
+  </div>
+</div>
+
+{% if request.query_params.get('created') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Success!</strong> New dynamic page created successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('updated') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Updated!</strong> Page details, SEO metadata, and slug mappings updated successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('deleted') %}
+<div class="alert alert-success" style="margin-bottom: 20px;">
+  <strong>Deleted!</strong> Page removed from database successfully.
+</div>
+{% endif %}
+
+{% if request.query_params.get('error') %}
+<div class="alert alert-danger" style="margin-bottom: 20px;">
+  <strong>Error:</strong> {{ request.query_params.get('error') }}
+</div>
+{% endif %}
+
+<div class="admin-card">
+  <!-- Search & Filter Bar -->
+  <form method="GET" action="/admin/pages" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search Pages</label>
+      <input type="text" id="filterSearch" name="search" value="{{ search or '' }}" placeholder="Search by title, slug, or content..." class="form-control">
+    </div>
+
+    <div style="min-width: 170px;">
+      <label class="form-label" for="filterStatus">Publication Status</label>
+      <select id="filterStatus" name="status_filter" class="form-select">
+        <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+        <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Published</option>
+        <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+      </select>
+    </div>
+
+    <div style="min-width: 180px;">
+      <label class="form-label" for="filterParent">Parent Page</label>
+      <select id="filterParent" name="parent_id" class="form-select">
+        <option value="">All Parents</option>
+        <option value="0" {% if parent_id == 0 %}selected{% endif %}>Top Level Pages Only</option>
+        {% for rp in root_pages %}
+        <option value="{{ rp.id }}" {% if parent_id == rp.id %}selected{% endif %}>{{ rp.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if search or status_filter != 'all' or parent_id is not none %}
+      <a href="/admin/pages" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Pages Table -->
+  {% if pages %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">Order</th>
+          <th>Page Title & URL</th>
+          <th>Parent Page</th>
+          <th style="text-align: center;">Menu</th>
+          <th style="text-align: center;">Footer</th>
+          <th style="text-align: center;">Status</th>
+          <th>Last Updated</th>
+          <th style="text-align: right; width: 220px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pages %}
+        <tr>
+          <td>
+            <span style="font-weight: 600; color: #64748b;">{{ p.display_order }}</span>
+          </td>
+          <td>
+            <div style="font-weight: 600; font-size: 0.95rem; color: #0f172a;">
+              <a href="/admin/pages/{{ p.id }}/edit" style="color: inherit; text-decoration: none;">
+                {{ p.title }}
+              </a>
+            </div>
+            <div style="font-size: 0.82rem; color: #64748b; font-family: monospace; margin-top: 3px;">
+              <a href="{{ p.url_path }}" target="_blank" style="color: #b45309; text-decoration: underline;">
+                {{ p.url_path }}
+              </a>
+            </div>
+          </td>
+          <td>
+            {% if p.parent %}
+              <span class="badge" style="background: #f1f5f9; color: #475569; font-weight: 500;">
+                {{ p.parent.title }}
+              </span>
+            {% else %}
+              <span style="color: #94a3b8; font-size: 0.85rem;">— Root —</span>
+            {% endif %}
+          </td>
+          <td style="text-align: center;">
+            {% if p.menu_visibility %}
+              <span class="badge badge-success" title="Visible in Navigation Menu">Visible</span>
+            {% else %}
+              <span class="badge badge-secondary" title="Hidden from Menu">Hidden</span>
+            {% endif %}
+          </td>
+          <td style="text-align: center;">
+            {% if p.footer_visibility %}
+              <span class="badge badge-success" title="Visible in Footer">Visible</span>
+            {% else %}
+              <span class="badge badge-secondary" title="Hidden from Footer">Hidden</span>
+            {% endif %}
+          </td>
+          <td style="text-align: center;">
+            {% if p.status == 'published' %}
+              <span class="badge badge-success">Published</span>
+            {% else %}
+              <span class="badge badge-warning">Draft</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.85rem; color: #64748b;">
+            {{ p.updated_at.strftime('%Y-%m-%d') if p.updated_at else '—' }}
+          </td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; gap: 6px; align-items: center;">
+              <!-- Preview button -->
+              <a href="{{ p.url_path }}?preview=1" target="_blank" class="btn btn-sm btn-outline" title="Preview Page">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                Preview
+              </a>
+
+              <!-- Edit button -->
+              <a href="/admin/pages/{{ p.id }}/edit" class="btn btn-sm btn-primary" title="Edit Page">
+                Edit
+              </a>
+
+              <!-- Status Toggle -->
+              <form method="POST" action="/admin/pages/{{ p.id }}/toggle-status" style="display: inline;">
+                <button type="submit" class="btn btn-sm btn-outline" title="Toggle Status">
+                  {% if p.status == 'published' %}Draft{% else %}Publish{% endif %}
+                </button>
+              </form>
+
+              <!-- Delete button with confirmation -->
+              <form method="POST" action="/admin/pages/{{ p.id }}/delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete the page \'{{ p.title }}\'? If this page has sub-pages, deletion will be blocked.');">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete Page">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-top: 1px solid #e2e8f0; margin-top: 16px;">
+    <div style="font-size: 0.875rem; color: #64748b;">
+      Showing page {{ page }} of {{ total_pages }} ({{ total }} total pages)
+    </div>
+    <div style="display: flex; gap: 6px;">
+      {% if page > 1 %}
+      <a href="/admin/pages?page={{ page - 1 }}&search={{ search or '' }}&status_filter={{ status_filter }}&parent_id={{ parent_id or '' }}" class="btn btn-sm btn-outline">Previous</a>
+      {% endif %}
+
+      {% for p_num in range(1, total_pages + 1) %}
+      <a href="/admin/pages?page={{ p_num }}&search={{ search or '' }}&status_filter={{ status_filter }}&parent_id={{ parent_id or '' }}" class="btn btn-sm {% if p_num == page %}btn-primary{% else %}btn-outline{% endif %}">
+        {{ p_num }}
+      </a>
+      {% endfor %}
+
+      {% if page < total_pages %}
+      <a href="/admin/pages?page={{ page + 1 }}&search={{ search or '' }}&status_filter={{ status_filter }}&parent_id={{ parent_id or '' }}" class="btn btn-sm btn-outline">Next</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state" style="padding: 40px; text-align: center;">
+    <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 16px;">No dynamic pages found matching your criteria.</p>
+    <a href="/admin/pages/create" class="btn btn-accent">Create Your First Page</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
