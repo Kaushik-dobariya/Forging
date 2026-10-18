@@ -116,4 +116,71 @@ document.addEventListener('DOMContentLoaded', () => {
       closeBtn.addEventListener('click', () => alert.remove());
     }
   });
+
+  // 6. Enterprise Admin Account Dropdown Interaction & Keyboard Navigation
+  const accountWrapper = document.querySelector('.admin-account-dropdown-wrapper');
+  const accountBtn = document.getElementById('adminAccountDropdownBtn');
+  const accountMenu = document.getElementById('adminAccountMenu');
+
+  if (accountWrapper && accountBtn && accountMenu) {
+    const toggleAccountMenu = (forceOpen) => {
+      const willOpen = typeof forceOpen === 'boolean' ? forceOpen : !accountWrapper.classList.contains('open');
+      accountWrapper.classList.toggle('open', willOpen);
+      accountBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+      if (willOpen) {
+        const firstItem = accountMenu.querySelector('[role="menuitem"]');
+        if (firstItem) firstItem.focus();
+      }
+    };
+
+    accountBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAccountMenu();
+    });
+
+    // Close on outside click or tap
+    document.addEventListener('click', (e) => {
+      if (!accountWrapper.contains(e.target)) {
+        accountWrapper.classList.remove('open');
+        accountBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Escape and Arrow key navigation
+    accountWrapper.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        accountWrapper.classList.remove('open');
+        accountBtn.setAttribute('aria-expanded', 'false');
+        accountBtn.focus();
+        return;
+      }
+
+      if (!accountWrapper.classList.contains('open')) {
+        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleAccountMenu(true);
+        }
+        return;
+      }
+
+      const menuItems = Array.from(accountMenu.querySelectorAll('[role="menuitem"]'));
+      const activeIdx = menuItems.indexOf(document.activeElement);
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIdx = (activeIdx + 1) % menuItems.length;
+        menuItems[nextIdx].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIdx = (activeIdx - 1 + menuItems.length) % menuItems.length;
+        menuItems[prevIdx].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        if (menuItems.length) menuItems[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        if (menuItems.length) menuItems[menuItems.length - 1].focus();
+      }
+    });
+  }
 });

@@ -1,7 +1,10 @@
 import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional, List, Dict
-from fastapi import APIRouter, Request, Depends, HTTPException, status, Response
-from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Request, Depends, HTTPException, status, Response, Form, File, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -13,6 +16,25 @@ from app.models.industry import Industry
 from app.models.infrastructure import Facility, Equipment, InfrastructureGallery
 from app.models.material import Material
 from app.models.quality import QualitySection, Certification
+
+# Phase 4 models and services
+from app.models.blog import BlogPost, BlogCategory, BlogPostStatus
+from app.models.case_study import CaseStudy
+from app.models.faq import FAQ, generate_faq_schema_ld
+from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
+from app.models.lead import ContactLead, QuoteRequest, LeadStatus
+from app.models.setting import SiteSetting, SocialLink
+from app.services.settings_service import settings_service
+from app.services.email_service import email_service
+from app.services.upload_service import upload_service
+from app.services.spam_protection import (
+    rate_limiter,
+    validate_honeypot,
+    validate_public_csrf_token,
+    validate_email_address,
+    sanitize_input_text,
+    generate_public_csrf_token,
+)
 
 router = APIRouter(tags=["Public Web"])
 
@@ -29,6 +51,14 @@ async def index_view(request: Request, db: Session = Depends(get_db)):
     featured_products = db.query(Product).filter(Product.status == "published").order_by(Product.display_order.asc()).limit(4).all()
     certifications = db.query(Certification).filter(Certification.status == "published").order_by(Certification.display_order.asc()).limit(4).all()
 
+    # Phase 4 dynamic data
+    faqs = db.query(FAQ).filter(FAQ.related_entity.in_(["homepage", "general"]), FAQ.is_active == True).order_by(FAQ.display_order.asc()).limit(6).all()
+    faq_schema_ld = generate_faq_schema_ld(faqs)
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    recent_posts = db.query(BlogPost).filter(BlogPost.status == BlogPostStatus.PUBLISHED.value).order_by(BlogPost.publish_date.desc()).limit(3).all()
+    featured_case_studies = db.query(CaseStudy).filter(CaseStudy.status == "published").order_by(CaseStudy.display_order.asc()).limit(3).all()
+
     return templates.TemplateResponse(
         request=request,
         name="public/index.html",
@@ -38,8 +68,15 @@ async def index_view(request: Request, db: Session = Depends(get_db)):
             "industries": industries,
             "featured_products": featured_products,
             "certifications": certifications,
+            "faqs": faqs,
+            "faq_schema_ld": faq_schema_ld,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "recent_posts": recent_posts,
+            "featured_case_studies": featured_case_studies,
         },
     )
+
 
 
 # ==============================================================================
@@ -421,6 +458,721 @@ async def public_certifications(
 
 
 # ==============================================================================
+# BLOG ROUTES
+# ==============================================================================
+
+@router.get("/blog", response_class=HTMLResponse, summary="Blog & Articles")
+async def public_blog_list(
+    request: Request,
+    cat: Optional[str] = None,
+    tag: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+    query = db.query(BlogPost).filter(
+        BlogPost.status == BlogPostStatus.PUBLISHED.value,
+        BlogPost.publish_date <= now,
+    )
+    if cat:
+        query = query.filter(BlogPost.category == cat)
+    if tag:
+        query = query.filter(BlogPost.tags.ilike(f"%{tag}%"))
+    if q:
+        query = query.filter(BlogPost.title.ilike(f"%{q}%") | BlogPost.content.ilike(f"%{q}%"))
+
+    posts = query.order_by(BlogPost.publish_date.desc()).all()
+    featured_post = posts[0] if posts else None
+    regular_posts = posts[1:] if len(posts) > 1 else []
+
+    all_published = db.query(BlogPost).filter(
+        BlogPost.status == BlogPostStatus.PUBLISHED.value,
+        BlogPost.publish_date <= now,
+    ).all()
+    categories_data = []
+    for c in BlogCategory:
+        count = sum(1 for p in all_published if p.category == c.value)
+        categories_data.append({"name": c.value, "count": count})
+
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/blog/list.html",
+        context={
+            "request": request,
+            "posts": posts,
+            "featured_post": featured_post,
+            "regular_posts": regular_posts,
+            "categories": categories_data,
+            "active_category": cat,
+            "current_category": cat,
+            "active_tag": tag,
+            "q": q,
+            "page": 1,
+            "total_pages": 1,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Forging Technology & Precision Manufacturing Insights",
+            "meta_description": "Industry insights, engineering metallurgy, closed-die forging breakthroughs, and company news.",
+        },
+    )
+
+
+@router.get("/blog/{slug}", response_class=HTMLResponse, summary="Blog Article Detail")
+async def public_blog_detail(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    post = db.query(BlogPost).filter(BlogPost.slug == slug).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    if not post.is_visible_publicly():
+        from app.services.auth_service import auth_service
+        admin_user = auth_service.get_current_user_from_cookie(db, request)
+        if not admin_user:
+            raise HTTPException(status_code=404, detail="Article not found or scheduled")
+
+    related_posts = db.query(BlogPost).filter(
+        BlogPost.id != post.id,
+        BlogPost.category == post.category,
+        BlogPost.status == BlogPostStatus.PUBLISHED.value,
+    ).order_by(BlogPost.publish_date.desc()).limit(3).all()
+
+    schema_ld = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": post.seo_title or post.title,
+        "description": post.meta_description or post.excerpt,
+        "author": {
+            "@type": "Organization",
+            "name": post.author,
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": settings.APP_NAME,
+        },
+        "datePublished": post.publish_date.isoformat() if post.publish_date else "",
+        "articleSection": post.category,
+    }
+    if post.featured_image:
+        schema_ld["image"] = f"{settings.SITE_URL}{post.featured_image}" if post.featured_image.startswith("/") else post.featured_image
+
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    whatsapp_article_cta = whatsapp_cfg.generate_cta(
+        f"Hello, I was reading your article '{post.title}' and would like to ask a technical question."
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/blog/detail.html",
+        context={
+            "request": request,
+            "post": post,
+            "related_posts": related_posts,
+            "schema_ld_json": json.dumps(schema_ld, indent=2),
+            "whatsapp_cfg": whatsapp_cfg,
+            "whatsapp_article_cta": whatsapp_article_cta,
+            "social_links": social_links,
+            "page_title": post.seo_title or f"{post.title} | {settings.APP_NAME}",
+            "meta_description": post.meta_description or post.excerpt,
+        },
+    )
+
+
+# ==============================================================================
+# CASE STUDIES ROUTES
+# ==============================================================================
+
+@router.get("/case-studies", response_class=HTMLResponse, summary="Case Studies")
+async def public_case_studies_list(
+    request: Request,
+    ind: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(CaseStudy).filter(CaseStudy.status == "published")
+    if ind:
+        query = query.filter(CaseStudy.client_industry.ilike(f"%{ind}%"))
+    if q:
+        query = query.filter(
+            CaseStudy.title.ilike(f"%{q}%")
+            | CaseStudy.material.ilike(f"%{q}%")
+            | CaseStudy.client_challenge.ilike(f"%{q}%")
+        )
+
+    case_studies = query.order_by(CaseStudy.display_order.asc(), CaseStudy.id.desc()).all()
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/case_studies/list.html",
+        context={
+            "request": request,
+            "case_studies": case_studies,
+            "ind": ind,
+            "q": q,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Forging Engineering Case Studies & Metallurgical Solutions",
+            "meta_description": "Real-world engineering challenges solved: aerospace turbine forgings, high-strength railway axles, and subsea oilfield components.",
+        },
+    )
+
+
+@router.get("/case-studies/{slug}", response_class=HTMLResponse, summary="Case Study Detail")
+async def public_case_study_detail(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    case_study = db.query(CaseStudy).filter(CaseStudy.slug == slug, CaseStudy.status == "published").first()
+    if not case_study:
+        raise HTTPException(status_code=404, detail="Case study not found")
+
+    related_case_studies = db.query(CaseStudy).filter(
+        CaseStudy.id != case_study.id,
+        CaseStudy.status == "published",
+    ).order_by(CaseStudy.display_order.asc()).limit(3).all()
+
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    whatsapp_case_cta = whatsapp_cfg.generate_cta(
+        f"Hello, I am reviewing your case study '{case_study.title}' and have a similar engineering requirement."
+    )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/case_studies/detail.html",
+        context={
+            "request": request,
+            "case_study": case_study,
+            "gallery_items": case_study.get_gallery_list(),
+            "downloads_items": case_study.get_downloads_list(),
+            "related_case_studies": related_case_studies,
+            "whatsapp_cfg": whatsapp_cfg,
+            "whatsapp_case_cta": whatsapp_case_cta,
+            "page_title": case_study.seo_title or f"{case_study.title} | Case Study",
+            "meta_description": case_study.meta_description or case_study.client_challenge[:160],
+        },
+    )
+
+
+# ==============================================================================
+# DOWNLOADS LIBRARY ROUTES
+# ==============================================================================
+
+@router.get("/downloads", response_class=HTMLResponse, summary="Technical Resource Library")
+async def public_downloads_list(
+    request: Request,
+    cat: Optional[str] = None,
+    q: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(DownloadResource).filter(
+        DownloadResource.is_active == True,
+        DownloadResource.visibility.in_(["public", "gated"]),
+    )
+    if cat:
+        query = query.filter(DownloadResource.category == cat)
+    if q:
+        query = query.filter(
+            DownloadResource.title.ilike(f"%{q}%")
+            | DownloadResource.description.ilike(f"%{q}%")
+        )
+
+    resources = query.order_by(DownloadResource.display_order.asc(), DownloadResource.id.desc()).all()
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/downloads/list.html",
+        context={
+            "request": request,
+            "resources": resources,
+            "cat": cat,
+            "q": q,
+            "categories": [c.value for c in DownloadCategory],
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": "Technical Downloads, Catalogs & Certification Library",
+            "meta_description": "Download forging brochures, material specification sheets, product drawing templates, and ISO/IATF quality certificates.",
+        },
+    )
+
+
+@router.get("/downloads/{resource_id}/file", summary="Download Resource File")
+async def public_download_file(
+    resource_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    resource = db.query(DownloadResource).filter(
+        DownloadResource.id == resource_id,
+        DownloadResource.is_active == True,
+    ).first()
+    if not resource:
+        raise HTTPException(status_code=404, detail="Resource not found")
+
+    resource.download_count += 1
+    db.commit()
+
+    if resource.file_path.startswith("/uploads/"):
+        disk_path = settings.resolved_upload_dir / resource.file_path.replace("/uploads/", "")
+        if disk_path.exists():
+            return FileResponse(
+                path=str(disk_path),
+                filename=Path(resource.file_path).name,
+                media_type="application/octet-stream",
+            )
+
+    return RedirectResponse(url=resource.file_path, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
+# ==============================================================================
+# CONTACT PAGE & SECURE CONTACT FORM
+# ==============================================================================
+
+@router.get("/contact", response_class=HTMLResponse, summary="Contact Page")
+async def public_contact_view(
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    settings_service.seed_defaults(db)
+    contact_info = settings_service.get_contact_info(db)
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    faqs = db.query(FAQ).filter(
+        FAQ.related_entity.in_(["contact", "general"]),
+        FAQ.is_active == True,
+    ).order_by(FAQ.display_order.asc()).all()
+    faq_schema_ld = generate_faq_schema_ld(faqs)
+
+    client_ip = request.client.host if request.client else "anon"
+    csrf_token = generate_public_csrf_token(client_ip)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/contact.html",
+        context={
+            "request": request,
+            "contact_info": contact_info,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "faqs": faqs,
+            "faq_schema_ld": faq_schema_ld,
+            "csrf_token": csrf_token,
+            "success": False,
+            "error": None,
+            "form_data": {},
+            "page_title": "Contact Engineering & Factory Operations | Forging Platform",
+            "meta_description": "Connect with our precision forging plant, metallurgical engineers, sales specialists, and quality control departments.",
+        },
+    )
+
+
+@router.post("/contact", response_class=HTMLResponse, summary="Submit Contact Form")
+async def public_contact_post(
+    request: Request,
+    name: str = Form(""),
+    company: Optional[str] = Form(None),
+    email: str = Form(""),
+    phone: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    message: str = Form(""),
+    website_url_check: Optional[str] = Form(None),
+    csrf_token: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    client_ip = request.client.host if request.client else "anon"
+    contact_info = settings_service.get_contact_info(db)
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    faqs = db.query(FAQ).filter(FAQ.related_entity.in_(["contact", "general"]), FAQ.is_active == True).all()
+
+    form_data = {
+        "name": name,
+        "company": company,
+        "email": email,
+        "phone": phone,
+        "country": country,
+        "message": message,
+    }
+
+    if not validate_honeypot({"website_url_check": website_url_check}):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/contact.html",
+            context={
+                "request": request,
+                "contact_info": contact_info,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": True,
+                "form_data": {},
+            },
+        )
+
+    if rate_limiter.is_rate_limited(client_ip):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/contact.html",
+            context={
+                "request": request,
+                "contact_info": contact_info,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Too many submissions detected. Please wait a few minutes before trying again.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    clean_name = sanitize_input_text(name, 150)
+    clean_email = email.strip()
+    clean_message = sanitize_input_text(message, 5000)
+
+    if not clean_name or not clean_email or not clean_message:
+        return templates.TemplateResponse(
+            request=request,
+            name="public/contact.html",
+            context={
+                "request": request,
+                "contact_info": contact_info,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Full name, corporate email, and message details are required.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_200_OK,
+        )
+
+    if not validate_email_address(clean_email):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/contact.html",
+            context={
+                "request": request,
+                "contact_info": contact_info,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Please provide a valid corporate email address.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_200_OK,
+        )
+
+    lead = ContactLead(
+        name=clean_name,
+        company=sanitize_input_text(company, 150) if company else None,
+        email=clean_email,
+        phone=sanitize_input_text(phone, 50) if phone else None,
+        country=sanitize_input_text(country, 100) if country else None,
+        message=clean_message,
+        source="contact_page",
+        client_ip=client_ip,
+        status=LeadStatus.NEW.value,
+    )
+    db.add(lead)
+    db.commit()
+    db.refresh(lead)
+
+    rate_limiter.record_request(client_ip)
+
+    email_service.send_contact_notification(lead)
+    email_service.send_contact_acknowledgment(lead)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/contact.html",
+        context={
+            "request": request,
+            "contact_info": contact_info,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "faqs": faqs,
+            "faq_schema_ld": generate_faq_schema_ld(faqs),
+            "csrf_token": generate_public_csrf_token(client_ip),
+            "success": True,
+            "error": None,
+            "form_data": {},
+            "submitted_name": clean_name,
+        },
+    )
+
+
+# ==============================================================================
+# REQUEST A QUOTE (RFQ) WITH DRAWING UPLOAD
+# ==============================================================================
+
+@router.get("/request-a-quote", response_class=HTMLResponse, summary="Request a Quote View")
+async def public_quote_view(
+    request: Request,
+    product: Optional[str] = None,
+    material: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    settings_service.seed_defaults(db)
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    faqs = db.query(FAQ).filter(
+        FAQ.related_entity.in_(["products", "capabilities", "general"]),
+        FAQ.is_active == True,
+    ).order_by(FAQ.display_order.asc()).limit(6).all()
+
+    client_ip = request.client.host if request.client else "anon"
+    csrf_token = generate_public_csrf_token(client_ip)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/quote.html",
+        context={
+            "request": request,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "faqs": faqs,
+            "faq_schema_ld": generate_faq_schema_ld(faqs),
+            "csrf_token": csrf_token,
+            "preset_product": product or "",
+            "preset_material": material or "",
+            "success": False,
+            "error": None,
+            "form_data": {},
+            "page_title": "Request a Forging Quotation & Engineering Estimate",
+            "meta_description": "Submit engineering 2D/3D drawings for immediate manufacturability review, tooling estimates, and commercial pricing.",
+        },
+    )
+
+
+@router.post("/request-a-quote", response_class=HTMLResponse, summary="Submit Quote Request")
+async def public_quote_post(
+    request: Request,
+    name: str = Form(""),
+    company: str = Form(""),
+    email: str = Form(""),
+    phone: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    product_component: Optional[str] = Form(None),
+    product: Optional[str] = Form(None),
+    material: Optional[str] = Form(None),
+    quantity: Optional[str] = Form(None),
+    required_delivery: Optional[str] = Form(None),
+    additional_requirements: Optional[str] = Form(None),
+    requirement: Optional[str] = Form(None),
+    drawing_upload: Optional[UploadFile] = File(None),
+    drawing_file: Optional[UploadFile] = File(None),
+    website_url_check: Optional[str] = Form(None),
+    csrf_token: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    client_ip = request.client.host if request.client else "anon"
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+    faqs = db.query(FAQ).filter(FAQ.related_entity.in_(["products", "capabilities", "general"]), FAQ.is_active == True).all()
+
+    eff_product = product if product is not None else product_component
+    eff_requirement = requirement if requirement is not None else additional_requirements
+    eff_drawing = drawing_file if (drawing_file and drawing_file.filename) else drawing_upload
+
+    form_data = {
+        "name": name,
+        "company": company,
+        "email": email,
+        "phone": phone,
+        "country": country,
+        "product_component": eff_product,
+        "product": eff_product,
+        "material": material,
+        "quantity": quantity,
+        "required_delivery": required_delivery,
+        "additional_requirements": eff_requirement,
+        "requirement": eff_requirement,
+    }
+
+    if not validate_honeypot({"website_url_check": website_url_check}):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/quote.html",
+            context={
+                "request": request,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": True,
+                "form_data": {},
+            },
+        )
+
+    if rate_limiter.is_rate_limited(client_ip):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/quote.html",
+            context={
+                "request": request,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Rate limit exceeded. Please wait a few minutes before submitting again.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    clean_name = sanitize_input_text(name, 150)
+    clean_company = sanitize_input_text(company, 150)
+    clean_email = email.strip()
+
+    if not clean_name or not clean_company or not clean_email:
+        return templates.TemplateResponse(
+            request=request,
+            name="public/quote.html",
+            context={
+                "request": request,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Name, Company, and Email are required fields.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_200_OK,
+        )
+
+    if not validate_email_address(clean_email):
+        return templates.TemplateResponse(
+            request=request,
+            name="public/quote.html",
+            context={
+                "request": request,
+                "whatsapp_cfg": whatsapp_cfg,
+                "social_links": social_links,
+                "faqs": faqs,
+                "faq_schema_ld": generate_faq_schema_ld(faqs),
+                "csrf_token": generate_public_csrf_token(client_ip),
+                "success": False,
+                "error": "Please provide a valid corporate email address.",
+                "form_data": form_data,
+            },
+            status_code=status.HTTP_200_OK,
+        )
+
+    drawing_rel_url = None
+    if eff_drawing and eff_drawing.filename:
+        try:
+            rel_url, _ = upload_service.save_upload(
+                eff_drawing,
+                subfolder="drawings",
+                is_drawing=True,
+            )
+            drawing_rel_url = rel_url
+        except HTTPException as exc:
+            return templates.TemplateResponse(
+                request=request,
+                name="public/quote.html",
+                context={
+                    "request": request,
+                    "whatsapp_cfg": whatsapp_cfg,
+                    "social_links": social_links,
+                    "faqs": faqs,
+                    "faq_schema_ld": generate_faq_schema_ld(faqs),
+                    "csrf_token": generate_public_csrf_token(client_ip),
+                    "success": False,
+                    "error": exc.detail,
+                    "form_data": form_data,
+                },
+                status_code=status.HTTP_200_OK,
+            )
+        except Exception as exc:
+            logger.error(f"Quote drawing upload error: {exc}")
+            return templates.TemplateResponse(
+                request=request,
+                name="public/quote.html",
+                context={
+                    "request": request,
+                    "whatsapp_cfg": whatsapp_cfg,
+                    "social_links": social_links,
+                    "faqs": faqs,
+                    "faq_schema_ld": generate_faq_schema_ld(faqs),
+                    "csrf_token": generate_public_csrf_token(client_ip),
+                    "success": False,
+                    "error": "Failed to process drawing file upload. Please verify file format and size.",
+                    "form_data": form_data,
+                },
+                status_code=status.HTTP_200_OK,
+            )
+
+    quote = QuoteRequest(
+        customer_name=clean_name,
+        company=clean_company,
+        email=clean_email,
+        phone=sanitize_input_text(phone, 50) if phone else None,
+        country=sanitize_input_text(country, 100) if country else None,
+        product_component=sanitize_input_text(eff_product, 200) if eff_product else None,
+        material=sanitize_input_text(material, 150) if material else None,
+        quantity=sanitize_input_text(quantity, 100) if quantity else None,
+        required_delivery=sanitize_input_text(required_delivery, 100) if required_delivery else None,
+        drawing_file=drawing_rel_url,
+        additional_requirements=sanitize_input_text(eff_requirement, 5000) if eff_requirement else None,
+        source="request_quote_page",
+        client_ip=client_ip,
+        status=LeadStatus.NEW.value,
+    )
+    db.add(quote)
+    db.commit()
+    db.refresh(quote)
+
+    rate_limiter.record_request(client_ip)
+
+    email_service.send_quote_notification(quote)
+    email_service.send_quote_acknowledgment(quote)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/quote.html",
+        context={
+            "request": request,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "faqs": faqs,
+            "faq_schema_ld": generate_faq_schema_ld(faqs),
+            "csrf_token": generate_public_csrf_token(client_ip),
+            "success": True,
+            "error": None,
+            "form_data": {},
+            "submitted_quote_id": quote.id,
+            "submitted_company": quote.company,
+        },
+    )
+
+
+# ==============================================================================
 # SEO: SITEMAP & ROBOTS.TXT
 # ==============================================================================
 
@@ -432,7 +1184,6 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
     """
     base_url = settings.SITE_URL.rstrip("/") if settings.SITE_URL else str(request.base_url).rstrip("/")
     
-    # Priority & Changefreq mapping for core static landing pages
     static_pages = [
         {"loc": f"{base_url}/", "changefreq": "weekly", "priority": "1.0"},
         {"loc": f"{base_url}/products", "changefreq": "daily", "priority": "0.9"},
@@ -442,6 +1193,11 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
         {"loc": f"{base_url}/materials", "changefreq": "weekly", "priority": "0.8"},
         {"loc": f"{base_url}/quality", "changefreq": "monthly", "priority": "0.8"},
         {"loc": f"{base_url}/certifications", "changefreq": "monthly", "priority": "0.8"},
+        {"loc": f"{base_url}/blog", "changefreq": "daily", "priority": "0.8"},
+        {"loc": f"{base_url}/case-studies", "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base_url}/downloads", "changefreq": "weekly", "priority": "0.7"},
+        {"loc": f"{base_url}/contact", "changefreq": "monthly", "priority": "0.8"},
+        {"loc": f"{base_url}/request-a-quote", "changefreq": "weekly", "priority": "0.9"},
     ]
     
     seen_urls = set()
@@ -464,7 +1220,7 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
                 "priority": "0.8",
                 "lastmod": cat.updated_at.strftime("%Y-%m-%d") if hasattr(cat, "updated_at") and cat.updated_at else None,
             })
-            
+
     # Published Products
     products = db.query(Product).filter(Product.status == "published").all()
     for prod in products:
@@ -483,7 +1239,7 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
                 "priority": "0.7",
                 "lastmod": lastmod,
             })
-            
+
     # Published Capabilities
     capabilities = db.query(Capability).filter(Capability.status == "published").all()
     for cap in capabilities:
@@ -532,6 +1288,38 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
                 "lastmod": lastmod,
             })
 
+    # Published Blog Posts
+    now = datetime.now(timezone.utc)
+    blog_posts = db.query(BlogPost).filter(
+        BlogPost.status == BlogPostStatus.PUBLISHED.value,
+        BlogPost.publish_date <= now,
+    ).all()
+    for post in blog_posts:
+        loc = f"{base_url}/blog/{post.slug}"
+        if loc not in seen_urls:
+            seen_urls.add(loc)
+            lastmod = post.updated_at.strftime("%Y-%m-%d") if hasattr(post, "updated_at") and post.updated_at else None
+            entries.append({
+                "loc": loc,
+                "changefreq": "weekly",
+                "priority": "0.7",
+                "lastmod": lastmod,
+            })
+
+    # Published Case Studies
+    case_studies = db.query(CaseStudy).filter(CaseStudy.status == "published").all()
+    for cs in case_studies:
+        loc = f"{base_url}/case-studies/{cs.slug}"
+        if loc not in seen_urls:
+            seen_urls.add(loc)
+            lastmod = cs.updated_at.strftime("%Y-%m-%d") if hasattr(cs, "updated_at") and cs.updated_at else None
+            entries.append({
+                "loc": loc,
+                "changefreq": "monthly",
+                "priority": "0.7",
+                "lastmod": lastmod,
+            })
+
     # Build XML
     xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>']
     xml_lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
@@ -566,4 +1354,5 @@ async def robots_txt(request: Request):
         "",
     ]
     return Response(content="\n".join(lines), media_type="text/plain")
+
 

@@ -1,0 +1,187 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}My Profile — Super Admin Control Panel{% endblock %}
+
+{% block content %}
+<!-- Standardized Page Header & Breadcrumbs -->
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item"><a href="/admin/profile">Account</a></span>
+      <span class="breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="breadcrumb-item breadcrumb-current" aria-current="page">My Profile</span>
+    </nav>
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-description">
+      Manage your administrator identity, contact email, and review system privilege settings.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin" class="btn btn-outline">
+      &larr; Back to Dashboard
+    </a>
+  </div>
+</div>
+
+<!-- Account Management Sub-navigation Tabs -->
+<div class="account-nav-tabs" role="tablist" aria-label="Account Management">
+  <a href="/admin/profile" class="account-nav-tab active" role="tab" aria-selected="true">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+    Profile Details
+  </a>
+  <a href="/admin/change-password" class="account-nav-tab" role="tab" aria-selected="false">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+    Change Password
+  </a>
+</div>
+
+<div class="profile-layout-grid">
+  <!-- Editable Profile Card -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--admin-accent);">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Administrator Details
+      </h3>
+    </div>
+
+    <form method="POST" action="/admin/profile" novalidate style="padding: 1.5rem;">
+      <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label for="full_name" class="form-label" style="font-weight: 600;">Full Name *</label>
+        <input 
+          type="text" 
+          id="full_name" 
+          name="full_name" 
+          value="{{ current_user.full_name if current_user else '' }}" 
+          required 
+          minlength="2" 
+          maxlength="150" 
+          class="form-control" 
+          placeholder="e.g. John Doe"
+          autocomplete="name"
+        >
+        <small class="form-text" style="color: var(--admin-text-muted); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+          Your display name as shown in the top header and audit trail.
+        </small>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label for="email" class="form-label" style="font-weight: 600;">Email Address *</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          value="{{ current_user.email if current_user else '' }}" 
+          required 
+          class="form-control" 
+          placeholder="admin@forgingcms.com"
+          autocomplete="email"
+        >
+        <small class="form-text" style="color: var(--admin-text-muted); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+          Primary authentication email. Must be unique across all system users.
+        </small>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
+        <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Profile Changes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Read-only Security & Role Metadata Card -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--admin-accent);">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        Account & Security Status
+      </h3>
+    </div>
+
+    <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+      <div class="meta-row">
+        <span class="meta-label">System Role</span>
+        <div>
+          <span class="badge-role-tag" style="font-size: 0.75rem; padding: 2px 8px;">
+            {{ (current_user.role|replace('_', ' ')|upper) if current_user else 'SUPER ADMIN' }}
+          </span>
+          <span style="display: block; font-size: 0.75rem; color: var(--admin-text-muted); margin-top: 0.25rem;">
+            Assigned by policy. Role changes are restricted.
+          </span>
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Account Status</span>
+        <div>
+          {% if current_user and current_user.is_active %}
+          <span style="display: inline-flex; align-items: center; gap: 0.35rem; color: #16A34A; font-weight: 600; font-size: 0.85rem;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background-color: #22C55E; display: inline-block;"></span>
+            Active
+          </span>
+          {% else %}
+          <span style="color: #DC2626; font-weight: 600; font-size: 0.85rem;">Inactive</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Privilege Level</span>
+        <span style="font-size: 0.875rem; font-weight: 500; color: var(--admin-text-primary);">
+          {% if current_user and current_user.is_superuser %}
+          Full Superuser Authority
+          {% else %}
+          Standard CMS Operations
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Account Created</span>
+        <span style="font-size: 0.875rem; color: var(--admin-text-secondary); font-family: var(--font-mono);">
+          {{ current_user.created_at.strftime('%B %d, %Y') if current_user and current_user.created_at else 'System Bootstrap' }}
+        </span>
+      </div>
+
+      <div class="meta-row">
+        <span class="meta-label">Last Sign In</span>
+        <span style="font-size: 0.875rem; color: var(--admin-text-secondary); font-family: var(--font-mono);">
+          {{ current_user.last_login_at.strftime('%B %d, %Y at %H:%M UTC') if current_user and current_user.last_login_at else 'Current Session' }}
+        </span>
+      </div>
+
+      <div style="border-top: 1px solid var(--admin-border); padding-top: 1rem; margin-top: 0.5rem;">
+        <a href="/admin/change-password" class="btn btn-outline" style="width: 100%; text-align: center; justify-content: center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Change Account Password
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

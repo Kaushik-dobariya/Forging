@@ -203,7 +203,123 @@
         </ul>
       </li>
 
-      <!-- 8. View Live Website -->
+      <!-- 8. Inbound Leads Group -->
+      <div class="admin-nav-group-label">Lead Generation</div>
+      <li class="admin-nav-item has-submenu {% if active_page == 'leads' %}open active-parent{% endif %}">
+        <a href="/admin/leads/quotes" class="admin-nav-link {% if active_page == 'leads' and not active_subpage %}active{% endif %}" data-tooltip="Inbound Leads">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <polyline points="16 11 18 13 22 9"></polyline>
+            </svg>
+          </span>
+          <span class="nav-label">Inbound Leads</span>
+          <span class="nav-chevron" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+        </a>
+        <ul class="admin-subnav">
+          <li>
+            <a href="/admin/leads/quotes" class="admin-subnav-link {% if active_subpage == 'quotes' %}active{% endif %}">
+              Quote Requests
+            </a>
+          </li>
+          <li>
+            <a href="/admin/leads/contacts" class="admin-subnav-link {% if active_subpage == 'contacts' %}active{% endif %}">
+              Contact Leads
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- 9. Content Management Group -->
+      <div class="admin-nav-group-label">Publishing & Content</div>
+      <li class="admin-nav-item">
+        <a href="/admin/blog" class="admin-nav-link {% if active_page == 'blog' %}active{% endif %}" data-tooltip="Blog Articles">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Technical Blog</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/admin/case-studies" class="admin-nav-link {% if active_page == 'case_studies' %}active{% endif %}" data-tooltip="Case Studies">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Case Studies</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/admin/faqs" class="admin-nav-link {% if active_page == 'faqs' %}active{% endif %}" data-tooltip="FAQs">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Reusable FAQs</span>
+        </a>
+      </li>
+      <li class="admin-nav-item">
+        <a href="/admin/downloads" class="admin-nav-link {% if active_page == 'downloads' %}active{% endif %}" data-tooltip="Downloads">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Downloads Library</span>
+        </a>
+      </li>
+
+      <!-- 10. Global Settings Group -->
+      <div class="admin-nav-group-label">Site Configuration</div>
+      <li class="admin-nav-item has-submenu {% if active_page == 'settings' %}open active-parent{% endif %}">
+        <a href="/admin/settings/contact" class="admin-nav-link {% if active_page == 'settings' and not active_subpage %}active{% endif %}" data-tooltip="Settings">
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Site Settings</span>
+          <span class="nav-chevron" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+        </a>
+        <ul class="admin-subnav">
+          <li>
+            <a href="/admin/settings/contact" class="admin-subnav-link {% if active_subpage == 'contact' %}active{% endif %}">
+              Contact & Plant
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/whatsapp" class="admin-subnav-link {% if active_subpage == 'whatsapp' %}active{% endif %}">
+              WhatsApp Engine
+            </a>
+          </li>
+          <li>
+            <a href="/admin/settings/social" class="admin-subnav-link {% if active_subpage == 'social' %}active{% endif %}">
+              Social Links
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- View Live Website -->
       <div class="admin-nav-group-label" style="margin-top: auto;">Public Gateway</div>
       <li class="admin-nav-item">
         <a href="/" target="_blank" class="admin-nav-link" data-tooltip="View Live Website">
@@ -226,6 +342,7 @@
         <span>CMS Engine Online</span>
       </div>
       <form action="/admin/logout" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
         <button type="submit" class="btn btn-outline btn-sm" style="width: 100%; border-color: var(--admin-sidebar-border); color: var(--admin-sidebar-text);">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -253,13 +370,75 @@
       </div>
 
       <div class="admin-topbar-right">
-        <div class="admin-user-profile">
-          <div class="user-avatar-circle" aria-hidden="true">
-            {{ (current_user.full_name[0]|upper) if current_user and current_user.full_name else 'A' }}
-          </div>
-          <div class="user-meta-details">
-            <span class="user-meta-name">{{ current_user.full_name if current_user else 'Super Administrator' }}</span>
-            <span class="user-meta-role">{{ current_user.role|upper if current_user else 'SUPER_ADMIN' }}</span>
+        <!-- Account Dropdown Component -->
+        <div class="admin-account-dropdown-wrapper">
+          <button 
+            type="button" 
+            class="admin-account-trigger" 
+            id="adminAccountDropdownBtn" 
+            aria-expanded="false" 
+            aria-haspopup="true" 
+            aria-controls="adminAccountMenu"
+            aria-label="Account menu for {{ current_user.full_name if current_user else 'Administrator' }}"
+          >
+            <div class="user-avatar-circle" aria-hidden="true">
+              {{ (current_user.full_name.split()[0][0] ~ (current_user.full_name.split()[-1][0] if current_user.full_name.split()|length > 1 else ''))|upper if current_user and current_user.full_name else 'SA' }}
+            </div>
+            <div class="user-meta-details">
+              <span class="user-meta-name">{{ current_user.full_name if current_user else 'Super Administrator' }}</span>
+              <span class="user-meta-badge">{{ (current_user.role|replace('_', ' ')|upper) if current_user else 'SUPER ADMIN' }}</span>
+            </div>
+            <span class="account-dropdown-chevron" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="admin-account-menu" id="adminAccountMenu" role="menu" aria-labelledby="adminAccountDropdownBtn">
+            <div class="menu-user-header">
+              <div class="menu-user-avatar" aria-hidden="true">
+                {{ (current_user.full_name.split()[0][0] ~ (current_user.full_name.split()[-1][0] if current_user.full_name.split()|length > 1 else ''))|upper if current_user and current_user.full_name else 'SA' }}
+              </div>
+              <div class="menu-user-info">
+                <span class="menu-user-name">{{ current_user.full_name if current_user else 'Super Administrator' }}</span>
+                <span class="menu-user-email">{{ current_user.email if current_user else '' }}</span>
+                <span class="badge-role-tag">{{ (current_user.role|replace('_', ' ')|upper) if current_user else 'SUPER ADMIN' }}</span>
+              </div>
+            </div>
+
+            <div class="menu-divider" role="separator"></div>
+
+            <a href="/admin/profile" class="admin-menu-item" role="menuitem" id="accountMenuProfile">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>My Profile</span>
+            </a>
+
+            <a href="/admin/change-password" class="admin-menu-item" role="menuitem" id="accountMenuPassword">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Change Password</span>
+            </a>
+
+            <div class="menu-divider" role="separator"></div>
+
+            <form action="/admin/logout" method="POST" class="admin-logout-form">
+              <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+              <button type="submit" class="admin-menu-item btn-signout" role="menuitem" id="accountMenuSignOut">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            </form>
           </div>
         </div>
       </div>

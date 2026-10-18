@@ -225,6 +225,129 @@
       </svg>
     </div>
   </a>
+
+  <!-- 9. Quote Requests (High Priority) -->
+  <a href="/admin/leads/quotes" class="metric-card" aria-label="Manage Inbound Quote Requests" style="border-top: 3px solid var(--admin-accent);">
+    <div class="metric-card-header">
+      <span class="metric-label" style="font-weight: 700; color: var(--admin-accent);">Quote Requests</span>
+      <div class="metric-icon-wrap" style="color: var(--admin-accent);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.quote_requests if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Review RFQs & Pipeline</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 10. Contact Leads -->
+  <a href="/admin/leads/contacts" class="metric-card" aria-label="Manage Contact Inquiries">
+    <div class="metric-card-header">
+      <span class="metric-label">Contact Inquiries</span>
+      <div class="metric-icon-wrap" style="color: #059669;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.contact_leads if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Inbound Leads</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 11. Technical Blog -->
+  <a href="/admin/blog" class="metric-card" aria-label="Manage Blog Articles">
+    <div class="metric-card-header">
+      <span class="metric-label">Blog Articles</span>
+      <div class="metric-icon-wrap" style="color: #EA580C;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.blog_posts if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Publish Papers</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 12. Case Studies -->
+  <a href="/admin/case-studies" class="metric-card" aria-label="Manage Case Studies">
+    <div class="metric-card-header">
+      <span class="metric-label">Case Studies</span>
+      <div class="metric-icon-wrap" style="color: #2563EB;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.case_studies if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Engineering Proofs</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 13. FAQs -->
+  <a href="/admin/faqs" class="metric-card" aria-label="Manage FAQs">
+    <div class="metric-card-header">
+      <span class="metric-label">Reusable FAQs</span>
+      <div class="metric-icon-wrap" style="color: #9333EA;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.faqs if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Knowledge Base</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
+
+  <!-- 14. Downloads -->
+  <a href="/admin/downloads" class="metric-card" aria-label="Manage Downloads">
+    <div class="metric-card-header">
+      <span class="metric-label">Downloads</span>
+      <div class="metric-icon-wrap" style="color: #0891B2;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </div>
+    </div>
+    <div class="metric-value">{{ counts.downloads if counts else 0 }}</div>
+    <div class="metric-footer-link">
+      <span>Resource Files</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </div>
+  </a>
 </div>
 
 <!-- Recent Products Section -->

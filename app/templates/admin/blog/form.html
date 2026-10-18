@@ -1,0 +1,159 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if post %}Edit Blog Article: {{ post.title }}{% else %}Write New Blog Article{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/blog">Blog</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{% if post %}Edit Article{% else %}Write Article{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if post %}Edit Blog Article: {{ post.title }}{% else %}Write New Blog Article{% endif %}</h1>
+    <p class="page-description">
+      Publish authoritative engineering articles, metallurgical research papers, and technical updates.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/blog" class="btn btn-outline">&larr; Back to Articles</a>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{% if post %}/admin/blog/{{ post.id }}/edit{% else %}/admin/blog/create{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+  <!-- 1. Article Details & Metadata -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Article Content & Classification</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Article Title *</label>
+        <input type="text" name="title" value="{{ post.title if post else '' }}" required class="form-control" placeholder="e.g. Grain Flow Optimization in Closed-Die Forgings">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ post.slug if post else '' }}" class="form-control" placeholder="grain-flow-optimization-closed-die">
+        <div class="form-help">Unique slug used in URL: /blog/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Category *</label>
+        <select name="category" required class="form-select">
+          {% for cat in categories %}
+          <option value="{{ cat.value }}" {% if post and post.category == cat %}selected{% endif %}>{{ cat.value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Author Name *</label>
+        <input type="text" name="author" value="{{ post.author if post else 'Metallurgical Engineering Team' }}" required class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Status *</label>
+        <select name="status" required class="form-select">
+          {% for st in statuses %}
+          <option value="{{ st.value }}" {% if post and post.status == st %}selected{% endif %}>{{ st.value.capitalize() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Publish Date & Time</label>
+        <input type="datetime-local" name="publish_date" value="{{ post.published_at.strftime('%Y-%m-%dT%H:%M') if post and post.published_at else '' }}" class="form-control">
+        <div class="form-help">Leave blank to default to current time when published.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Tags (comma-separated)</label>
+        <input type="text" name="tags" value="{{ post.tags if post else '' }}" class="form-control" placeholder="e.g. Metallurgy, Closed-Die, Grain Flow, Aerospace">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Article Excerpt *</label>
+      <textarea name="excerpt" rows="3" required class="form-control" placeholder="A concise 2-3 sentence technical overview of the paper...">{{ post.excerpt if post else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Full Article Rich Content *</label>
+      <textarea name="content" rows="14" required class="form-control" style="font-family: var(--font-mono); font-size: 0.875rem;" placeholder="Full technical paper text (HTML supported)...">{{ post.content if post else '' }}</textarea>
+    </div>
+  </div>
+
+  <!-- 2. Imagery -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Featured Image</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Upload Featured Image</label>
+        <input type="file" name="featured_image_file" accept="image/*" class="form-control">
+        <div class="form-help">Recommended resolution: 1200x630 (WebP, JPG, PNG). Max 10MB.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Or Image URL / Current Image</label>
+        <input type="text" name="featured_image" value="{{ post.featured_image if post else '' }}" class="form-control" placeholder="/static/images/hero_furnace.webp">
+        {% if post and post.featured_image %}
+        <div style="margin-top: 8px;">
+          <img src="{{ post.featured_image }}" alt="Preview" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--admin-border);">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SEO & Open Graph Meta -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. SEO & Schema Configuration</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">SEO Meta Title</label>
+        <input type="text" name="seo_title" value="{{ post.seo_title if post else '' }}" class="form-control" placeholder="Targeted Google title (50-60 chars)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Canonical URL</label>
+        <input type="url" name="canonical_url" value="{{ post.canonical_url if post else '' }}" class="form-control" placeholder="https://forgingplant.com/blog/example-slug">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Meta Description</label>
+        <textarea name="meta_description" rows="2" class="form-control" placeholder="Snippet for search engine result pages (140-160 chars)">{{ post.meta_description if post else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">OG Share Image URL</label>
+        <input type="text" name="og_image" value="{{ post.og_image if post else '' }}" class="form-control" placeholder="Leave blank to use Featured Image">
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-bottom: var(--space-2xl);">
+    <a href="/admin/blog" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-accent">
+      {% if post %}Update Blog Article{% else %}Save & Publish Article{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}

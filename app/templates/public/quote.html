@@ -1,0 +1,204 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}Request an Engineering Forging Quotation (RFQ) | Technical Feasibility Review{% endblock %}
+{% block meta_description %}Submit your 2D/3D CAD drawings and metallurgical specifications for a rapid, detailed forging quotation, tooling analysis, and component feasibility review.{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Request a Quote</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      REQUEST FOR QUOTATION (RFQ)
+    </span>
+    <h1 class="page-title">Request a Component Quotation</h1>
+    <p class="page-subtitle">
+      Upload 2D/3D component drawings and specify material grades for tooling design evaluation, metallurgical optimization, and formal quotation within 24–48 hours.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: var(--space-xl);">
+  <div class="container" style="max-width: 960px;">
+
+    <!-- Flash message alerts -->
+    {% if success %}
+    <div style="background: #E8F5EE; border: 1px solid #A7E0BE; border-left: 4px solid #1E7E51; border-radius: var(--radius-sm); padding: var(--space-xl); margin-bottom: var(--space-2xl); color: #165E39;">
+      <h3 style="margin: 0 0 6px; font-weight: 700; color: #1E7E51; font-size: 1.25rem;">RFQ Received Successfully</h3>
+      <p style="margin: 0; font-size: 1rem; line-height: 1.6;">{{ success }}</p>
+      <div style="margin-top: var(--space-md);">
+        <a href="/" class="btn btn-primary btn-sm">&larr; Return to Homepage</a>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div style="background: #FCEAEA; border: 1px solid #F5C6CB; border-left: 4px solid #BE2828; border-radius: var(--radius-sm); padding: var(--space-xl); margin-bottom: var(--space-2xl); color: #721C24;">
+      <h3 style="margin: 0 0 6px; font-weight: 700; color: #BE2828; font-size: 1.25rem;">Submission Notice</h3>
+      <p style="margin: 0; font-size: 1rem; line-height: 1.6;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2xl); box-shadow: var(--shadow-sm);">
+      
+      <form method="POST" action="/request-a-quote" enctype="multipart/form-data" id="rfq-form" novalidate>
+        <!-- Public CSRF Token -->
+        <input type="hidden" name="csrf_token" value="{{ get_public_csrf_token() }}">
+
+        <!-- Anti-Spam Honeypot Field -->
+        <div style="display: none !important; opacity: 0; position: absolute; left: -9999px;">
+          <label for="website_url_check">Leave this field blank</label>
+          <input type="text" id="website_url_check" name="website_url_check" tabindex="-1" autocomplete="off">
+        </div>
+
+        <!-- Section 1: Contact & Company Profile -->
+        <div style="margin-bottom: var(--space-2xl);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.1rem;">01.</span>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0;">Customer & Enterprise Credentials</h3>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="rfq-name" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Full Name *</label>
+              <input type="text" id="rfq-name" name="name" value="{{ form_data.name if form_data else '' }}" required placeholder="e.g. Dr. Jennifer Hayes"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rfq-company" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Company / Organization *</label>
+              <input type="text" id="rfq-company" name="company" value="{{ form_data.company if form_data else '' }}" required placeholder="e.g. AeroTurbine Dynamics Ltd."
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="rfq-email" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Corporate Email *</label>
+              <input type="email" id="rfq-email" name="email" value="{{ form_data.email if form_data else '' }}" required placeholder="j.hayes@aeroturbine.com"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rfq-phone" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Direct Phone</label>
+              <input type="tel" id="rfq-phone" name="phone" value="{{ form_data.phone if form_data else '' }}" placeholder="+1 617-555-0199"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rfq-country" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Delivery Destination / Country</label>
+              <input type="text" id="rfq-country" name="country" value="{{ form_data.country if form_data else '' }}" placeholder="e.g. Germany, USA, UAE"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Component Engineering Specifications -->
+        <div style="margin-bottom: var(--space-2xl);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.1rem;">02.</span>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0;">Component & Metallurgical Specifications</h3>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="rfq-product" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Product / Component Name</label>
+              <input type="text" id="rfq-product" name="product" value="{{ form_data.product if form_data else (product.name if product else '') }}" placeholder="e.g. High-Pressure Flange / Rotor Shaft"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rfq-material" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Material Grade / Alloy</label>
+              <input type="text" id="rfq-material" name="material" value="{{ form_data.material if form_data else '' }}" placeholder="e.g. 42CrMo4, AISI 4140, Inconel 718, 316L"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md);">
+            <div class="form-group">
+              <label class="form-label" for="rfq-quantity" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Estimated Production Quantity / Annual Run</label>
+              <input type="text" id="rfq-quantity" name="quantity" value="{{ form_data.quantity if form_data else '' }}" placeholder="e.g. 500 pcs / 10,000 units p.a."
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="rfq-delivery" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Required Delivery Timeline</label>
+              <input type="text" id="rfq-delivery" name="required_delivery" value="{{ form_data.required_delivery if form_data else '' }}" placeholder="e.g. Q3 2026 / 8 weeks from die approval"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: CAD Drawing & Engineering Attachment -->
+        <div style="margin-bottom: var(--space-2xl);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.1rem;">03.</span>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0;">2D / 3D CAD Drawing Upload</h3>
+          </div>
+
+          <div style="border: 2px dashed var(--color-border); border-radius: var(--radius-md); padding: var(--space-xl); background: var(--color-surface-subtle); text-align: center;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" style="margin-bottom: var(--space-xs);">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <div style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 4px;">
+              Select CAD Drawing or Technical Specification Document
+            </div>
+            <p style="font-size: 0.8125rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">
+              Supported formats: <strong>.PDF, .DWG, .DXF, .STEP, .STP, .IGES, .IGS, .PNG, .JPG, .ZIP</strong> (Max 15MB)
+            </p>
+            <input type="file" id="drawing_file" name="drawing_file" accept=".pdf,.dwg,.dxf,.step,.stp,.iges,.igs,.png,.jpg,.jpeg,.zip"
+                   style="font-size: 0.9rem; color: var(--color-primary); max-width: 360px; margin: 0 auto; display: block;">
+          </div>
+        </div>
+
+        <!-- Section 4: Additional Requirements & Notes -->
+        <div style="margin-bottom: var(--space-2xl);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.1rem;">04.</span>
+            <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--color-primary); margin: 0;">Special Heat Treatment, Machining & Testing Requirements</h3>
+          </div>
+
+          <div class="form-group">
+            <textarea id="rfq-requirement" name="requirement" rows="4" placeholder="Detail any non-destructive testing requirements (UT, MPI), heat treatments (quenched & tempered, normalized), CNC machining tolerances, or governing standards (ASTM, EN, DIN, IATF)..."
+                      class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem; resize: vertical;">{{ form_data.requirement if form_data else '' }}</textarea>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+          <button type="submit" class="btn btn-accent" style="width: 100%; padding: 16px; font-weight: 800; font-size: 1.05rem; cursor: pointer; letter-spacing: 0.02em;">
+            Submit Engineering RFQ for Feasibility Review &rarr;
+          </button>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8125rem; color: var(--color-text-muted); margin-top: 4px;">
+            <span>Strict NDA confidentiality guaranteed</span>
+            <span>Technical review response within 24–48 hours</span>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+
+    <!-- Direct Fast-Track Engineering Consultation -->
+    {% if whatsapp_cta %}
+    <div style="margin-top: var(--space-2xl); background: #1B2B20; border: 1px solid #2B4E34; border-radius: var(--radius-md); padding: var(--space-xl); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--space-md);">
+      <div>
+        <h4 style="color: #4ADE80; font-size: 1.1rem; margin-bottom: 4px;">Need Immediate Metallurgical Review?</h4>
+        <p style="color: #A3E635; font-size: 0.875rem; margin: 0;">For urgent production lines, contact our engineering desk via WhatsApp.</p>
+      </div>
+      <a href="{{ whatsapp_cta }}" target="_blank" rel="noopener noreferrer" class="btn" style="background: #25D366; color: #FFF; font-weight: 700; border: none;">
+        Chat with Metallurgist
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

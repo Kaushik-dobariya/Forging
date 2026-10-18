@@ -23,6 +23,14 @@ from app.models.infrastructure import Facility, InfrastructureGallery, Equipment
 from app.models.material import Material
 from app.models.quality import QualitySection, Certification
 
+# Phase 4 models
+from app.models.blog import BlogPost, BlogCategory, BlogPostStatus
+from app.models.case_study import CaseStudy
+from app.models.faq import FAQ, generate_faq_schema_ld
+from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
+from app.models.lead import ContactLead, QuoteRequest, LeadStatus
+from app.models.setting import SiteSetting, SocialLink, SocialPlatform
+
 __all__ = [
     "Base",
     "User",
@@ -48,4 +56,20 @@ __all__ = [
     "capability_material_association",
     "capability_industry_association",
     "product_related_association",
+    # Phase 4
+    "BlogPost",
+    "BlogCategory",
+    "BlogPostStatus",
+    "CaseStudy",
+    "FAQ",
+    "generate_faq_schema_ld",
+    "DownloadResource",
+    "DownloadCategory",
+    "DownloadVisibility",
+    "ContactLead",
+    "QuoteRequest",
+    "LeadStatus",
+    "SiteSetting",
+    "SocialLink",
+    "SocialPlatform",
 ]

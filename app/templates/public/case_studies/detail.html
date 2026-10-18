@@ -1,0 +1,242 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ case_study.seo_title or case_study.title }} | Engineering Case Study{% endblock %}
+{% block meta_description %}{{ case_study.meta_description or case_study.client_challenge }}{% endblock %}
+
+{% block extra_meta %}
+<meta property="og:title" content="{{ case_study.seo_title or case_study.title }}">
+<meta property="og:description" content="{{ case_study.meta_description or case_study.client_challenge }}">
+<meta property="og:type" content="article">
+<meta property="og:image" content="{{ case_study.og_image or case_study.featured_image or '/static/images/hero_furnace.webp' }}">
+{% endblock %}
+
+{% block content %}
+<header class="page-header" style="padding-bottom: var(--space-xl);">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li><a href="/case-studies">Case Studies</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">{{ case_study.title|truncate(45) }}</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      {{ case_study.client_or_industry or 'INDUSTRIAL ENGINEERING CASE STUDY' }}
+    </span>
+    <h1 class="page-title" style="font-size: 2.25rem; max-width: 950px; margin-bottom: var(--space-sm);">
+      {{ case_study.title }}
+    </h1>
+    {% if case_study.client_or_industry %}
+    <p class="page-subtitle" style="color: var(--color-text-light);">
+      Application Domain & Sector: <strong>{{ case_study.client_or_industry }}</strong>
+    </p>
+    {% endif %}
+  </div>
+</header>
+
+<section class="section" style="padding-top: var(--space-xl);">
+  <div class="container">
+
+    <!-- Top Grid: Hero Image + Technical Matrix -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-2xl); margin-bottom: var(--space-3xl); align-items: start;">
+      
+      <!-- Featured Image -->
+      <div style="background: var(--color-primary-dark); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-md); max-height: 480px;">
+        <img src="{{ case_study.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ case_study.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+
+      <!-- Technical Parameters Matrix -->
+      <div style="background: var(--color-surface); padding: var(--space-xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+          Technical Specification Matrix
+        </h3>
+
+        <table class="spec-table" style="width: 100%; margin-top: 0;">
+          <tbody>
+            {% if case_study.client_or_industry %}
+            <tr>
+              <th style="width: 35%; padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); color: var(--color-text-muted); font-size: 0.875rem;">Industry / Sector</th>
+              <td style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); font-weight: 600; font-size: 0.9rem; color: var(--color-primary);">{{ case_study.client_or_industry }}</td>
+            </tr>
+            {% endif %}
+
+            {% if case_study.material %}
+            <tr>
+              <th style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); color: var(--color-text-muted); font-size: 0.875rem;">Alloy / Material</th>
+              <td style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); font-weight: 600; font-size: 0.9rem; color: var(--color-accent);">{{ case_study.material }}</td>
+            </tr>
+            {% endif %}
+
+            {% if case_study.forging_process %}
+            <tr>
+              <th style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); color: var(--color-text-muted); font-size: 0.875rem;">Forging Process</th>
+              <td style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); font-weight: 600; font-size: 0.9rem; color: var(--color-primary);">{{ case_study.forging_process }}</td>
+            </tr>
+            {% endif %}
+
+            {% if case_study.machining %}
+            <tr>
+              <th style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); color: var(--color-text-muted); font-size: 0.875rem;">Machining Limits</th>
+              <td style="padding: 10px 0; border-bottom: 1px solid var(--color-border-subtle); font-size: 0.875rem; color: var(--color-secondary);">{{ case_study.machining }}</td>
+            </tr>
+            {% endif %}
+
+            {% if case_study.quality_requirements %}
+            <tr>
+              <th style="padding: 10px 0; color: var(--color-text-muted); font-size: 0.875rem;">NDT & Quality</th>
+              <td style="padding: 10px 0; font-size: 0.875rem; color: var(--color-secondary);">{{ case_study.quality_requirements }}</td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        <div style="margin-top: var(--space-xl); display: flex; flex-direction: column; gap: var(--space-xs);">
+          <a href="{{ case_study.cta_url or '/request-a-quote' }}" class="btn btn-accent" style="width: 100%; text-align: center;">
+            {{ case_study.cta_text or 'Request Engineering Quotation' }} &rarr;
+          </a>
+          {% if whatsapp_cta %}
+          <a href="{{ whatsapp_cta }}" target="_blank" rel="noopener noreferrer" class="btn" style="background: #25D366; color: #FFF; width: 100%; text-align: center; border: none; font-weight: 600;">
+            Inquire via WhatsApp
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Engineering Narrative Sections -->
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--space-3xl); align-items: start;">
+      
+      <!-- Narrative Content -->
+      <div style="display: flex; flex-direction: column; gap: var(--space-2xl);">
+        
+        <!-- 1. The Challenge -->
+        <section style="background: var(--color-surface); padding: var(--space-2xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.25rem;">01.</span>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-primary); margin: 0;">The Engineering Challenge</h2>
+          </div>
+          <div style="line-height: 1.8; font-size: 1rem; color: var(--color-text);">
+            {{ case_study.client_challenge|safe }}
+          </div>
+        </section>
+
+        <!-- 2. Engineering Approach & Metallurgy -->
+        <section style="background: var(--color-surface); padding: var(--space-2xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.25rem;">02.</span>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-primary); margin: 0;">Metallurgical Formulation & Tooling Design</h2>
+          </div>
+          <div style="line-height: 1.8; font-size: 1rem; color: var(--color-text);">
+            {{ case_study.engineering_approach|safe }}
+          </div>
+        </section>
+
+        <!-- 3. Machining & Quality Compliance -->
+        {% if case_study.machining or case_study.quality_requirements %}
+        <section style="background: var(--color-surface); padding: var(--space-2xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--color-accent); font-size: 1.25rem;">03.</span>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-primary); margin: 0;">Precision Machining & Quality Verification</h2>
+          </div>
+          {% if case_study.machining %}
+          <div style="margin-bottom: var(--space-md);">
+            <h4 style="font-size: 1rem; font-weight: 600; color: var(--color-secondary); margin-bottom: 4px;">Machining & Dimensional Tolerances:</h4>
+            <p style="line-height: 1.7; color: var(--color-text); margin: 0;">{{ case_study.machining }}</p>
+          </div>
+          {% endif %}
+          {% if case_study.quality_requirements %}
+          <div>
+            <h4 style="font-size: 1rem; font-weight: 600; color: var(--color-secondary); margin-bottom: 4px;">Non-Destructive Testing & Standards:</h4>
+            <p style="line-height: 1.7; color: var(--color-text); margin: 0;">{{ case_study.quality_requirements }}</p>
+          </div>
+          {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- 4. Quantified Results & Client Impact -->
+        {% if case_study.result %}
+        <section style="background: #E8F5EE; border: 1px solid #C4E5D2; padding: var(--space-2xl); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; gap: var(--space-xs); margin-bottom: var(--space-md);">
+            <span style="font-family: var(--font-mono); font-weight: 700; color: #1E7E51; font-size: 1.25rem;">04.</span>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: #1E7E51; margin: 0;">Quantified Results & Value Delivered</h2>
+          </div>
+          <div style="line-height: 1.8; font-size: 1.05rem; color: #165E39; font-weight: 500;">
+            {{ case_study.result|safe }}
+          </div>
+        </section>
+        {% endif %}
+
+        <!-- 5. Gallery Images -->
+        {% set gallery_items = case_study.get_gallery_list() %}
+        {% if gallery_items %}
+        <section style="background: var(--color-surface); padding: var(--space-2xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+          <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-lg);">Component Inspection & Plant Gallery</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-md);">
+            {% for img_url in gallery_items %}
+            <div style="border-radius: var(--radius-sm); overflow: hidden; height: 160px; background: var(--color-primary-dark); border: 1px solid var(--color-border-subtle);">
+              <img src="{{ img_url }}" alt="Component Inspection" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
+
+      </div>
+
+      <!-- Right Column: Downloads & Contact Action -->
+      <aside style="display: flex; flex-direction: column; gap: var(--space-xl);">
+        
+        <!-- Technical Downloads -->
+        {% set download_items = case_study.get_downloads_list() %}
+        {% if download_items %}
+        <div style="background: var(--color-surface); padding: var(--space-xl); border-radius: var(--radius-md); border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+          <h4 style="font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-md); padding-bottom: var(--space-xs); border-bottom: 2px solid var(--color-accent);">
+            Technical Documentation
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+            {% for dl in download_items %}
+            <a href="{{ dl.url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm); background: var(--color-surface-subtle); border-radius: var(--radius-xs); text-decoration: none; border: 1px solid var(--color-border); transition: border-color var(--transition-fast);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-primary);">{{ dl.title }}</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-muted);">PDF Document</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Direct Consultation Card -->
+        <div style="background: var(--color-primary); color: #FFF; padding: var(--space-xl); border-radius: var(--radius-md); box-shadow: var(--shadow-md);">
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: var(--space-xs); color: #FFF;">
+            Need Similar Metallurgical Performance?
+          </h4>
+          <p style="font-size: 0.875rem; color: var(--color-text-light); line-height: 1.6; margin-bottom: var(--space-lg);">
+            Our metallurgists assist in selecting cost-effective forging pathways that optimize component grain structure and tensile strength.
+          </p>
+          <a href="/request-a-quote" class="btn btn-accent" style="width: 100%; text-align: center;">
+            Submit Your Component Drawing &rarr;
+          </a>
+        </div>
+
+        <div style="text-align: center;">
+          <a href="/case-studies" class="btn btn-outline btn-sm" style="width: 100%;">
+            &larr; Back to All Case Studies
+          </a>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Engineering Case Studies Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Case Studies</span>
+    </nav>
+    <h1 class="page-title">Industrial Case Studies</h1>
+    <p class="page-description">
+      Showcase proven metallurgical solutions, tooling breakthroughs, and precision component deliveries.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/case-studies/create" class="btn btn-accent" id="btn-create-case-study">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Case Study
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Search & Filter Bar -->
+  <form method="GET" action="/admin/case-studies" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search Case Studies</label>
+      <input type="text" id="filterSearch" name="q" value="{{ q or '' }}" placeholder="Search by title, industry, or alloy..." class="form-control">
+    </div>
+    <div style="min-width: 200px;">
+      <label class="form-label" for="filterIndustry">Industry / Sector</label>
+      <select id="filterIndustry" name="industry_filter" class="form-select">
+        <option value="">All Industries</option>
+        {% for ind in industries %}
+        <option value="{{ ind }}" {% if industry_filter == ind %}selected{% endif %}>{{ ind }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if q or industry_filter %}
+      <a href="/admin/case-studies" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Table -->
+  {% if case_studies %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 260px;">Case Study Title & Slug</th>
+          <th style="min-width: 140px;">Industry / Sector</th>
+          <th style="min-width: 130px;">Material / Alloy</th>
+          <th style="min-width: 150px;">Forging Process</th>
+          <th style="width: 100px; text-align: center;">Status</th>
+          <th style="width: 130px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cs in case_studies %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ cs.display_order }}
+          </td>
+          <td>
+            <a href="/admin/case-studies/{{ cs.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ cs.title }}
+            </a>
+            <div class="table-subtext">/case-studies/{{ cs.slug }}</div>
+          </td>
+          <td>
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ cs.client_or_industry or '&mdash;'|safe }}
+            </span>
+          </td>
+          <td style="color: var(--admin-accent); font-weight: 600; font-size: 0.875rem;">
+            {{ cs.material or '&mdash;'|safe }}
+          </td>
+          <td style="color: var(--admin-text-secondary); font-size: 0.875rem;">
+            {{ cs.forging_process or '&mdash;'|safe }}
+          </td>
+          <td style="text-align: center;">
+            {% if cs.is_published %}
+            <span class="badge badge-success">Published</span>
+            {% else %}
+            <span class="badge badge-warning">Draft</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions">
+              <a href="/admin/case-studies/{{ cs.id }}/edit" class="btn btn-icon btn-sm" title="Edit Case Study">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </a>
+              {% if cs.is_published %}
+              <a href="/case-studies/{{ cs.slug }}" target="_blank" class="btn btn-icon btn-sm" title="View Public Page">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="21" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              {% endif %}
+              <form action="/admin/case-studies/{{ cs.id }}/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this case study?');">
+                <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+                <button type="submit" class="btn btn-icon btn-sm btn-icon-danger" title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
+    <p style="font-size: 1rem; margin-bottom: 1rem;">No case studies found.</p>
+    <a href="/admin/case-studies/create" class="btn btn-accent btn-sm">Add First Case Study</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

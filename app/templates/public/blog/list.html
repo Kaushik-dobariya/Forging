@@ -1,0 +1,159 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}Forging Technology & Industrial Engineering Blog | Precision Metallurgy{% endblock %}
+{% block meta_description %}Explore technical articles on closed-die forging, metallurgical heat treatments, aerospace alloys, non-destructive testing, and precision engineering.{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Technical Blog</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      METALLURGY & INDUSTRIAL INSIGHTS
+    </span>
+    <h1 class="page-title">Engineering & Forging Insights</h1>
+    <p class="page-subtitle">
+      Authoritative technical papers, case studies, manufacturing technology updates, and quality engineering analysis from our plant metallurgists.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: var(--space-xl);">
+  <div class="container">
+    <!-- Category & Search Filter Bar -->
+    <div style="background: var(--color-surface); padding: var(--space-lg); border-radius: var(--radius-md); border: 1px solid var(--color-border); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);">
+      <form method="GET" action="/blog" style="display: flex; flex-wrap: wrap; gap: var(--space-md); align-items: center; justify-content: space-between;">
+        <div style="display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center;">
+          <a href="/blog" class="btn btn-sm {% if not current_category %}btn-accent{% else %}btn-outline{% endif %}" style="text-decoration: none;">
+            All Categories
+          </a>
+          {% for cat in categories %}
+          <a href="/blog?category={{ cat.value }}{% if q %}&q={{ q }}{% endif %}" 
+             class="btn btn-sm {% if current_category == cat.value %}btn-accent{% else %}btn-outline{% endif %}" 
+             style="text-decoration: none;">
+            {{ cat.value }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: var(--space-xs); width: 100%; max-width: 320px;">
+          <input type="text" name="q" value="{{ q or '' }}" placeholder="Search articles, alloys, specs..." 
+                 class="form-control" style="font-size: 0.875rem; padding: 6px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); width: 100%;">
+          {% if current_category %}
+          <input type="hidden" name="category" value="{{ current_category }}">
+          {% endif %}
+          <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </div>
+      </form>
+    </div>
+
+    {% if posts %}
+    <!-- Featured Top Post (if on page 1 and no search query) -->
+    {% if page == 1 and not q and not current_category and posts|length > 0 %}
+    {% set hero_post = posts[0] %}
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-3xl); box-shadow: var(--shadow-md); display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+      <div style="position: relative; min-height: 280px; background: var(--color-primary-dark);">
+        <img src="{{ hero_post.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ hero_post.title }}" 
+             style="width: 100%; height: 100%; object-fit: cover; max-height: 420px;">
+        <div style="position: absolute; top: var(--space-md); left: var(--space-md);">
+          <span class="brand-badge" style="background: var(--color-accent); color: #FFF;">FEATURED TECHNICAL PAPER</span>
+        </div>
+      </div>
+      <div style="padding: var(--space-2xl); display: flex; flex-direction: column; justify-content: center;">
+        <div style="display: flex; gap: var(--space-sm); align-items: center; margin-bottom: var(--space-xs); font-size: 0.8125rem; color: var(--color-text-muted);">
+          <span style="font-weight: 700; color: var(--color-accent);">{{ hero_post.category.value }}</span>
+          <span>&bull;</span>
+          <span>{{ hero_post.published_at.strftime('%B %d, %Y') if hero_post.published_at else 'Recent' }}</span>
+          <span>&bull;</span>
+          <span>{{ hero_post.reading_time_minutes }} min read</span>
+        </div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-sm); line-height: 1.3;">
+          <a href="/blog/{{ hero_post.slug }}" style="color: inherit; text-decoration: none;">
+            {{ hero_post.title }}
+          </a>
+        </h2>
+        <p style="color: var(--color-text-muted); font-size: 1rem; line-height: 1.6; margin-bottom: var(--space-lg);">
+          {{ hero_post.excerpt }}
+        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+          <div style="font-size: 0.875rem; color: var(--color-secondary); font-weight: 600;">
+            By {{ hero_post.author }}
+          </div>
+          <a href="/blog/{{ hero_post.slug }}" class="btn btn-accent btn-sm">
+            Read Full Analysis &rarr;
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Posts Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--space-xl);">
+      {% for post in posts %}
+      {% if not (page == 1 and not q and not current_category and loop.first) %}
+      <article class="catalog-card" style="display: flex; flex-direction: column; height: 100%; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); transition: transform var(--transition-fast), box-shadow var(--transition-fast);">
+        <a href="/blog/{{ post.slug }}" style="display: block; position: relative; height: 200px; overflow: hidden; background: var(--color-primary-dark);">
+          <img src="{{ post.featured_image or '/static/images/hero_furnace.webp' }}" alt="{{ post.title }}" 
+               style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-normal);" loading="lazy">
+          <div style="position: absolute; top: var(--space-sm); left: var(--space-sm);">
+            <span class="brand-badge" style="background: rgba(23, 33, 43, 0.9); color: var(--color-accent); font-size: 0.65rem;">
+              {{ post.category.value }}
+            </span>
+          </div>
+        </a>
+
+        <div style="padding: var(--space-lg); display: flex; flex-direction: column; flex-grow: 1;">
+          <div style="display: flex; gap: var(--space-2xs); font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: var(--space-xs);">
+            <span>{{ post.published_at.strftime('%b %d, %Y') if post.published_at else '' }}</span>
+            <span>&bull;</span>
+            <span>{{ post.reading_time_minutes }} min read</span>
+          </div>
+
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-xs); line-height: 1.4;">
+            <a href="/blog/{{ post.slug }}" style="color: inherit; text-decoration: none;">
+              {{ post.title }}
+            </a>
+          </h3>
+
+          <p style="font-size: 0.875rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: var(--space-md); flex-grow: 1;">
+            {{ post.excerpt|truncate(140) }}
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-sm); border-top: 1px solid var(--color-border-subtle); margin-top: auto;">
+            <span style="font-size: 0.8125rem; font-weight: 600; color: var(--color-secondary);">{{ post.author }}</span>
+            <a href="/blog/{{ post.slug }}" style="color: var(--color-accent); font-weight: 600; font-size: 0.85rem; text-decoration: none;">
+              Read Paper &rarr;
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages and total_pages > 1 %}
+    <div style="display: flex; justify-content: center; gap: var(--space-xs); margin-top: var(--space-3xl);">
+      {% for p_num in range(1, total_pages + 1) %}
+      <a href="/blog?page={{ p_num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if q %}&q={{ q }}{% endif %}"
+         class="btn btn-sm {% if p_num == page %}btn-primary{% else %}btn-outline{% endif %}" style="min-width: 40px; text-align: center;">
+        {{ p_num }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div style="text-align: center; padding: var(--space-3xl); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md);">
+      <p style="font-size: 1.15rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">No articles found matching your criteria.</p>
+      <a href="/blog" class="btn btn-accent">Clear Filters & View All Articles</a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

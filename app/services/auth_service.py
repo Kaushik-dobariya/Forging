@@ -21,6 +21,20 @@ from app.core.logging import logger
 class AuthService:
     """Service encapsulating all administrative authentication and session business logic."""
 
+    def __init__(self):
+        self._revoked_session_ids = set()
+
+    def revoke_session(self, session_id: Optional[str]) -> None:
+        """Revokes a session ID so it cannot be used again."""
+        if session_id:
+            self._revoked_session_ids.add(session_id)
+
+    def is_session_revoked(self, session_id: Optional[str]) -> bool:
+        """Checks if a session ID has been explicitly revoked."""
+        if not session_id:
+            return False
+        return session_id in self._revoked_session_ids
+
     def authenticate_admin(
         self,
         db: Session,
@@ -66,6 +80,7 @@ class AuthService:
             "role": user.role,
             "is_superuser": user.is_superuser,
             "session_id": session_id,
+            "pwd_hash_prefix": user.hashed_password[:10] if user.hashed_password else "",
         }
         token = create_session_token(payload)
 
@@ -82,8 +97,10 @@ class AuthService:
         )
         return session_id
 
-    def terminate_admin_session(self, response: Response) -> None:
-        """Clears the admin session cookie."""
+    def terminate_admin_session(self, response: Response, session_id: Optional[str] = None) -> None:
+        """Clears the admin session cookie and records session revocation."""
+        if session_id:
+            self.revoke_session(session_id)
         response.delete_cookie(
             key=settings.SESSION_COOKIE_NAME,
             path="/",
@@ -105,8 +122,18 @@ class AuthService:
         if not payload or "user_id" not in payload:
             return None
 
+        session_id = payload.get("session_id")
+        if self.is_session_revoked(session_id):
+            return None
+
         user = user_repository.get_by_id(db, payload["user_id"])
         if not user or not user.is_active:
+            return None
+
+        # Invalidate tokens signed with previous password hash if password changed
+        token_pwd_prefix = payload.get("pwd_hash_prefix")
+        if token_pwd_prefix and user.hashed_password and token_pwd_prefix != user.hashed_password[:10]:
+            logger.info(f"Session token invalidated due to password change for user {user.id}")
             return None
 
         return user

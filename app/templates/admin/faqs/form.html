@@ -1,0 +1,83 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if faq %}Edit FAQ{% else %}Create New FAQ{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/faqs">FAQs</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{% if faq %}Edit FAQ{% else %}Create FAQ{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if faq %}Edit FAQ{% else %}Create New Reusable FAQ{% endif %}</h1>
+    <p class="page-description">
+      Manage structured QA pairs automatically rendered with Schema.org FAQPage JSON-LD.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/faqs" class="btn btn-outline">&larr; Back to FAQs</a>
+  </div>
+</div>
+
+<form method="POST" action="{% if faq %}/admin/faqs/{{ faq.id }}/edit{% else %}/admin/faqs/create{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">FAQ Details & Target Page Assignment</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Frequently Asked Question *</label>
+      <input type="text" name="question" value="{{ faq.question if faq else '' }}" required class="form-control" placeholder="e.g. What is the maximum diameter and weight capability for closed-die forgings?">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Authoritative Technical Answer *</label>
+      <textarea name="answer" rows="6" required class="form-control" placeholder="Provide a detailed, helpful engineering answer...">{{ faq.answer if faq else '' }}</textarea>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Category Assignment *</label>
+        <select name="category" required class="form-select">
+          {% for c in category_options %}
+          <option value="{{ c }}" {% if faq and faq.category == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">Thematic grouping for this question.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Page / Entity Assignment *</label>
+        <select name="related_entity" required class="form-select">
+          {% for ent in entity_options %}
+          <option value="{{ ent }}" {% if faq and faq.related_entity == ent %}selected{% endif %}>{{ ent.capitalize() }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">Target landing page where this FAQ will be rendered.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ faq.display_order if faq else 1 }}" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: var(--space-md);">
+      <input type="checkbox" id="is_active" name="is_active" value="true" {% if not faq or faq.is_active %}checked{% endif %}>
+      <label for="is_active" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary);">Active Status (Render on public pages and Schema.org)</label>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-bottom: var(--space-2xl);">
+    <a href="/admin/faqs" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-accent">
+      {% if faq %}Update FAQ{% else %}Save FAQ{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}

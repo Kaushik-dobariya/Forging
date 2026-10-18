@@ -1,0 +1,124 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Contact Lead: {{ lead.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/leads/contacts">Contact Leads</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Lead #{{ lead.id }}</span>
+    </nav>
+    <h1 class="page-title">Contact Inquiry: {{ lead.name }}</h1>
+    <p class="page-description">
+      Received on {{ lead.created_at.strftime('%B %d, %Y at %H:%M UTC') if lead.created_at else '' }}
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/leads/contacts" class="btn btn-outline">&larr; Back to Contact Leads</a>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--space-xl); align-items: start;">
+  
+  <!-- Left Column: Inquiry Details -->
+  <div>
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">Inquiry Message</h3>
+      </div>
+      <div style="font-size: 1rem; line-height: 1.8; color: var(--admin-text-primary); white-space: pre-line; background: var(--admin-surface-muted); padding: var(--space-lg); border-radius: var(--radius-sm); border: 1px solid var(--admin-border);">
+        {{ lead.message }}
+      </div>
+    </div>
+
+    <!-- Metadata Details -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">Sender & Origin Information</h3>
+      </div>
+      <table class="spec-table" style="margin-top: 0;">
+        <tbody>
+          <tr>
+            <th style="width: 25%;">Full Name</th>
+            <td><strong>{{ lead.name }}</strong></td>
+          </tr>
+          <tr>
+            <th>Company / Org</th>
+            <td>{{ lead.company or 'Direct Individual' }}</td>
+          </tr>
+          <tr>
+            <th>Email Address</th>
+            <td><a href="mailto:{{ lead.email }}" style="color: var(--admin-accent); font-weight: 600;">{{ lead.email }}</a></td>
+          </tr>
+          <tr>
+            <th>Phone Number</th>
+            <td>{% if lead.phone %}<a href="tel:{{ lead.phone }}">{{ lead.phone }}</a>{% else %}&mdash;{% endif %}</td>
+          </tr>
+          <tr>
+            <th>Country / Region</th>
+            <td>{{ lead.country or '&mdash;'|safe }}</td>
+          </tr>
+          <tr>
+            <th>Inbound Source</th>
+            <td>{{ lead.source or 'Public Contact Form' }}</td>
+          </tr>
+          <tr>
+            <th>Origin IP Address</th>
+            <td><code style="font-family: var(--font-mono); font-size: 0.8125rem;">{{ lead.ip_address or 'Not logged' }}</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Right Column: Status & Notes Pipeline -->
+  <div>
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <h3 class="admin-card-title">Lead Pipeline Status</h3>
+      </div>
+
+      <form method="POST" action="/admin/leads/contacts/{{ lead.id }}/status">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label">Current Pipeline Status</label>
+          <select name="status" class="form-select">
+            {% for st in statuses %}
+            <option value="{{ st.value }}" {% if lead.status == st %}selected{% endif %}>{{ st.value }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-md);">
+          <label class="form-label">Internal Sales Notes</label>
+          <textarea name="notes" rows="6" class="form-control" placeholder="Add follow-up notes, sales reps assigned, meeting logs...">{{ lead.notes or '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-accent" style="width: 100%;">
+          Update Lead Status & Notes
+        </button>
+      </form>
+    </div>
+
+    <!-- Delete Lead -->
+    <div class="admin-card" style="border-top: 3px solid var(--color-danger);">
+      <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--color-danger); margin-bottom: 6px;">Delete Record</h4>
+      <p style="font-size: 0.8125rem; color: var(--admin-text-muted); margin-bottom: var(--space-md);">
+        Permanently remove this inquiry from database records.
+      </p>
+      <form method="POST" action="/admin/leads/contacts/{{ lead.id }}/delete" onsubmit="return confirm('Permanently delete this contact lead?');">
+        <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+        <button type="submit" class="btn btn-outline" style="width: 100%; border-color: var(--color-danger); color: var(--color-danger);">
+          Delete Lead
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

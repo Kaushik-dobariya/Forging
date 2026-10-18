@@ -1,0 +1,147 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Technical Blog Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Technical Blog</span>
+    </nav>
+    <h1 class="page-title">Blog Articles & Technical Papers</h1>
+    <p class="page-description">
+      Manage metallurgical engineering articles, company news, case study analyses, and technical insights.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/blog/create" class="btn btn-accent" id="btn-create-post">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Write New Article
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Search & Filter Bar -->
+  <form method="GET" action="/admin/blog" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search Articles</label>
+      <input type="text" id="filterSearch" name="q" value="{{ q or '' }}" placeholder="Search by title, tag, or excerpt..." class="form-control">
+    </div>
+    <div style="min-width: 180px;">
+      <label class="form-label" for="filterCategory">Category</label>
+      <select id="filterCategory" name="category_filter" class="form-select">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.value }}" {% if category_filter == cat.value %}selected{% endif %}>{{ cat.value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width: 150px;">
+      <label class="form-label" for="filterStatus">Status</label>
+      <select id="filterStatus" name="status_filter" class="form-select">
+        <option value="">All Statuses</option>
+        {% for st in statuses %}
+        <option value="{{ st.value }}" {% if status_filter == st.value %}selected{% endif %}>{{ st.value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if q or category_filter or status_filter %}
+      <a href="/admin/blog" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Blog Posts Table -->
+  {% if posts %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="min-width: 280px;">Article Title & Slug</th>
+          <th style="min-width: 150px;">Category</th>
+          <th style="min-width: 130px;">Author</th>
+          <th style="width: 120px;">Publish Date</th>
+          <th style="width: 100px; text-align: center;">Status</th>
+          <th style="width: 130px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in posts %}
+        <tr>
+          <td>
+            <a href="/admin/blog/{{ p.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ p.title }}
+            </a>
+            <div class="table-subtext">/blog/{{ p.slug }}</div>
+          </td>
+          <td>
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border);">
+              {{ p.category.value }}
+            </span>
+          </td>
+          <td style="color: var(--admin-text-secondary); font-size: 0.875rem;">
+            {{ p.author }}
+          </td>
+          <td style="color: var(--admin-text-muted); font-size: 0.8125rem;">
+            {{ p.published_at.strftime('%Y-%m-%d') if p.published_at else '&mdash;'|safe }}
+          </td>
+          <td style="text-align: center;">
+            {% if p.status.value == 'published' %}
+            <span class="badge badge-success">Published</span>
+            {% elif p.status.value == 'draft' %}
+            <span class="badge badge-warning">Draft</span>
+            {% elif p.status.value == 'scheduled' %}
+            <span class="badge badge-info">Scheduled</span>
+            {% else %}
+            <span class="badge badge-neutral">Archived</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions">
+              <a href="/admin/blog/{{ p.id }}/edit" class="btn btn-icon btn-sm" title="Edit Article">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </a>
+              {% if p.status.value == 'published' %}
+              <a href="/blog/{{ p.slug }}" target="_blank" class="btn btn-icon btn-sm" title="View Live Article">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="21" x2="21" y2="3"></line>
+                </svg>
+              </a>
+              {% endif %}
+              <form action="/admin/blog/{{ p.id }}/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this article?');">
+                <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+                <button type="submit" class="btn btn-icon btn-sm btn-icon-danger" title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
+    <p style="font-size: 1rem; margin-bottom: 1rem;">No blog articles found.</p>
+    <a href="/admin/blog/create" class="btn btn-accent btn-sm">Write First Article</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

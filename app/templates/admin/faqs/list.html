@@ -1,0 +1,134 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Reusable FAQ Management{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Reusable FAQs</span>
+    </nav>
+    <h1 class="page-title">Frequently Asked Questions (FAQs)</h1>
+    <p class="page-description">
+      Manage modular FAQs automatically structured into Schema.org FAQPage JSON-LD across products, capabilities, quality, and landing pages.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/faqs/create" class="btn btn-accent" id="btn-create-faq">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add New FAQ
+    </a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Search & Filter Bar -->
+  <form method="GET" action="/admin/faqs" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search FAQs</label>
+      <input type="text" id="filterSearch" name="q" value="{{ q or '' }}" placeholder="Search by question or answer keyword..." class="form-control">
+    </div>
+    <div style="min-width: 180px;">
+      <label class="form-label" for="filterEntity">Related Entity</label>
+      <select id="filterEntity" name="entity" class="form-select">
+        <option value="">All Entities</option>
+        {% for ent in entity_options %}
+        <option value="{{ ent }}" {% if entity == ent %}selected{% endif %}>{{ ent.capitalize() }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width: 180px;">
+      <label class="form-label" for="filterCategory">Category</label>
+      <select id="filterCategory" name="cat" class="form-select">
+        <option value="">All Categories</option>
+        {% for c in category_options %}
+        <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if q or cat or entity %}
+      <a href="/admin/faqs" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- FAQs Table -->
+  {% if faqs %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 60px; text-align: center;">Order</th>
+          <th style="min-width: 300px;">Question & Answer Preview</th>
+          <th style="min-width: 140px;">Category</th>
+          <th style="min-width: 140px;">Related Entity</th>
+          <th style="width: 90px; text-align: center;">Status</th>
+          <th style="width: 120px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for faq in faqs %}
+        <tr>
+          <td style="text-align: center; font-family: var(--font-mono); font-size: 0.8125rem; color: var(--admin-text-muted);">
+            {{ faq.display_order }}
+          </td>
+          <td>
+            <a href="/admin/faqs/{{ faq.id }}/edit" style="font-weight: 600; color: var(--admin-text-primary); text-decoration: none;">
+              {{ faq.question }}
+            </a>
+            <div class="table-subtext" style="line-height: 1.4; margin-top: 4px;">{{ faq.answer|truncate(120) }}</div>
+          </td>
+          <td>
+            <span class="badge" style="background-color: var(--admin-surface-muted); color: var(--admin-text-secondary); border: 1px solid var(--admin-border); text-transform: uppercase;">
+              {{ faq.category.value }}
+            </span>
+          </td>
+          <td style="color: var(--admin-text-muted); font-size: 0.8125rem;">
+            {{ faq.related_entity or '&mdash;'|safe }}
+          </td>
+          <td style="text-align: center;">
+            {% if faq.is_active %}
+            <span class="badge badge-success">Active</span>
+            {% else %}
+            <span class="badge badge-neutral">Inactive</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div class="table-actions">
+              <a href="/admin/faqs/{{ faq.id }}/edit" class="btn btn-icon btn-sm" title="Edit FAQ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </a>
+              <form action="/admin/faqs/{{ faq.id }}/delete" method="POST" style="display: inline;" onsubmit="return confirm('Delete this FAQ?');">
+                <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+                <button type="submit" class="btn btn-icon btn-sm btn-icon-danger" title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
+    <p style="font-size: 1rem; margin-bottom: 1rem;">No FAQs configured.</p>
+    <a href="/admin/faqs/create" class="btn btn-accent btn-sm">Add First FAQ</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

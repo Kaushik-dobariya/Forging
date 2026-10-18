@@ -1,0 +1,197 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}{% if case_study %}Edit Case Study: {{ case_study.title }}{% else %}Create New Case Study{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/case-studies">Case Studies</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">{% if case_study %}Edit Case Study{% else %}Create Case Study{% endif %}</span>
+    </nav>
+    <h1 class="page-title">{% if case_study %}Edit Case Study: {{ case_study.title }}{% else %}Create New Case Study{% endif %}</h1>
+    <p class="page-description">
+      Configure metallurgical parameters, problem statement, engineering approach, and measurable client results.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/case-studies" class="btn btn-outline">&larr; Back to Case Studies</a>
+  </div>
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{% if case_study %}/admin/case-studies/{{ case_study.id }}/edit{% else %}/admin/case-studies/create{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+  <!-- 1. Core Profile -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Project Overview & Categorization</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Case Study Title *</label>
+        <input type="text" name="title" value="{{ case_study.title if case_study else '' }}" required class="form-control" placeholder="e.g. Near-Net-Shape Forged Rotor Discs for Aerospace Turbines">
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Slug (leave blank to auto-generate)</label>
+        <input type="text" name="slug" value="{{ case_study.slug if case_study else '' }}" class="form-control" placeholder="aerospace-rotor-discs-near-net-shape">
+        <div class="form-help">Unique slug used in URL: /case-studies/{slug}</div>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Client Industry / Sector *</label>
+        <input type="text" name="client_or_industry" value="{{ case_study.client_or_industry if case_study else '' }}" required class="form-control" placeholder="e.g. Aerospace & Defense, Heavy Automotive">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Display Order</label>
+        <input type="number" name="display_order" value="{{ case_study.display_order if case_study else 1 }}" class="form-control">
+      </div>
+
+      <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 28px;">
+        <input type="checkbox" id="is_published" name="is_published" value="true" {% if not case_study or case_study.is_published %}checked{% endif %}>
+        <label for="is_published" style="font-weight: 600; cursor: pointer; color: var(--admin-text-primary);">Publish Case Study Live</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Technical Matrix Parameters -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Engineering & Metallurgical Matrix</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Alloy / Material Grade</label>
+        <input type="text" name="material" value="{{ case_study.material if case_study else '' }}" class="form-control" placeholder="e.g. Inconel 718 / AMS 5662 / 42CrMo4">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Forging Process Employed</label>
+        <input type="text" name="forging_process" value="{{ case_study.forging_process if case_study else '' }}" class="form-control" placeholder="e.g. 10,000-Ton Hydraulic Closed-Die Forging">
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Machining Limits & Tolerances</label>
+        <input type="text" name="machining" value="{{ case_study.machining if case_study else '' }}" class="form-control" placeholder="e.g. Proof-machined within ±0.15mm tolerance envelope">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Quality Requirements & NDT Standards</label>
+        <input type="text" name="quality_requirements" value="{{ case_study.quality_requirements if case_study else '' }}" class="form-control" placeholder="e.g. Level-3 Ultrasonic C-Scan, Nadcap Certified">
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Engineering Narrative Sections -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">3. Engineering Narrative & Quantified Results</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">The Client Challenge *</label>
+      <textarea name="client_challenge" rows="4" required class="form-control" placeholder="Detail the initial technical obstacles, defect rates, weight targets, or metallurgical failure modes...">{{ case_study.client_challenge if case_study else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Our Engineering & Tooling Approach *</label>
+      <textarea name="engineering_approach" rows="6" required class="form-control" placeholder="Detail simulation modeling, grain-flow die optimization, preform geometry, and heat treatment...">{{ case_study.engineering_approach if case_study else '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Quantified Results & Value Delivered *</label>
+      <textarea name="result" rows="4" required class="form-control" placeholder="Detail measured scrap rate reduction, fatigue cycle improvement, weight savings, or cost reduction...">{{ case_study.result if case_study else '' }}</textarea>
+    </div>
+  </div>
+
+  <!-- 4. Imagery, Gallery & Downloads -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">4. Imagery, Gallery & Technical Downloads</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Upload Hero Featured Image</label>
+        <input type="file" name="featured_image_file" accept="image/*" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Or Image URL</label>
+        <input type="text" name="featured_image" value="{{ case_study.featured_image if case_study else '' }}" class="form-control" placeholder="/static/images/hero_furnace.webp">
+        {% if case_study and case_study.featured_image %}
+        <div style="margin-top: 8px;">
+          <img src="{{ case_study.featured_image }}" alt="Preview" style="height: 60px; border-radius: var(--radius-xs); border: 1px solid var(--admin-border);">
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Gallery Images (JSON array of URLs)</label>
+        <textarea name="gallery_json" rows="3" class="form-control" style="font-family: var(--font-mono); font-size: 0.8125rem;" placeholder='["/static/images/gallery1.jpg", "/static/images/gallery2.jpg"]'>{{ case_study.gallery_json if case_study and case_study.gallery_json else '' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Downloadable Documents (JSON array)</label>
+        <textarea name="downloads_json" rows="3" class="form-control" style="font-family: var(--font-mono); font-size: 0.8125rem;" placeholder='[{"title": "Technical Case Brief", "url": "/downloads/case_brief.pdf"}]'>{{ case_study.downloads_json if case_study and case_study.downloads_json else '' }}</textarea>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Call to Action (CTA) Button Text</label>
+        <input type="text" name="cta_text" value="{{ case_study.cta_text if case_study else 'Request Aerospace Component Quotation' }}" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Call to Action (CTA) URL</label>
+        <input type="text" name="cta_url" value="{{ case_study.cta_url if case_study else '/request-a-quote' }}" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SEO Configuration -->
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">5. SEO Metadata</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">SEO Title</label>
+        <input type="text" name="seo_title" value="{{ case_study.seo_title if case_study else '' }}" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">OG Share Image URL</label>
+        <input type="text" name="og_image" value="{{ case_study.og_image if case_study else '' }}" class="form-control">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Meta Description</label>
+      <textarea name="meta_description" rows="2" class="form-control">{{ case_study.meta_description if case_study else '' }}</textarea>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-bottom: var(--space-2xl);">
+    <a href="/admin/case-studies" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-accent">
+      {% if case_study %}Update Case Study{% else %}Create Case Study{% endif %}
+    </button>
+  </div>
+</form>
+{% endblock %}

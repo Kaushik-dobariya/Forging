@@ -71,5 +71,35 @@ class UserRepository:
         db.refresh(user)
         return user
 
+    def update_profile(
+        self,
+        db: Session,
+        user: User,
+        full_name: str,
+        email: str,
+    ) -> User:
+        """Updates administrator profile information (full_name and email)."""
+        user.full_name = full_name.strip()
+        user.email = email.strip().lower()
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
+    def update_password(
+        self,
+        db: Session,
+        user: User,
+        hashed_password: str,
+    ) -> User:
+        """Updates administrator hashed password and clears failed attempts."""
+        user.hashed_password = hashed_password
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+
 
 user_repository = UserRepository()

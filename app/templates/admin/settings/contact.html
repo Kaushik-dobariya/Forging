@@ -1,0 +1,92 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Plant & Commercial Contact Settings{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/settings/contact">Settings</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Contact & Plant Info</span>
+    </nav>
+    <h1 class="page-title">Contact & Plant Information</h1>
+    <p class="page-description">
+      Manage facility address, direct phone numbers, email routing, business hours, and Google Maps embed.
+    </p>
+  </div>
+</div>
+
+{% if request.query_params.get('success') %}
+<div style="background: #E8F5EE; border: 1px solid #C4E5D2; border-left: 4px solid #1E7E51; border-radius: var(--radius-sm); padding: var(--space-md); margin-bottom: var(--space-xl); color: #1E7E51; font-weight: 600;">
+  Contact details successfully updated in database!
+</div>
+{% endif %}
+
+<form method="POST" action="/admin/settings/contact">
+  <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">1. Plant Address & Primary Communication</h3>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label">Plant & Headquarters Physical Address *</label>
+        <textarea name="address" rows="3" required class="form-control" placeholder="Plot No. 42-48, Heavy Engineering Zone...">{{ contact_info.address }}</textarea>
+        <div class="form-help">Displayed on website footer and contact page.</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Primary Business Operating Hours</label>
+        <textarea name="business_hours" rows="3" class="form-control" placeholder="Monday - Friday: 08:00 - 18:00 UTC...">{{ contact_info.business_hours }}</textarea>
+      </div>
+    </div>
+
+    <div class="form-grid-3">
+      <div class="form-group">
+        <label class="form-label">Telephone / Phone Number *</label>
+        <input type="text" name="phone" value="{{ contact_info.phone }}" required class="form-control" placeholder="+1 (555) 438-2900">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">General & RFQ Inquiries Email *</label>
+        <input type="email" name="email" value="{{ contact_info.email }}" required class="form-control" placeholder="engineering@forgingplant.com">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Official WhatsApp Number</label>
+        <input type="text" name="whatsapp_number" value="{{ contact_info.whatsapp_number }}" class="form-control" placeholder="+1 (555) 438-2905">
+        <div class="form-help">Will be sanitized into wa.me link without hardcoding.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <h3 class="admin-card-title">2. Google Maps & Plant Departments</h3>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Google Maps Embed URL or iframe Code</label>
+      <textarea name="google_maps" rows="3" class="form-control" placeholder="https://maps.google.com/... or <iframe> embed code">{{ contact_info.google_maps }}</textarea>
+      <div class="form-help">Paste Google Maps embed URL or embed HTML for the interactive plant map.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Key Plant Departments & Directory</label>
+      <textarea name="departments" rows="4" class="form-control" placeholder="Sales & Commercial RFQs, Metallurgy & Lab Testing, Plant Logistics...">{{ contact_info.departments }}</textarea>
+      <div class="form-help">Displayed on public contact page as department contacts.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end; gap: var(--space-md); margin-bottom: var(--space-2xl);">
+    <button type="submit" class="btn btn-accent">
+      Save Contact Information
+    </button>
+  </div>
+</form>
+{% endblock %}

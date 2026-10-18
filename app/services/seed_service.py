@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.models.product import (
     MeasurementUnit,
@@ -12,7 +13,16 @@ from app.models.industry import Industry
 from app.models.infrastructure import Facility, InfrastructureGallery, Equipment
 from app.models.material import Material
 from app.models.quality import QualitySection, Certification
+
+# Phase 4 models
+from app.models.blog import BlogPost, BlogCategory, BlogPostStatus
+from app.models.case_study import CaseStudy
+from app.models.faq import FAQ
+from app.models.download import DownloadResource, DownloadCategory, DownloadVisibility
+from app.models.setting import SiteSetting, SocialLink
+from app.services.settings_service import settings_service
 from app.core.logging import logger
+
 
 
 def seed_cms_data(db: Session) -> dict:
@@ -1064,4 +1074,363 @@ def seed_cms_data(db: Session) -> dict:
     else:
         stats["products"] = db.query(Product).count()
 
+    # Seed Phase 4 Modules
+    seed_phase_4_data(db, stats)
+
     return stats
+
+
+def seed_phase_4_data(db: Session, stats: dict) -> None:
+    """
+    Seeds Phase 4 content: Blog posts, Case studies, reusable FAQs,
+    Downloadable technical resources, dynamic site settings, and social links.
+    """
+    # 1. Site Settings & Social Links
+    settings_service.seed_defaults(db)
+
+    # 2. Blog Posts
+    now = datetime.now(timezone.utc)
+    blog_seed = [
+        BlogPost(
+            title="Advancements in High-Precision Closed Die Forging for Automotive Powertrains",
+            slug="closed-die-forging-automotive-powertrains",
+            featured_image="/static/images/closed_die_forging.webp",
+            author="Metallurgical Engineering Lead",
+            category=BlogCategory.FORGING_TECHNOLOGY.value,
+            excerpt="How modern automated forging presses with optical thermal feedback and multi-cavity dies produce net-shape connecting rods and crankshafts with zero porosity.",
+            content="""<p>In high-performance automotive powertrains, structural endurance and torsional fatigue resistance are non-negotiable. Modern automotive applications require components that can sustain millions of cyclic load reversals without mechanical failure.</p>
+<h3>Grain Alignment and Continuous Grain Flow</h3>
+<p>Unlike casting or machining from rolled bar stock, closed-die impression forging forces the metal to flow along the component contour. This unbroken grain orientation dramatically increases fatigue life, impact toughness, and ductility under fluctuating mechanical loads.</p>
+<h3>Statistical Process Control & Thermal Monitoring</h3>
+<p>Our automated press lines monitor billet induction temperature at ±10°C tolerance before entering the preforming impression. Laser scanning verifies die cavity filling dynamically, ensuring zero cold-shut defects and tight geometric repeatability conforming to EN 10243-1 Grade F.</p>""",
+            tags="Forging,Automotive,Closed Die,Engineering",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Automotive Powertrain Closed Die Forging Innovations",
+            meta_description="Explore precision closed-die forging technologies for automotive crankshafts and connecting rods. Grain flow optimization and zero-porosity metallurgy.",
+            reading_time_minutes=6,
+        ),
+        BlogPost(
+            title="Grain Flow Optimization vs Traditional Casting in High-Stress Components",
+            slug="grain-flow-optimization-vs-casting",
+            featured_image="/static/images/open_die_forging.webp",
+            author="Chief Metallurgist",
+            category=BlogCategory.ENGINEERING.value,
+            excerpt="A metallurgical comparison of grain boundary continuity in forged steel versus dendritic shrinkage porosity in castings subjected to severe fatigue.",
+            content="""<p>When selecting manufacturing methods for mission-critical parts such as turbine discs, steering knuckles, and high-pressure valve bodies, engineers frequently evaluate forgings against castings.</p>
+<h3>The Metallurgical Advantage of Forging</h3>
+<p>Forging refines the coarse as-cast dendritic microstructure through substantial plastic deformation (upsetting and cogging). This breaks up inclusions, closes internal micro-voids, and reorients crystal structures along the principal stress directions.</p>
+<h3>Tensile and Charpy V-Notch Impact Superiority</h3>
+<p>Laboratory testing confirms that forged alloy steels consistently deliver 25% to 35% higher yield strength and more than double the Charpy impact energy at sub-zero temperatures (-40°C) compared to cast equivalents of identical nominal chemistry.</p>""",
+            tags="Metallurgy,Grain Flow,Casting vs Forging,Engineering",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Forging vs Casting: Grain Flow and Fatigue Comparison",
+            meta_description="Comprehensive metallurgical evaluation of continuous grain flow in forgings compared to cast components under extreme cyclic stress.",
+            reading_time_minutes=7,
+        ),
+        BlogPost(
+            title="Global Supply Chain Shifts in Industrial Heavy Forgings",
+            slug="global-supply-chain-heavy-forgings",
+            featured_image="/static/images/facilities_heavy_press.webp",
+            author="Supply Chain & Strategy Director",
+            category=BlogCategory.INDUSTRY_INSIGHTS.value,
+            excerpt="Key dynamics shaping global forging procurement: near-shoring, raw material hedging, carbon footprint reduction, and dual-sourcing strategies.",
+            content="""<p>Global industrial supply chains are prioritizing reliability, regional resilience, and verifiable ESG certifications. Original equipment manufacturers (OEMs) across Europe and North America are actively partnering with integrated forging and machining specialists.</p>
+<h3>Single-Source Turnkey Manufacturing</h3>
+<p>OEMs increasingly seek Tier-1 suppliers capable of managing the full value stream: billet sourcing, open-die and closed-die forging, heat treatment, rough turning, finish CNC grinding, and full NDT certification under one roof. This minimizes transit bottlenecks and reduces administrative overhead.</p>""",
+            tags="Supply Chain,Industrial,Strategy,Procurement",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Global Trends in Heavy Forging Supply Chains | 2026 Analysis",
+            meta_description="Analysis of international procurement strategies in heavy open-die and closed-die forgings. Managing lead times and certified quality.",
+            reading_time_minutes=5,
+        ),
+        BlogPost(
+            title="Metallurgical Purity and Ultrasonic Testing in Vacuum Degassed Steels",
+            slug="ultrasonic-testing-vacuum-degassed-steels",
+            featured_image="/static/images/facility_lab.webp",
+            author="Quality Assurance Director",
+            category=BlogCategory.QUALITY.value,
+            excerpt="Why secondary metallurgical refining and immersion ultrasonic scanning per ASTM A388 are mandatory for critical aerospace and energy forgings.",
+            content="""<p>Internal soundness is the cornerstone of high-integrity forging. Hydrogen embrittlement, non-metallic inclusion clusters, and macro-segregation can lead to catastrophic fracture under high hydrostatic or cyclic loads.</p>
+<h3>Vacuum Degassing & Ladle Refining</h3>
+<p>All forging ingots and billets are procured with vacuum degassing (VD/VOD), reducing dissolved hydrogen to under 1.5 ppm and total oxygen to under 15 ppm. This guarantees extreme cleanliness conforming to ASTM E45 Method A.</p>
+<h3>100% Volume Ultrasonic Examination</h3>
+<p>Our ASNT Level II and Level III certified inspectors conduct complete volumetric ultrasonic testing in accordance with ASTM A388, EN 10228-3, and API 6A requirements, detecting internal discontinuities smaller than 1.5 mm flat-bottom hole equivalents.</p>""",
+            tags="Quality,Ultrasonic Testing,NDT,ASTM,Metallurgy",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Ultrasonic Testing Standards in Forged Steel | ASTM A388",
+            meta_description="Understanding vacuum degassed steel refining and 100% volumetric ultrasonic inspection standards for critical heavy forgings.",
+            reading_time_minutes=8,
+        ),
+        BlogPost(
+            title="Expanding Plant Capacity: Commissioning of New 6,300 MT Press Line",
+            slug="plant-expansion-6300mt-press-line",
+            featured_image="/static/images/equipment_hammer.webp",
+            author="Corporate Communications",
+            category=BlogCategory.COMPANY_NEWS.value,
+            excerpt="New automated 6,300 Metric Ton hydraulic forging line enhances single-piece closed-die forging capacity up to 180 kg with robotic transfer.",
+            content="""<p>We are proud to announce the successful installation and commissioning of our new 6,300 MT heavy-duty forging press line at our main plant. This strategic expansion increases our annual closed-die forging capacity by 18,000 metric tons.</p>
+<h3>Robotic Material Handling & Energy Efficiency</h3>
+<p>The press line is integrated with heavy payload robotic transfer systems and energy-efficient regenerative servo drives that reduce electrical power consumption per ton of steel forged by 22%.</p>""",
+            tags="Company News,Expansion,Press Line,Manufacturing",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="New 6,300 MT Heavy Forging Press Commissioned",
+            meta_description="Plant capacity expansion: 6,300 MT automated forging press commissioned for heavy closed-die industrial components.",
+            reading_time_minutes=4,
+        ),
+        BlogPost(
+            title="Near-Net Shape Ring Rolling: Reducing Raw Material Scrap by 35%",
+            slug="near-net-shape-ring-rolling-scrap-reduction",
+            featured_image="/static/images/ring_rolling.webp",
+            author="Senior Manufacturing Engineer",
+            category=BlogCategory.MANUFACTURING.value,
+            excerpt="How CNC radial-axial ring rolling minimizes machining allowances and saves valuable nickel and titanium alloys.",
+            content="""<p>In aerospace flanges, slewing rings, and high-pressure pipeline connections, machining massive rings from solid plate or hollow bar generates enormous metal waste. Radial-axial ring rolling provides the superior economic and mechanical solution.</p>
+<h3>Tangential Grain Orientation</h3>
+<p>Continuous circumferential deformation creates tangential grain alignment that maximizes hoop stress containment while keeping raw material input 30% to 40% lower than flame-cut forged plate rings.</p>""",
+            tags="Ring Rolling,Manufacturing,Near Net Shape,Sustainability",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Near-Net Shape Ring Rolling Technology | Material Efficiency",
+            meta_description="Learn how CNC seamless ring rolling optimizes grain flow and slashes machining scrap on high-alloy rings up to 3,500 mm OD.",
+            reading_time_minutes=6,
+        ),
+        BlogPost(
+            title="Engineering Case Study: Heavy Duty Diesel Engine Crankshaft Redesign",
+            slug="case-study-diesel-crankshaft-redesign",
+            featured_image="/static/images/product_crankshaft.webp",
+            author="R&D Engineering Group",
+            category=BlogCategory.CASE_STUDIES.value,
+            excerpt="Deep dive into a successful weight reduction and fatigue life enhancement project for a 12-liter commercial vehicle engine program.",
+            content="""<p>A major commercial vehicle manufacturer approached our engineering team to reduce reciprocating mass in their flagship 12-liter inline-6 diesel engine while extending bearing pin fatigue life by 40%.</p>
+<h3>Finite Element Forging Simulation & Grain Optimization</h3>
+<p>Using DEFORM-3D finite element simulation, our tooling designers optimized the pre-forming blocker dies, redistributing mass to web fillets and counterweights without increasing total forging billet weight.</p>""",
+            tags="Case Studies,Crankshaft,Automotive,R&D",
+            publish_date=now,
+            status=BlogPostStatus.PUBLISHED.value,
+            seo_title="Diesel Crankshaft Forging Engineering Case Study",
+            meta_description="Technical case study detailing how finite element forging simulation and micro-alloyed steel achieved 18% weight reduction in diesel crankshafts.",
+            reading_time_minutes=7,
+        ),
+    ]
+    for b in blog_seed:
+        if not db.query(BlogPost).filter(BlogPost.slug == b.slug).first():
+            db.add(b)
+    db.commit()
+    stats["blog_posts"] = db.query(BlogPost).count()
+
+    # 3. Case Studies
+    cs_seed = [
+        CaseStudy(
+            title="Heavy-Duty Diesel Crankshaft Weight & Fatigue Optimization",
+            slug="heavy-duty-diesel-crankshaft-optimization",
+            featured_image="/static/images/product_crankshaft.webp",
+            client_industry="Commercial Vehicle & Heavy Truck OEM",
+            client_challenge="A global heavy truck engine manufacturer required an 18% reduction in crankshaft mass while simultaneously improving torsional fatigue endurance by 30% to meet stringent Euro VI / EPA emissions mandates.",
+            engineering_approach="Our technical team executed 3D computer finite element forging simulations to optimize billet pre-forming, eliminate flash waste, and redirect continuous grain flow through crankpin fillets. We switched from standard 42CrMo4 to micro-alloyed 38MnSiVS5 steel with controlled cooling to eliminate secondary quench cracking.",
+            material="38MnSiVS5 Micro-alloyed Forging Steel (EN 10267)",
+            forging_process="Automated 6,300 MT mechanical forging press with closed impression dies and optical laser pyrometer temperature tracking.",
+            machining="CNC multi-axis pin milling, deep-hole oil gallery gun drilling, induction journal hardening (54-58 HRC), and superfinishing to Ra 0.15 µm.",
+            quality_requirements="100% wet magnetic particle inspection (MPI), ultrasonic flaw detection per EN 10228-3 Class 3, and optical coordinate measuring machine (CMM) dimensional verification.",
+            result="Achieved 18.4% reduction in rotating mass, zero internal porosity defects across 25,000 serial units, and an estimated 4.2% reduction in engine fuel consumption during dynamometer testing.",
+            gallery_json=json.dumps([
+                "/static/images/product_crankshaft.webp",
+                "/static/images/closed_die_forging.webp",
+                "/static/images/equipment_lathe.webp",
+            ]),
+            downloads_json=json.dumps([
+                {"title": "Crankshaft Forging Specification Sheet", "url": "/uploads/downloads/crankshaft_drawing_template.pdf"},
+                {"title": "Material Test & Metallurgical Report", "url": "/uploads/downloads/forging_design_guide.pdf"}
+            ]),
+            cta_text="Discuss Your Powertrain Forging Challenge",
+            cta_link="/request-a-quote?product=Crankshaft&material=38MnSiVS5",
+            seo_title="Heavy Truck Diesel Crankshaft Forging Case Study",
+            meta_description="Read how our engineering team redesigned a 12L diesel engine crankshaft, achieving 18% weight reduction and superior fatigue life.",
+            status="published",
+            display_order=1,
+        ),
+        CaseStudy(
+            title="Seamless Forged Rings for 12 MW Offshore Wind Turbine Slewing Bearings",
+            slug="seamless-forged-ring-offshore-wind",
+            featured_image="/static/images/product_rolled_ring.webp",
+            client_industry="Offshore Renewable Energy & Wind Turbines",
+            client_challenge="Client needed ultra-large seamless rolled rings (OD 3,200 mm) with zero weld seams, capable of enduring extreme cyclic bending moments in harsh marine North Sea environments for 25-year service life.",
+            engineering_approach="Utilized vacuum degassed 42CrMo4 alloy steel ingots with electroslag remelting (ESR). Executed precision core piercing followed by CNC radial-axial ring rolling to establish tangential grain alignment throughout the full circumference.",
+            material="42CrMo4+QT / AISI 4140 Quenched & Tempered Steel",
+            forging_process="Radial-axial CNC ring rolling machine with 400 MT radial and 320 MT axial rolling force.",
+            machining="Vertical CNC boring and turning to precision raceway tolerances within ±0.08 mm.",
+            quality_requirements="Sub-zero Charpy V-notch impact testing at -40°C (>42 Joules), 100% volumetric ultrasonic testing per EN 10228-3 Class 4.",
+            result="Delivered 180 ring sets with 100% ultrasonic compliance, zero grain boundary embrittlement, and flawless installation in offshore wind platforms.",
+            gallery_json=json.dumps([
+                "/static/images/product_rolled_ring.webp",
+                "/static/images/ring_rolling.webp",
+                "/static/images/facilities_heavy_press.webp",
+            ]),
+            downloads_json=json.dumps([
+                {"title": "Seamless Rolled Ring Technical Specs", "url": "/uploads/downloads/forging_corporate_brochure.pdf"}
+            ]),
+            cta_text="Request a Ring Rolling Engineering Review",
+            cta_link="/request-a-quote?product=Rolled+Ring&material=42CrMo4",
+            seo_title="Offshore Wind Slewing Ring Forging Case Study",
+            meta_description="Case study: Seamless forged rings up to 3,200 mm OD for 12 MW offshore wind turbines. Sub-zero impact toughness at -40°C.",
+            status="published",
+            display_order=2,
+        ),
+        CaseStudy(
+            title="Subsea Valve Body Forging in Super Duplex Stainless Steel (UNS S32750)",
+            slug="subsea-valve-body-duplex-forging",
+            featured_image="/static/images/product_hollow_forging.webp",
+            client_industry="Subsea Oil & Gas / Deepwater Extraction",
+            client_challenge="Deepwater exploration equipment operating at 3,000 meters water depth subjected to 15,000 PSI hydrostatic pressure and sour crude oil containing high concentrations of H2S and chlorides.",
+            engineering_approach="Engineered a near-net shape closed-die forging process in Super Duplex Stainless Steel (2507 / UNS S32750). Rigorous solution annealing at 1,120°C followed by high-velocity water quenching prevented intermetallic sigma phase precipitation.",
+            material="Super Duplex Stainless Steel UNS S32750 / EN 1.4410",
+            forging_process="Hydraulic press forging with preheated ceramic-coated dies to prevent surface chilling.",
+            machining="Rough and finish 5-axis CNC machining of flange faces and internal seal cavities.",
+            quality_requirements="ASTM G48 Method A ferric chloride pitting corrosion testing, microstructural ferrite/austenite ratio analysis (45-55%), NACE MR0175 / ISO 15156 compliance.",
+            result="100% pass rate in critical pitting temperature tests (>50°C), zero sigma phase detection under scanning electron microscopy, and complete API 6A PR2 certification.",
+            gallery_json=json.dumps([
+                "/static/images/product_hollow_forging.webp",
+                "/static/images/facility_lab.webp",
+            ]),
+            downloads_json=json.dumps([
+                {"title": "Super Duplex Metallurgy Report", "url": "/uploads/downloads/forging_design_guide.pdf"}
+            ]),
+            cta_text="Consult Subsea Metallurgy Specialists",
+            cta_link="/request-a-quote?product=Valve+Body&material=Super+Duplex",
+            seo_title="Subsea Valve Body Super Duplex Forging Case Study",
+            meta_description="Engineering case study on forging high-pressure subsea valve bodies in Super Duplex UNS S32750 per API 6A and NACE MR0175.",
+            status="published",
+            display_order=3,
+        ),
+    ]
+    for cs in cs_seed:
+        if not db.query(CaseStudy).filter(CaseStudy.slug == cs.slug).first():
+            db.add(cs)
+    db.commit()
+    stats["case_studies"] = db.query(CaseStudy).count()
+
+    # 4. Reusable FAQs
+    faqs_seed = [
+        FAQ(
+            question="What materials and steel grades can your forging facility manufacture?",
+            answer="We forge a wide spectrum of carbon steels (AISI 1020 to 1045, EN 8/EN 9), alloy steels (42CrMo4, 18CrNiMo7-6, 16MnCr5, 20MnCr5), micro-alloyed steels (38MnSiVS5), austenitic and martensitic stainless steels (SS304, SS316L, 17-4PH), and high-integrity Super Duplex stainless steels (UNS S32750 / 2507). All material is sourced exclusively with EN 10204 3.1 certification and vacuum degassing.",
+            category="Quality & Metallurgy",
+            related_entity="homepage",
+            display_order=1,
+            is_active=True,
+        ),
+        FAQ(
+            question="What is your maximum piece weight and dimensional forging capacity?",
+            answer="Our open die forging presses handle single-piece forgings up to 15 Metric Tons with diameters up to 1,200 mm and lengths up to 6,000 mm. For closed-die components, our press and hammer lines produce components from 0.5 kg up to 180 kg. Our CNC ring rolling facility produces seamless rings up to 3,500 mm outer diameter.",
+            category="Technical Specifications",
+            related_entity="homepage",
+            display_order=2,
+            is_active=True,
+        ),
+        FAQ(
+            question="Do you provide fully finished CNC machined components ready for assembly?",
+            answer="Yes. Our in-house machine shop features over 45 CNC turning centers, vertical and horizontal machining centers (VMC/HMC), cylindrical grinders, and gear shapers. We deliver forgings as rough turned, proof machined, or fully finish ground with microns-level tolerances.",
+            category="Machining & Tolerances",
+            related_entity="homepage",
+            display_order=3,
+            is_active=True,
+        ),
+        FAQ(
+            question="What quality certifications and non-destructive testing (NDT) capabilities do you maintain?",
+            answer="Our plants are certified to ISO 9001:2015, IATF 16949 (Automotive), AS9100D (Aerospace), and PED 2014/68/EU (Pressure Equipment). In-house testing includes 100% Ultrasonic Testing (UT), Magnetic Particle Inspection (MPI), Liquid Penetrant Testing (LPT), Optical Spectrometry, and Charpy impact testing down to -40°C.",
+            category="Quality & Metallurgy",
+            related_entity="quality",
+            display_order=4,
+            is_active=True,
+        ),
+        FAQ(
+            question="What is the typical lead time for new tooling and first-article prototype sampling?",
+            answer="New tooling design and 3D simulation typically requires 2 to 3 weeks. Tool manufacturing and first-article pilot batch forging with full dimensional inspection (PPAP Level 3) is completed within 4 to 6 weeks from tooling sign-off.",
+            category="Tooling & Lead Times",
+            related_entity="products",
+            display_order=5,
+            is_active=True,
+        ),
+        FAQ(
+            question="How can I submit drawings to get a formal quotation?",
+            answer="You can upload 2D drawings (PDF, DWG, DXF) or 3D models (STEP, STP, IGES) directly via our /request-a-quote portal or email rfq@forgingcms.com. Our engineering estimation department provides formal proposals with manufacturing feasibility notes within 48 business hours.",
+            category="Ordering & Logistics",
+            related_entity="contact",
+            display_order=6,
+            is_active=True,
+        ),
+    ]
+    for f in faqs_seed:
+        if not db.query(FAQ).filter(FAQ.question == f.question).first():
+            db.add(f)
+    db.commit()
+    stats["faqs"] = db.query(FAQ).count()
+
+    # 5. Downloads
+    downloads_seed = [
+        DownloadResource(
+            title="Industrial Forging Capabilities & Infrastructure Corporate Brochure",
+            description="Comprehensive overview of open-die presses, closed-die lines, CNC ring rolling, and testing laboratories.",
+            file_path="/uploads/downloads/forging_corporate_brochure.pdf",
+            file_type="PDF",
+            file_size_bytes=4250000,
+            category=DownloadCategory.BROCHURE.value,
+            visibility=DownloadVisibility.PUBLIC.value,
+            display_order=1,
+            is_active=True,
+        ),
+        DownloadResource(
+            title="Design Engineers Guide to Forging Tolerances & Metallurgy",
+            description="Technical design manual detailing machining allowances, draft angles, fillet radii, and steel grade cross-reference tables.",
+            file_path="/uploads/downloads/forging_design_guide.pdf",
+            file_type="PDF",
+            file_size_bytes=6800000,
+            category=DownloadCategory.TECHNICAL_DOCUMENT.value,
+            visibility=DownloadVisibility.PUBLIC.value,
+            display_order=2,
+            is_active=True,
+        ),
+        DownloadResource(
+            title="Precision Forged Components Full Product Catalog (2026 Edition)",
+            description="Complete product range catalog: crankshafts, seamless rolled rings, hollow shafts, bevel gears, and valve bodies.",
+            file_path="/uploads/downloads/product_catalog_2026.pdf",
+            file_type="PDF",
+            file_size_bytes=8900000,
+            category=DownloadCategory.CATALOG.value,
+            visibility=DownloadVisibility.PUBLIC.value,
+            display_order=3,
+            is_active=True,
+        ),
+        DownloadResource(
+            title="ISO 9001:2015, IATF 16949 & PED Quality Certificates Portfolio",
+            description="Official accreditation certificates from TÜV Rheinland and Lloyd's Register for automotive and pressure equipment.",
+            file_path="/uploads/downloads/iso_iatf_certificates.pdf",
+            file_type="PDF",
+            file_size_bytes=2100000,
+            category=DownloadCategory.CERTIFICATE.value,
+            visibility=DownloadVisibility.PUBLIC.value,
+            display_order=4,
+            is_active=True,
+        ),
+        DownloadResource(
+            title="Crankshaft 2D & 3D Engineering Drawing Templates (Sample Spec)",
+            description="Dimensional drawing specification template and GD&T tolerance standards for closed-die forged crankshafts.",
+            file_path="/uploads/downloads/crankshaft_drawing_template.pdf",
+            file_type="PDF",
+            file_size_bytes=3400000,
+            category=DownloadCategory.PRODUCT_DRAWING.value,
+            visibility=DownloadVisibility.PUBLIC.value,
+            display_order=5,
+            is_active=True,
+        ),
+    ]
+    for d in downloads_seed:
+        if not db.query(DownloadResource).filter(DownloadResource.title == d.title).first():
+            db.add(d)
+    db.commit()
+    stats["downloads"] = db.query(DownloadResource).count()
+

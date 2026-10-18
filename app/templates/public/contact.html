@@ -1,0 +1,245 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}Contact Us | Manufacturing Plant & Commercial Sales | Precision Forging{% endblock %}
+{% block meta_description %}Contact our heavy industrial forging plant and sales headquarters. Connect via direct phone, email, WhatsApp, or schedule a technical facility visit.{% endblock %}
+
+{% block content %}
+<header class="page-header">
+  <div class="container">
+    <ul class="breadcrumbs">
+      <li><a href="/">Home</a></li>
+      <li><span class="separator">/</span></li>
+      <li style="color: #FFF;">Contact Us</li>
+    </ul>
+
+    <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-2xs);">
+      PLANT LOCATIONS & COMMERCIAL INQUIRIES
+    </span>
+    <h1 class="page-title">Contact Our Engineering Plant</h1>
+    <p class="page-subtitle">
+      Connect directly with our sales directors, metallurgists, and plant operations for inquiries, customer audits, or component production feasibility.
+    </p>
+  </div>
+</header>
+
+<section class="section" style="padding-top: var(--space-xl);">
+  <div class="container">
+
+    <!-- Flash message alerts -->
+    {% if success %}
+    <div style="background: #E8F5EE; border: 1px solid #A7E0BE; border-left: 4px solid #1E7E51; border-radius: var(--radius-sm); padding: var(--space-lg); margin-bottom: var(--space-2xl); color: #165E39;">
+      <h4 style="margin: 0 0 4px; font-weight: 700; color: #1E7E51;">Inquiry Submitted Successfully</h4>
+      <p style="margin: 0; font-size: 0.95rem;">{{ success }}</p>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div style="background: #FCEAEA; border: 1px solid #F5C6CB; border-left: 4px solid #BE2828; border-radius: var(--radius-sm); padding: var(--space-lg); margin-bottom: var(--space-2xl); color: #721C24;">
+      <h4 style="margin: 0 0 4px; font-weight: 700; color: #BE2828;">Submission Error</h4>
+      <p style="margin: 0; font-size: 0.95rem;">{{ error }}</p>
+    </div>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--space-3xl); align-items: start;">
+      
+      <!-- Left Column: CMS-Controlled Plant Information -->
+      <div>
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2xl); box-shadow: var(--shadow-sm); margin-bottom: var(--space-2xl);">
+          <span class="brand-badge" style="background: var(--color-primary); color: var(--color-accent); margin-bottom: var(--space-xs);">
+            FACILITY HEADQUARTERS
+          </span>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-lg);">
+            Manufacturing Facility & Offices
+          </h2>
+
+          <div style="display: flex; flex-direction: column; gap: var(--space-lg);">
+            
+            <!-- Address -->
+            <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-accent); border: 1px solid var(--color-border);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Plant Address</div>
+                <div style="font-size: 0.95rem; color: var(--color-primary); font-weight: 500; line-height: 1.5; white-space: pre-line;">
+                  {{ contact_info.address }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone & WhatsApp -->
+            <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-accent); border: 1px solid var(--color-border);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Telephone & Direct Lines</div>
+                <div style="font-size: 0.95rem; color: var(--color-primary); font-weight: 600;">
+                  <a href="tel:{{ contact_info.phone }}" style="color: inherit; text-decoration: none;">{{ contact_info.phone }}</a>
+                </div>
+                {% if whatsapp_cta %}
+                <div style="margin-top: 6px;">
+                  <a href="{{ whatsapp_cta }}" target="_blank" rel="noopener noreferrer" style="color: #16A34A; font-weight: 700; font-size: 0.875rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.472 14.382c-.301-.15-1.78-.879-2.056-.98-.276-.1-.477-.15-.678.15-.201.301-.78 0.98-.956 1.18-.175.201-.351.226-.652.075-.301-.15-1.272-.469-2.423-1.496-.897-.8-1.503-1.788-1.68-2.089-.175-.301-.019-.464.132-.614.136-.135.301-.351.452-.527.15-.175.201-.301.301-.502.101-.201.05-.377-.025-.527-.075-.15-.678-1.633-.93-2.241-.245-.591-.495-.511-.678-.521-.175-.01-.376-.01-.577-.01-.201 0-.527.075-.803.377-.276.301-1.054 1.03-1.054 2.511 0 1.481 1.08 2.912 1.23 3.113.15.201 2.124 3.244 5.145 4.549.719.311 1.28.497 1.718.636.722.229 1.379.197 1.9.119.58-.088 1.78-.728 2.031-1.431.251-.703.251-1.305.176-1.431-.075-.126-.276-.201-.577-.351z"/>
+                    </svg>
+                    WhatsApp Engineering Chat &rarr;
+                  </a>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-accent); border: 1px solid var(--color-border);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Email Inquiries</div>
+                <div style="font-size: 0.95rem; color: var(--color-primary); font-weight: 600;">
+                  <a href="mailto:{{ contact_info.email }}" style="color: inherit; text-decoration: none;">{{ contact_info.email }}</a>
+                </div>
+              </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div style="display: flex; gap: var(--space-md); align-items: flex-start;">
+              <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--color-surface-subtle); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--color-accent); border: 1px solid var(--color-border);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted);">Business Operating Hours</div>
+                <div style="font-size: 0.95rem; color: var(--color-primary); line-height: 1.5; white-space: pre-line;">
+                  {{ contact_info.business_hours }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Departments -->
+            {% if contact_info.departments %}
+            <div style="margin-top: var(--space-sm); padding-top: var(--space-md); border-top: 1px solid var(--color-border-subtle);">
+              <div style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); margin-bottom: 6px;">Key Plant Departments</div>
+              <div style="font-size: 0.875rem; color: var(--color-secondary); line-height: 1.6; white-space: pre-line;">
+                {{ contact_info.departments }}
+              </div>
+            </div>
+            {% endif %}
+
+          </div>
+        </div>
+
+        <!-- Google Maps Embed / Coordinates Display -->
+        {% if contact_info.google_maps %}
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); height: 280px;">
+          {% if '<iframe' in contact_info.google_maps %}
+          <div style="width: 100%; height: 100%;">
+            {{ contact_info.google_maps|safe }}
+          </div>
+          {% else %}
+          <iframe 
+            src="{{ contact_info.google_maps }}" 
+            width="100%" 
+            height="100%" 
+            style="border:0;" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+
+      <!-- Right Column: Secure Inbound Contact Form -->
+      <div>
+        <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-2xl); box-shadow: var(--shadow-sm);">
+          <span class="brand-badge" style="background: var(--color-accent); color: #FFF; margin-bottom: var(--space-xs);">
+            SECURE INBOUND INQUIRY
+          </span>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin-bottom: var(--space-xs);">
+            Send an Inquiry
+          </h2>
+          <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: var(--space-xl);">
+            Fill out the form below. For component technical drawings and manufacturing quotes, please use our dedicated <a href="/request-a-quote" style="color: var(--color-accent); font-weight: 600;">Request a Quote (RFQ)</a> portal.
+          </p>
+
+          <form method="POST" action="/contact" id="contact-form" novalidate>
+            <!-- Public CSRF Protection -->
+            <input type="hidden" name="csrf_token" value="{{ get_public_csrf_token() }}">
+
+            <!-- Anti-Spam Honeypot Field (Hidden from human users) -->
+            <div style="display: none !important; opacity: 0; position: absolute; left: -9999px;">
+              <label for="website_url_check">Leave this field blank</label>
+              <input type="text" id="website_url_check" name="website_url_check" tabindex="-1" autocomplete="off">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+              <div class="form-group">
+                <label class="form-label" for="contact-name" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Full Name *</label>
+                <input type="text" id="contact-name" name="name" value="{{ form_data.name if form_data else '' }}" required placeholder="e.g. Robert Vance"
+                       class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contact-company" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Company / Enterprise</label>
+                <input type="text" id="contact-company" name="company" value="{{ form_data.company if form_data else '' }}" placeholder="e.g. Apex Industrial Systems"
+                       class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+              <div class="form-group">
+                <label class="form-label" for="contact-email" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Corporate Email *</label>
+                <input type="email" id="contact-email" name="email" value="{{ form_data.email if form_data else '' }}" required placeholder="r.vance@apexindustrial.com"
+                       class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contact-phone" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Phone Number</label>
+                <input type="tel" id="contact-phone" name="phone" value="{{ form_data.phone if form_data else '' }}" placeholder="+1 (555) 234-5678"
+                       class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-md);">
+              <label class="form-label" for="contact-country" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Country / Region</label>
+              <input type="text" id="contact-country" name="country" value="{{ form_data.country if form_data else '' }}" placeholder="e.g. United States, Germany, India"
+                     class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: var(--space-lg);">
+              <label class="form-label" for="contact-message" style="font-weight: 600; font-size: 0.875rem; color: var(--color-primary); margin-bottom: 4px; display: block;">Message / Inquiry Details *</label>
+              <textarea id="contact-message" name="message" rows="5" required placeholder="Specify your component requirements, annual volume estimates, or facility audit request..."
+                        class="form-control" style="width: 100%; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: 0.95rem; resize: vertical;">{{ form_data.message if form_data else '' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-accent" style="width: 100%; padding: 14px; font-weight: 700; font-size: 1rem; cursor: pointer;">
+              Submit Inquiry &rarr;
+            </button>
+            
+            <p style="margin-top: var(--space-sm); font-size: 0.75rem; color: var(--color-text-muted); text-align: center;">
+              Protected by automated CSRF validation and rate-limiting. Your industrial IP and information remain confidential.
+            </p>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+{% endblock %}

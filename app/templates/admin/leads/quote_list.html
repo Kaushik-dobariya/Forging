@@ -1,0 +1,134 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Inbound Quote Requests (RFQs){% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <nav class="admin-breadcrumbs" aria-label="Breadcrumb">
+      <span class="breadcrumb-item"><a href="/admin">Admin</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item"><a href="/admin/leads/quotes">Leads</a></span>
+      <span class="breadcrumb-sep">/</span>
+      <span class="breadcrumb-item breadcrumb-current">Quote Requests</span>
+    </nav>
+    <h1 class="page-title">Quote Requests (RFQs)</h1>
+    <p class="page-description">
+      Inbound engineering quotation requests with customer drawings, material specifications, and production run requirements.
+    </p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/admin/leads/contacts" class="btn btn-outline">View General Contact Leads &rarr;</a>
+  </div>
+</div>
+
+<div class="admin-card">
+  <!-- Filter Toolbar -->
+  <form method="GET" action="/admin/leads/quotes" class="filter-toolbar">
+    <div class="filter-item-grow">
+      <label class="form-label" for="filterSearch">Search RFQs</label>
+      <input type="text" id="filterSearch" name="q" value="{{ q or '' }}" placeholder="Search by customer, company, component, material, country..." class="form-control">
+    </div>
+    <div style="min-width: 200px;">
+      <label class="form-label" for="filterStatus">RFQ Status</label>
+      <select id="filterStatus" name="status_filter" class="form-select">
+        <option value="">All Pipeline Statuses</option>
+        {% for st in statuses %}
+        <option value="{{ st.value }}" {% if status_filter == st.value %}selected{% endif %}>{{ st.value }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="filter-actions">
+      <button type="submit" class="btn btn-primary">Filter</button>
+      {% if q or status_filter %}
+      <a href="/admin/leads/quotes" class="btn btn-outline">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if quotes %}
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="min-width: 220px;">Customer & Enterprise</th>
+          <th style="min-width: 180px;">Component & Material</th>
+          <th style="min-width: 120px;">Quantity / Run</th>
+          <th style="width: 110px; text-align: center;">CAD Drawing</th>
+          <th style="width: 120px;">Received Date</th>
+          <th style="width: 130px; text-align: center;">Status</th>
+          <th style="width: 100px; text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for q in quotes %}
+        <tr>
+          <td>
+            <a href="/admin/leads/quotes/{{ q.id }}" style="font-weight: 700; color: var(--admin-text-primary); text-decoration: none;">
+              {{ q.name }}
+            </a>
+            <div class="table-subtext">{{ q.company }} {% if q.country %}&bull; {{ q.country }}{% endif %}</div>
+            <div style="font-size: 0.75rem; color: var(--admin-text-muted);">{{ q.email }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: var(--admin-text-primary); font-size: 0.875rem;">
+              {{ q.product or 'Custom Component' }}
+            </div>
+            {% if q.material %}
+            <div style="font-size: 0.8125rem; color: var(--admin-accent); font-weight: 600;">
+              {{ q.material }}
+            </div>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.875rem; color: var(--admin-text-secondary);">
+            {{ q.quantity or '&mdash;'|safe }}
+          </td>
+          <td style="text-align: center;">
+            {% if q.drawing_file %}
+            <a href="{{ q.drawing_file }}" target="_blank" class="badge" style="background: var(--admin-surface-muted); color: var(--admin-accent); border: 1px solid var(--admin-border); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              View CAD
+            </a>
+            {% else %}
+            <span style="color: var(--admin-text-subtle); font-size: 0.8125rem;">None</span>
+            {% endif %}
+          </td>
+          <td style="font-size: 0.8125rem; color: var(--admin-text-muted); white-space: nowrap;">
+            {{ q.created_at.strftime('%Y-%m-%d %H:%M') if q.created_at else '' }}
+          </td>
+          <td style="text-align: center;">
+            {% if q.status.value == 'New' %}
+            <span class="badge" style="background: #DC2626; color: #FFF; font-weight: 700;">New RFQ</span>
+            {% elif q.status.value == 'Contacted' %}
+            <span class="badge" style="background: #2563EB; color: #FFF;">Contacted</span>
+            {% elif q.status.value == 'Qualified' %}
+            <span class="badge" style="background: #7C3AED; color: #FFF;">Qualified</span>
+            {% elif q.status.value == 'Quotation Sent' %}
+            <span class="badge" style="background: #D97706; color: #FFF;">Quote Sent</span>
+            {% elif q.status.value == 'Won' %}
+            <span class="badge badge-success">Won</span>
+            {% else %}
+            <span class="badge badge-neutral">Lost</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="/admin/leads/quotes/{{ q.id }}" class="btn btn-outline btn-sm">
+              Review
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1rem; color: var(--admin-text-muted);">
+    <p style="font-size: 1rem;">No quote requests found.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
