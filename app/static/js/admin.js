@@ -37,32 +37,110 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 3. Accordion Submenus & Active Group Auto-Expansion
+  const openSubmenusKey = 'forging_admin_open_submenus';
+  let openSubmenus = [];
+  try {
+    openSubmenus = JSON.parse(sessionStorage.getItem(openSubmenusKey) || '[]');
+  } catch (err) {
+    openSubmenus = [];
+  }
+
   const navItemsWithSubmenu = document.querySelectorAll('.admin-nav-item.has-submenu');
-  navItemsWithSubmenu.forEach(item => {
-    // If active child inside, expand parent
-    const hasActiveChild = item.querySelector('.admin-subnav-link.active');
-    if (hasActiveChild) {
-      item.classList.add('open', 'active-parent');
+  navItemsWithSubmenu.forEach((item, index) => {
+    const itemLabel = item.querySelector('.nav-label')?.textContent?.trim() || String(index);
+    const hasActiveChild = item.querySelector('.admin-subnav-link.active') !== null;
+    const isParentActive = item.classList.contains('active-parent');
+
+    // Expand if active or if user had opened it
+    if (hasActiveChild || isParentActive || openSubmenus.includes(itemLabel)) {
+      item.classList.add('open');
+      if (hasActiveChild || isParentActive) {
+        item.classList.add('active-parent');
+        if (!openSubmenus.includes(itemLabel)) {
+          openSubmenus.push(itemLabel);
+          sessionStorage.setItem(openSubmenusKey, JSON.stringify(openSubmenus));
+        }
+      }
     }
 
     const triggerLink = item.querySelector('.admin-nav-link');
     if (triggerLink) {
       triggerLink.addEventListener('click', (e) => {
-        // If sidebar is collapsed on desktop, don't toggle accordion on click (link works or expand)
+        // If sidebar is collapsed on desktop, expand it
         if (document.body.classList.contains('sidebar-collapsed') && window.innerWidth >= 1024) {
           document.body.classList.remove('sidebar-collapsed');
           localStorage.setItem(sidebarStorageKey, 'false');
         }
-        
-        // Prevent default if clicking arrow or link has subnav
-        const isChevron = e.target.closest('.nav-chevron');
-        if (isChevron || triggerLink.getAttribute('href') === '#') {
+
+        const isChevron = e.target.closest('.nav-chevron') !== null;
+        const href = triggerLink.getAttribute('href');
+
+        // Toggle submenu if chevron clicked or link is anchor
+        if (isChevron || href === '#' || href === 'javascript:void(0)') {
           e.preventDefault();
           item.classList.toggle('open');
+
+          if (item.classList.contains('open')) {
+            if (!openSubmenus.includes(itemLabel)) openSubmenus.push(itemLabel);
+          } else {
+            openSubmenus = openSubmenus.filter(k => k !== itemLabel);
+          }
+          sessionStorage.setItem(openSubmenusKey, JSON.stringify(openSubmenus));
+        } else {
+          // If navigating to the parent hub link, ensure it stays open in sessionStorage
+          if (!openSubmenus.includes(itemLabel)) {
+            openSubmenus.push(itemLabel);
+            sessionStorage.setItem(openSubmenusKey, JSON.stringify(openSubmenus));
+          }
         }
       });
     }
   });
+
+  // 3b. Sidebar Navigation Scroll Position Preservation
+  const navContainer = document.querySelector('.admin-nav-container');
+  const scrollStorageKey = 'forging_admin_sidebar_scroll';
+
+  if (navContainer) {
+    // Restore saved scroll position
+    const savedScroll = sessionStorage.getItem(scrollStorageKey);
+    if (savedScroll !== null) {
+      const scrollPos = parseInt(savedScroll, 10);
+      if (!isNaN(scrollPos) && scrollPos > 0) {
+        navContainer.scrollTop = scrollPos;
+      }
+    }
+
+    // Save scroll on user scrolling
+    let scrollTimeout;
+    navContainer.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        sessionStorage.setItem(scrollStorageKey, String(navContainer.scrollTop));
+      }, 50);
+    }, { passive: true });
+
+    // Save immediately before navigating on any sidebar link
+    document.querySelectorAll('.admin-nav-link, .admin-subnav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        sessionStorage.setItem(scrollStorageKey, String(navContainer.scrollTop));
+      });
+    });
+
+    // Bring active subnav or active item smoothly into view if offscreen
+    requestAnimationFrame(() => {
+      const activeLink = document.querySelector('.admin-subnav-link.active') || document.querySelector('.admin-nav-link.active');
+      if (activeLink) {
+        const itemRect = activeLink.getBoundingClientRect();
+        const containerRect = navContainer.getBoundingClientRect();
+        if (itemRect.top < containerRect.top || itemRect.bottom > containerRect.bottom) {
+          activeLink.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+          sessionStorage.setItem(scrollStorageKey, String(navContainer.scrollTop));
+        }
+      }
+    });
+  }
+
 
   // 4. Accessible Delete Confirmation Modal
   const modalBackdrop = document.getElementById('deleteConfirmModal');

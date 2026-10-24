@@ -1,0 +1,74 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}{% if item %}Edit URL Redirect{% else %}New URL Redirect Rule{% endif %}{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div class="header-left">
+    <h1 class="page-title">{% if item %}Edit URL Redirect Rule{% else %}Add URL Redirect Rule{% endif %}</h1>
+    <p class="page-subtitle">Define automatic 301 or 302 routing rules with cycle detection.</p>
+  </div>
+  <div class="header-actions">
+    <a href="/admin/redirects" class="btn btn-outline">Back to Redirects</a>
+  </div>
+</div>
+
+{% if error %}
+<div class="alert alert-danger" style="margin-bottom: 24px;">
+  <strong>Error:</strong> {{ error }}
+</div>
+{% endif %}
+
+<div class="card" style="max-width: 720px;">
+  <form method="POST" action="{% if item %}/admin/redirects/{{ item.id }}/edit{% else %}/admin/redirects/create{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+
+    {% set val_source = form_data.source_path if form_data is defined else (item.source_path if item else '') %}
+    {% set val_target = form_data.target_path if form_data is defined else (item.target_path if item else '') %}
+    {% set val_status = form_data.status_code if form_data is defined else (item.status_code if item else 301) %}
+    {% set val_notes = form_data.notes if form_data is defined else (item.notes if item else '') %}
+    {% set val_active = form_data.is_active if form_data is defined else (item.is_active if item else True) %}
+
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="form-label" style="font-weight: 700;">Old URL (Source Path) <span style="color: red;">*</span></label>
+      <input type="text" name="source_path" value="{{ val_source }}" class="form-control" placeholder="e.g. /old-crankshaft-page" required>
+      <small class="form-text" style="color: var(--color-text-secondary); display: block; margin-top: 4px;">
+        The legacy incoming URL path to intercept (e.g. <code>/legacy-products/valves</code>). Leading slash will be added automatically.
+      </small>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="form-label" style="font-weight: 700;">New URL (Target Path) <span style="color: red;">*</span></label>
+      <input type="text" name="target_path" value="{{ val_target }}" class="form-control" placeholder="e.g. /products/closed-die-forgings/valve-bodies" required>
+      <small class="form-text" style="color: var(--color-text-secondary); display: block; margin-top: 4px;">
+        The destination URL path where users and search bots will be redirected. Cannot be equal to Source Path.
+      </small>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="form-label" style="font-weight: 700;">Redirect Status Code <span style="color: red;">*</span></label>
+      <select name="status_code" class="form-control">
+        <option value="301" {% if val_status == 301 %}selected{% endif %}>301 - Permanent Redirect (Recommended for SEO & migrated pages)</option>
+        <option value="302" {% if val_status == 302 %}selected{% endif %}>302 - Temporary Redirect (For temporary maintenance / campaigns)</option>
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 20px;">
+      <label class="form-label" style="font-weight: 700;">Notes & Context</label>
+      <input type="text" name="notes" value="{{ val_notes }}" class="form-control" placeholder="e.g. Product line merged into new closed-die catalog">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 28px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" name="is_active" value="true" {% if val_active %}checked{% endif %}>
+        <span style="font-weight: 600;">Enable this redirect rule immediately</span>
+      </label>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <button type="submit" class="btn btn-primary">Save Redirect Rule</button>
+      <a href="/admin/redirects" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

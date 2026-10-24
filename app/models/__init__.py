@@ -38,6 +38,9 @@ from app.models.redirect import URLRedirect
 from app.models.hero_slide import HeroSlide
 from app.models.timeline import TimelineMilestone
 
+# Phase 6 models
+from app.models.media import MediaAsset
+
 __all__ = [
     "Base",
     "User",
@@ -87,6 +90,8 @@ __all__ = [
     # Phase 5
     "HeroSlide",
     "TimelineMilestone",
+    # Phase 6
+    "MediaAsset",
 ]
 
 

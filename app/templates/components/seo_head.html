@@ -1,0 +1,41 @@
+{# Dynamic SEO & Social Metadata Component #}
+{% set path = request.url.path if request is defined else '/' %}
+{% set is_admin = path.startswith('/admin') or path.startswith('/api') %}
+
+{% if seo is defined and seo %}
+  {% set s = seo %}
+{% else %}
+  {% set s = get_dynamic_seo(request, entity=entity if entity is defined else None, entity_type=entity_type if entity_type is defined else None, custom_title=page_title if page_title is defined else None, custom_description=meta_description if meta_description is defined else None, custom_canonical=canonical_url if canonical_url is defined else None, og_image=og_image if og_image is defined else None, faqs=faqs if faqs is defined else None) %}
+{% endif %}
+
+{% if is_admin %}
+  <meta name="robots" content="noindex, nofollow">
+{% else %}
+  <meta name="robots" content="{{ s.robots | default('index, follow') }}">
+  <link rel="canonical" href="{{ s.canonical_url }}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:title" content="{{ s.og_title | default(s.title) }}">
+  <meta property="og:description" content="{{ s.og_description | default(s.meta_description) }}">
+  <meta property="og:url" content="{{ s.og_url | default(s.canonical_url) }}">
+  <meta property="og:type" content="{{ s.og_type | default('website') }}">
+  {% if s.og_image %}
+  <meta property="og:image" content="{{ s.og_image }}">
+  {% endif %}
+  <meta property="og:site_name" content="{{ s.og_site_name | default('FORGE Precision Engineering Ltd.') }}">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="{{ s.twitter_card | default('summary_large_image') }}">
+  <meta name="twitter:title" content="{{ s.twitter_title | default(s.title) }}">
+  <meta name="twitter:description" content="{{ s.twitter_description | default(s.meta_description) }}">
+  {% if s.twitter_image %}
+  <meta name="twitter:image" content="{{ s.twitter_image }}">
+  {% endif %}
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  {% if s.schema_json %}
+  <script type="application/ld+json">
+{{ s.schema_json | safe }}
+  </script>
+  {% endif %}
+{% endif %}

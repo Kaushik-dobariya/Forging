@@ -5,11 +5,15 @@ from pathlib import Path
 from typing import Optional, List, Dict
 from fastapi import APIRouter, Request, Depends, HTTPException, status, Response, Form, File, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import or_
 
 from app.core.database import get_db
 from app.core.templates import templates
 from app.core.config import settings
+from app.services.seo_service import seo_service
+from app.services.sitemap_service import sitemap_service
+from app.services.redirect_service import redirect_service
 from app.models.product import Product, ProductCategory, ProductSpecification, ProductImage
 from app.models.capability import Capability
 from app.models.industry import Industry
@@ -178,6 +182,54 @@ async def public_machinery_view(request: Request, db: Session = Depends(get_db))
     )
 
 
+@router.get("/machinery/{slug}", response_class=HTMLResponse, summary="Equipment Detail")
+async def public_equipment_detail(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Renders dedicated equipment landing page: /machinery/{slug}
+    """
+    equipment = db.query(Equipment).filter(
+        or_(Equipment.slug == slug, Equipment.name.ilike(slug.replace("-", " "))),
+        Equipment.status == "published",
+    ).first()
+
+    if not equipment:
+        raise HTTPException(status_code=404, detail="Machinery equipment not found")
+
+    eff_slug = equipment.slug or slug
+    seo = seo_service.get_seo_context(
+        path=f"/machinery/{eff_slug}",
+        entity=equipment,
+        entity_type="equipment",
+        breadcrumbs=[
+            {"name": "Home", "url": "/"},
+            {"name": "Infrastructure", "url": "/infrastructure"},
+            {"name": "Machinery", "url": "/machinery"},
+            {"name": equipment.name, "url": f"/machinery/{eff_slug}"},
+        ],
+        db=db,
+    )
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/machinery_detail.html",
+        context={
+            "request": request,
+            "equipment": equipment,
+            "seo": seo,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": equipment.meta_title or f"{equipment.name} | Heavy Machinery Fleet",
+            "meta_description": equipment.meta_description or equipment.description,
+        },
+    )
+
+
 # ==============================================================================
 # FAQS KNOWLEDGEBASE ROUTE
 # ==============================================================================
@@ -217,17 +269,40 @@ async def public_faqs_view(request: Request, db: Session = Depends(get_db)):
 async def public_products_list(
     request: Request,
     q: Optional[str] = None,
+    page: int = 1,
+    per_page: int = 12,
     db: Session = Depends(get_db),
 ):
     """
-    Renders product catalog index: /products
+    Renders product catalog index with pagination and dynamic SEO: /products
     """
-    query = db.query(Product).filter(Product.status == "published")
+    query = db.query(Product).options(
+        joinedload(Product.category),
+        joinedload(Product.images),
+    ).filter(Product.status == "published")
+
     if q:
         query = query.filter(Product.name.ilike(f"%{q}%"))
 
-    products = query.order_by(Product.display_order.asc(), Product.id.desc()).all()
+    total = query.count()
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    current_page = max(1, min(page, total_pages))
+
+    products = (
+        query.order_by(Product.display_order.asc(), Product.id.desc())
+        .offset((current_page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
     categories = db.query(ProductCategory).filter(ProductCategory.is_active == True).order_by(ProductCategory.display_order.asc()).all()
+
+    seo = seo_service.get_seo_context(
+        path="/products",
+        custom_title="Industrial Forgings & Precision Engineered Components Catalog",
+        custom_description="Explore our certified forged components: closed-die crankshafts, seamless rolled rings, open-die shafts, and precision machined components.",
+        breadcrumbs=[{"name": "Home", "url": "/"}, {"name": "Products", "url": "/products"}],
+        db=db,
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -238,6 +313,10 @@ async def public_products_list(
             "categories": categories,
             "active_category": None,
             "q": q,
+            "page": current_page,
+            "total_pages": total_pages,
+            "total_products": total,
+            "seo": seo,
             "page_title": "Industrial Forgings & Precision Engineered Components Catalog",
             "meta_description": "Explore our certified forged components: closed-die crankshafts, seamless rolled rings, open-die shafts, and precision machined components.",
         },
@@ -248,6 +327,8 @@ async def public_products_list(
 async def public_category_products(
     category_slug: str,
     request: Request,
+    page: int = 1,
+    per_page: int = 12,
     db: Session = Depends(get_db),
 ):
     """
@@ -261,12 +342,37 @@ async def public_category_products(
     if not category:
         raise HTTPException(status_code=404, detail="Product category not found")
 
-    products = db.query(Product).filter(
+    query = db.query(Product).options(
+        joinedload(Product.category),
+        joinedload(Product.images),
+    ).filter(
         Product.category_id == category.id,
         Product.status == "published",
-    ).order_by(Product.display_order.asc()).all()
+    )
 
+    total = query.count()
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    current_page = max(1, min(page, total_pages))
+
+    products = (
+        query.order_by(Product.display_order.asc(), Product.id.desc())
+        .offset((current_page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
     categories = db.query(ProductCategory).filter(ProductCategory.is_active == True).order_by(ProductCategory.display_order.asc()).all()
+
+    seo = seo_service.get_seo_context(
+        path=f"/products/{category.slug}",
+        custom_title=category.meta_title or f"{category.name} Catalog | Precision Forging",
+        custom_description=category.meta_description or category.description or f"Catalog of certified {category.name}.",
+        breadcrumbs=[
+            {"name": "Home", "url": "/"},
+            {"name": "Products", "url": "/products"},
+            {"name": category.name, "url": f"/products/{category.slug}"},
+        ],
+        db=db,
+    )
 
     return templates.TemplateResponse(
         request=request,
@@ -277,6 +383,10 @@ async def public_category_products(
             "products": products,
             "categories": categories,
             "active_category": category,
+            "page": current_page,
+            "total_pages": total_pages,
+            "total_products": total,
+            "seo": seo,
             "page_title": category.meta_title or f"{category.name} Catalog",
             "meta_description": category.meta_description or category.description,
         },
@@ -292,9 +402,14 @@ async def public_product_detail(
 ):
     """
     Renders canonical product detail: /products/{category}/{product}
-    Enforces strict SEO URL matching.
+    Enforces strict SEO URL matching and generates dynamic Product JSON-LD schema.
     """
-    product = db.query(Product).filter(
+    product = db.query(Product).options(
+        joinedload(Product.category),
+        joinedload(Product.images),
+        joinedload(Product.specifications),
+        joinedload(Product.capabilities),
+    ).filter(
         Product.slug == product_slug,
         Product.status == "published",
     ).first()
@@ -307,12 +422,26 @@ async def public_product_detail(
     if category_slug != expected_category_slug:
         raise HTTPException(status_code=404, detail="Product not found in this category")
 
+    seo = seo_service.get_seo_context(
+        path=f"/products/{category_slug}/{product_slug}",
+        entity=product,
+        entity_type="product",
+        breadcrumbs=[
+            {"name": "Home", "url": "/"},
+            {"name": "Products", "url": "/products"},
+            {"name": product.category.name if product.category else "All", "url": f"/products/{category_slug}"},
+            {"name": product.name, "url": f"/products/{category_slug}/{product_slug}"},
+        ],
+        db=db,
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="public/products/detail.html",
         context={
             "request": request,
             "product": product,
+            "seo": seo,
             "page_title": product.meta_title or f"{product.name} | Technical Specifications",
             "meta_description": product.meta_description or product.short_description,
         },
@@ -583,6 +712,54 @@ async def public_certifications(
             "certifications": certifications,
             "page_title": "ISO 9001, IATF 16949 & PED 2014/68/EU Certifications",
             "meta_description": "View and download our international manufacturing quality certifications: ISO 9001:2015, IATF 16949, AS9100D, and PED 2014/68/EU.",
+        },
+    )
+
+
+@router.get("/certifications/{slug}", response_class=HTMLResponse, summary="Certification Detail")
+async def public_certification_detail(
+    slug: str,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """
+    Renders dedicated certification landing page: /certifications/{slug}
+    """
+    cert = db.query(Certification).filter(
+        or_(Certification.slug == slug, Certification.certificate_name.ilike(slug.replace("-", " "))),
+        Certification.status == "published",
+    ).first()
+
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certification not found")
+
+    eff_slug = cert.slug or slug
+    seo = seo_service.get_seo_context(
+        path=f"/certifications/{eff_slug}",
+        entity=cert,
+        entity_type="certification",
+        breadcrumbs=[
+            {"name": "Home", "url": "/"},
+            {"name": "Quality", "url": "/quality"},
+            {"name": "Certifications", "url": "/certifications"},
+            {"name": cert.certificate_name, "url": f"/certifications/{eff_slug}"},
+        ],
+        db=db,
+    )
+    whatsapp_cfg = settings_service.get_whatsapp_config(db)
+    social_links = settings_service.get_social_links(db)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="public/certification_detail.html",
+        context={
+            "request": request,
+            "certification": cert,
+            "seo": seo,
+            "whatsapp_cfg": whatsapp_cfg,
+            "social_links": social_links,
+            "page_title": cert.meta_title or f"{cert.certificate_name} Accreditation | Quality System",
+            "meta_description": cert.meta_description or cert.description,
         },
     )
 
@@ -1316,191 +1493,42 @@ async def sitemap_xml(request: Request, db: Session = Depends(get_db)):
     Includes only published public content, deduplicated, excluding admin and authentication pages.
     """
     base_url = settings.SITE_URL.rstrip("/") if settings.SITE_URL else str(request.base_url).rstrip("/")
-    
-    static_pages = [
-        {"loc": f"{base_url}/", "changefreq": "weekly", "priority": "1.0"},
-        {"loc": f"{base_url}/products", "changefreq": "daily", "priority": "0.9"},
-        {"loc": f"{base_url}/capabilities", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base_url}/industries", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base_url}/infrastructure", "changefreq": "monthly", "priority": "0.8"},
-        {"loc": f"{base_url}/materials", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base_url}/quality", "changefreq": "monthly", "priority": "0.8"},
-        {"loc": f"{base_url}/certifications", "changefreq": "monthly", "priority": "0.8"},
-        {"loc": f"{base_url}/blog", "changefreq": "daily", "priority": "0.8"},
-        {"loc": f"{base_url}/case-studies", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base_url}/downloads", "changefreq": "weekly", "priority": "0.7"},
-        {"loc": f"{base_url}/contact", "changefreq": "monthly", "priority": "0.8"},
-        {"loc": f"{base_url}/request-a-quote", "changefreq": "weekly", "priority": "0.9"},
-    ]
-    
-    seen_urls = set()
-    entries = []
-    
-    for page in static_pages:
-        if page["loc"] not in seen_urls:
-            seen_urls.add(page["loc"])
-            entries.append(page)
-            
-    # Active Categories
-    categories = db.query(ProductCategory).filter(ProductCategory.is_active == True).all()
-    for cat in categories:
-        loc = f"{base_url}/products/{cat.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            entries.append({
-                "loc": loc,
-                "changefreq": "weekly",
-                "priority": "0.8",
-                "lastmod": cat.updated_at.strftime("%Y-%m-%d") if hasattr(cat, "updated_at") and cat.updated_at else None,
-            })
-
-    # Published Products
-    products = db.query(Product).filter(Product.status == "published").all()
-    for prod in products:
-        cat_slug = prod.category.slug if prod.category else "general"
-        loc = f"{base_url}/products/{cat_slug}/{prod.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = None
-            if hasattr(prod, "updated_at") and prod.updated_at:
-                lastmod = prod.updated_at.strftime("%Y-%m-%d")
-            elif hasattr(prod, "created_at") and prod.created_at:
-                lastmod = prod.created_at.strftime("%Y-%m-%d")
-            entries.append({
-                "loc": loc,
-                "changefreq": "weekly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-
-    # Published Capabilities
-    capabilities = db.query(Capability).filter(Capability.status == "published").all()
-    for cap in capabilities:
-        loc = f"{base_url}/capabilities/{cap.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = None
-            if hasattr(cap, "updated_at") and cap.updated_at:
-                lastmod = cap.updated_at.strftime("%Y-%m-%d")
-            entries.append({
-                "loc": loc,
-                "changefreq": "monthly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-            
-    # Published Industries
-    industries = db.query(Industry).filter(Industry.status == "published").all()
-    for ind in industries:
-        loc = f"{base_url}/industries/{ind.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = None
-            if hasattr(ind, "updated_at") and ind.updated_at:
-                lastmod = ind.updated_at.strftime("%Y-%m-%d")
-            entries.append({
-                "loc": loc,
-                "changefreq": "monthly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-            
-    # Published Materials
-    materials = db.query(Material).filter(Material.status == "published").all()
-    for mat in materials:
-        loc = f"{base_url}/materials/{mat.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = None
-            if hasattr(mat, "updated_at") and mat.updated_at:
-                lastmod = mat.updated_at.strftime("%Y-%m-%d")
-            entries.append({
-                "loc": loc,
-                "changefreq": "monthly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-
-    # Published Blog Posts
-    now = datetime.now(timezone.utc)
-    blog_posts = db.query(BlogPost).filter(
-        BlogPost.status == BlogPostStatus.PUBLISHED.value,
-        BlogPost.publish_date <= now,
-    ).all()
-    for post in blog_posts:
-        loc = f"{base_url}/blog/{post.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = post.updated_at.strftime("%Y-%m-%d") if hasattr(post, "updated_at") and post.updated_at else None
-            entries.append({
-                "loc": loc,
-                "changefreq": "weekly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-
-    # Published Case Studies
-    case_studies = db.query(CaseStudy).filter(CaseStudy.status == "published").all()
-    for cs in case_studies:
-        loc = f"{base_url}/case-studies/{cs.slug}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = cs.updated_at.strftime("%Y-%m-%d") if hasattr(cs, "updated_at") and cs.updated_at else None
-            entries.append({
-                "loc": loc,
-                "changefreq": "monthly",
-                "priority": "0.7",
-                "lastmod": lastmod,
-            })
-
-    # Published Dynamic CMS Pages
-    cms_pages = page_service.get_all_published_pages(db)
-    for p in cms_pages:
-        loc = f"{base_url}{p.url_path}"
-        if loc not in seen_urls:
-            seen_urls.add(loc)
-            lastmod = p.updated_at.strftime("%Y-%m-%d") if p.updated_at else None
-            entries.append({
-                "loc": loc,
-                "changefreq": "weekly",
-                "priority": "0.8",
-                "lastmod": lastmod,
-            })
-
-    # Build XML
-    xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-    xml_lines.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-    for e in entries:
-        xml_lines.append("  <url>")
-        xml_lines.append(f"    <loc>{e['loc']}</loc>")
-        if e.get("lastmod"):
-            xml_lines.append(f"    <lastmod>{e['lastmod']}</lastmod>")
-        if e.get("changefreq"):
-            xml_lines.append(f"    <changefreq>{e['changefreq']}</changefreq>")
-        if e.get("priority"):
-            xml_lines.append(f"    <priority>{e['priority']}</priority>")
-        xml_lines.append("  </url>")
-    xml_lines.append("</urlset>")
-
-    return Response(content="\n".join(xml_lines), media_type="application/xml")
+    xml_content = sitemap_service.generate_sitemap_xml(db, base_url)
+    return Response(content=xml_content, media_type="application/xml; charset=utf-8")
 
 
 @router.get("/robots.txt", summary="Robots.txt Specification")
-async def robots_txt(request: Request):
+async def robots_txt(request: Request, db: Session = Depends(get_db)):
     """
-    Renders robots.txt directives, disallowing admin areas and pointing to sitemap.xml.
+    Renders robots.txt directives, allowing CMS configuration where appropriate,
+    disallowing admin, API, and private paths, and pointing to sitemap.xml.
     """
     base_url = settings.SITE_URL.rstrip("/") if settings.SITE_URL else str(request.base_url).rstrip("/")
+
+    # Check for CMS-configured robots.txt
+    try:
+        cms_setting = db.query(SiteSetting).filter(SiteSetting.key == "seo_robots_txt").first()
+        if cms_setting and cms_setting.value and cms_setting.value.strip():
+            content = cms_setting.value.strip()
+            if "Sitemap:" not in content:
+                content = f"{content}\n\nSitemap: {base_url}/sitemap.xml"
+            return Response(content=content, media_type="text/plain; charset=utf-8")
+    except Exception as exc:
+        logger.warning(f"Error querying custom robots.txt: {exc}")
+
+
     lines = [
         "User-agent: *",
         "Allow: /",
         "Disallow: /admin/",
-        "Disallow: /static/uploads/private/",
+        "Disallow: /api/",
+        "Disallow: /uploads/private/",
+        "Disallow: /uploads/drawings/",
         "",
         f"Sitemap: {base_url}/sitemap.xml",
         "",
     ]
-    return Response(content="\n".join(lines), media_type="text/plain")
+    return Response(content="\n".join(lines), media_type="text/plain; charset=utf-8")
 
 
 # ==============================================================================

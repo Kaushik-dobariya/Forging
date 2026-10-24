@@ -33,5 +33,24 @@ class HeroSlide(Base):
         nullable=False,
     )
 
+    @property
+    def background_image_url(self) -> str:
+        return self.background_image
+
+    @property
+    def text_alignment(self) -> str:
+        return self.text_align
+
+    @property
+    def alt_text(self) -> str:
+        return self.image_alt or self.title
+
+    @property
+    def overlay_opacity_decimal(self) -> float:
+        if self.overlay_opacity is None:
+            return 0.65
+        return self.overlay_opacity / 100.0 if self.overlay_opacity > 1 else float(self.overlay_opacity)
+
     def __repr__(self) -> str:
         return f"<HeroSlide id={self.id} title='{self.title[:30]}' active={self.is_active}>"
+

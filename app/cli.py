@@ -21,9 +21,37 @@ def main():
     # seed-cms command
     subparsers.add_parser("seed-cms", help="Seed initial Phase 3 manufacturing CMS modules")
 
+    # seo-audit command
+    subparsers.add_parser("seo-audit", help="Run automated SEO & structured data validation audit")
+
     args = parser.parse_args()
 
+    if args.command == "seo-audit":
+        if not check_db_connection():
+            print("ERROR: Database connection failed. Please check your DATABASE_URL configuration.")
+            sys.exit(1)
+        from app.services.seo_audit_service import seo_audit_service
+        db = SessionLocal()
+        try:
+            report = seo_audit_service.run_full_audit(db)
+            print("=" * 60)
+            print(f"SEO & STRUCTURED DATA HEALTH AUDIT: SCORE {report['score']}/100")
+            print("=" * 60)
+            print(f"Total entities scanned: {report['total_entities_checked']}")
+            print(f"Total issues found:    {report['total_issues']} (Critical: {report['critical_count']}, Warnings: {report['warning_count']}, Info: {report['info_count']})")
+            print(f"Schemas validated:     {report['structured_data_validated']}")
+            print("-" * 60)
+            for idx, issue in enumerate(report["issues"][:15], 1):
+                print(f"[{issue['severity'].upper()}] {issue['category']} - {issue['message']}")
+            if len(report["issues"]) > 15:
+                print(f"... and {len(report['issues']) - 15} more issues. Run /admin/seo/audit for full report.")
+            print("=" * 60)
+        finally:
+            db.close()
+        return
+
     if args.command == "seed-cms":
+
         if not check_db_connection():
             print("ERROR: Database connection failed. Please check your DATABASE_URL configuration.")
             sys.exit(1)

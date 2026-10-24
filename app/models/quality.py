@@ -35,6 +35,7 @@ class Certification(Base):
     __tablename__ = "certifications"
 
     certificate_name = Column(String(200), nullable=False)
+    slug = Column(String(220), unique=True, index=True, nullable=True)
     issuing_organization = Column(String(150), nullable=True)
     certificate_number = Column(String(100), nullable=True)
     issue_date = Column(String(50), nullable=True)
@@ -43,6 +44,10 @@ class Certification(Base):
 
     certificate_image = Column(String(255), nullable=True)
     certificate_pdf = Column(String(255), nullable=True)
+
+    # SEO metadata
+    meta_title = Column(String(255), nullable=True)
+    meta_description = Column(String(500), nullable=True)
 
     display_order = Column(Integer, default=0, nullable=False)
     status = Column(String(50), default="published", nullable=False, index=True)

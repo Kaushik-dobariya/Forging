@@ -57,11 +57,16 @@ class Equipment(Base):
     capacity = Column(String(150), nullable=True)
     specifications = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
+    slug = Column(String(220), unique=True, index=True, nullable=True)
     image = Column(String(255), nullable=True)
     gallery_json = Column(Text, nullable=True)
     pdf_url = Column(String(255), nullable=True)
     status = Column(String(50), default="published", nullable=False)
     display_order = Column(Integer, default=0, nullable=False)
+
+    # SEO metadata
+    meta_title = Column(String(255), nullable=True)
+    meta_description = Column(String(500), nullable=True)
 
     # Relationships
     products = relationship("Product", secondary=product_equipment_association, back_populates="equipment")

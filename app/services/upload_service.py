@@ -9,13 +9,16 @@ from app.core.config import settings
 from app.core.logging import logger
 
 
-ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"}
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".ico"}
 ALLOWED_IMAGE_MIMES = {
     "image/jpeg",
     "image/png",
     "image/webp",
     "image/gif",
     "image/svg+xml",
+    "image/x-icon",
+    "image/vnd.microsoft.icon",
+    "image/ico",
 }
 ALLOWED_DOCUMENT_EXTENSIONS = {".pdf"}
 ALLOWED_DOCUMENT_MIMES = {"application/pdf"}
@@ -68,13 +71,32 @@ DANGEROUS_EXTENSIONS = {
     ".phtml",
     ".cgi",
     ".pl",
+    ".jar",
+    ".apk",
+    ".com",
+    ".scr",
+    ".app",
+    ".deb",
+    ".rpm",
+    ".ps1",
 }
 
 
 def sanitize_filename(filename: str) -> str:
-    """Strips unsafe path traversal characters and normalizes file basename."""
-    base = os.path.basename(filename)
+    """Strips unsafe path traversal characters, null bytes, and normalizes file basename."""
+    if not filename:
+        return "upload.bin"
+    if "\x00" in filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Malformed filename containing null bytes detected.",
+        )
+    # Strip any directory path components (both UNIX / and Windows \)
+    base = os.path.basename(filename.replace("\\", "/"))
     clean = re.sub(r"[^\w\.-]", "_", base)
+    clean = clean.lstrip(".")
+    if not clean:
+        clean = "upload.bin"
     return clean[:100]
 
 
@@ -96,12 +118,25 @@ class UploadService:
 
     def validate_image_file(self, upload_file: UploadFile, content: bytes) -> None:
         """Validates MIME type, file extension, and image payload integrity using Pillow."""
-        ext = Path(upload_file.filename or "").suffix.lower()
+        original_name = upload_file.filename or ""
+        if "\x00" in original_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Malformed filename containing null bytes detected.",
+            )
+        if ".." in original_name or "/" in original_name or "\\" in original_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Path traversal sequences detected in filename.",
+            )
+
+        ext = Path(original_name).suffix.lower()
         if ext not in ALLOWED_IMAGE_EXTENSIONS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Unsupported file extension '{ext}'. Allowed: {', '.join(sorted(ALLOWED_IMAGE_EXTENSIONS))}",
             )
+
 
         mime = upload_file.content_type
         if mime and mime.lower() not in ALLOWED_IMAGE_MIMES:
@@ -255,9 +290,19 @@ class UploadService:
         stem = Path(clean_name).stem
         unique_name = f"{stem}_{uuid.uuid4().hex[:8]}{ext}"
 
-        target_dir = self.upload_dir / subfolder
+        # Sanitize subfolder and enforce upload_dir boundary
+        safe_subfolder = re.sub(r"[^\w-]", "", subfolder.strip()) or "general"
+        target_dir = (self.upload_dir / safe_subfolder).resolve()
+        base_resolved = self.upload_dir.resolve()
+
+        if not str(target_dir).startswith(str(base_resolved)):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid upload destination path.")
+
         target_dir.mkdir(parents=True, exist_ok=True)
-        file_path = target_dir / unique_name
+        file_path = (target_dir / unique_name).resolve()
+
+        if not str(file_path).startswith(str(base_resolved)):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Path traversal attempt detected.")
 
         with open(file_path, "wb") as f:
             f.write(content)

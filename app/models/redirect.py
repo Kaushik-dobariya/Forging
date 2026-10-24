@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, Boolean
 from app.core.database import Base
 
 
@@ -13,6 +13,8 @@ class URLRedirect(Base):
     source_path = Column(String(500), unique=True, index=True, nullable=False)
     target_path = Column(String(500), nullable=False)
     status_code = Column(Integer, default=301, nullable=False)
+    notes = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
 
     def __repr__(self) -> str:
         return f"<URLRedirect {self.source_path} -> {self.target_path} ({self.status_code})>"

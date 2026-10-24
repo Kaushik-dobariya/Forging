@@ -1,6 +1,6 @@
 {% extends "admin/base_admin.html" %}
 
-{% block page_title %}Global SEO Defaults{% endblock %}
+{% block page_title %}Global SEO & Robots Defaults{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -10,68 +10,91 @@
       <span class="breadcrumb-sep">/</span>
       <span class="breadcrumb-item"><a href="/admin/settings">Settings</a></span>
       <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-item breadcrumb-current">SEO Defaults</span>
+      <span class="breadcrumb-item breadcrumb-current">SEO & Robots</span>
     </nav>
-    <h1 class="page-title">Global SEO & Search Defaults</h1>
+    <h1 class="page-title">Global SEO & Robots.txt Configuration</h1>
     <p class="page-description">
-      Configure default metadata fallbacks for pages without explicit custom SEO, and inspect the XML sitemap.
+      Configure default metadata fallbacks for pages without explicit custom SEO, manage crawler access in robots.txt, and run automated SEO health audits.
     </p>
   </div>
   <div class="page-header-actions" style="display: flex; gap: 8px;">
+    <a href="/admin/seo/audit" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      Run SEO Audit
+    </a>
     <a href="/sitemap.xml" target="_blank" class="btn btn-outline">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
       </svg>
       View Live sitemap.xml
     </a>
-    <a href="/admin/settings" class="btn btn-outline">Back to Settings Hub</a>
+    <a href="/robots.txt" target="_blank" class="btn btn-outline">
+      View Live robots.txt
+    </a>
+    <a href="/admin/settings" class="btn btn-outline">Back to Settings</a>
   </div>
 </div>
 
 {% if request.query_params.get('saved') %}
-<div class="alert alert-success" style="margin-bottom: 24px;">
-  <strong>Saved!</strong> Global SEO default settings updated successfully.
+<div class="alert alert-success" style="margin-bottom: 24px; padding: 12px 16px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-radius: 6px;">
+  <strong>Saved!</strong> Global SEO and robots.txt settings updated successfully.
 </div>
 {% endif %}
 
 <form method="POST" action="/admin/settings/seo">
 
-  <div class="admin-card" style="margin-bottom: 24px;">
-    <div class="admin-card-header">
-      <h3 class="admin-card-title">1. Search Engine Snippet Defaults</h3>
+  <div class="admin-card" style="margin-bottom: 24px; padding: 20px; background: var(--admin-surface, #fff); border: 1px solid var(--admin-border, #e2e8f0); border-radius: 8px;">
+    <div class="admin-card-header" style="margin-bottom: 16px;">
+      <h3 class="admin-card-title" style="font-size: 1.1rem; font-weight: 700;">1. Search Engine Snippet Defaults</h3>
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="defaultMetaTitle">Default Meta Title *</label>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label class="form-label" for="defaultMetaTitle" style="font-weight: 600; display: block; margin-bottom: 6px;">Default Meta Title *</label>
       <input type="text" id="defaultMetaTitle" name="default_meta_title" required class="form-control"
-             value="{{ general.general_meta_title }}">
-      <div class="form-help">Displayed in browser title bar and search engine result titles when no page title override is set.</div>
+             value="{{ general.general_meta_title or 'FORGE Precision Engineering — Industrial Forging Solutions' }}">
+      <small class="form-help" style="color: #64748b;">Displayed in browser title bar and search engine result titles when no page title override is set.</small>
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="defaultMetaDesc">Default Meta Description *</label>
-      <textarea id="defaultMetaDesc" name="default_meta_description" rows="3" required class="form-control">{{ general.general_meta_description }}</textarea>
-      <div class="form-help">Fallback description for search engine result snippets (recommended: 140-160 characters).</div>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label class="form-label" for="defaultMetaDesc" style="font-weight: 600; display: block; margin-bottom: 6px;">Default Meta Description *</label>
+      <textarea id="defaultMetaDesc" name="default_meta_description" rows="3" required class="form-control">{{ general.general_meta_description or 'Leading manufacturer of closed-die forgings, precision machined components, and heavy engineering solutions.' }}</textarea>
+      <small class="form-help" style="color: #64748b;">Fallback description for search engine result snippets (recommended: 140-160 characters).</small>
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="defaultKeywords">Default Meta Keywords (Optional)</label>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label class="form-label" for="defaultKeywords" style="font-weight: 600; display: block; margin-bottom: 6px;">Default Meta Keywords (Optional)</label>
       <input type="text" id="defaultKeywords" name="default_meta_keywords" class="form-control"
              value="{{ general.general_meta_keywords if general.general_meta_keywords else '' }}"
              placeholder="closed die forging, precision machining, metallurgical engineering">
     </div>
 
-    <div class="form-group">
-      <label class="form-label" for="defaultOgImage">Default Open Graph Sharing Image URL</label>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label class="form-label" for="defaultOgImage" style="font-weight: 600; display: block; margin-bottom: 6px;">Default Open Graph Sharing Image URL</label>
       <input type="text" id="defaultOgImage" name="default_og_image" class="form-control"
              value="{{ general.general_og_image if general.general_og_image else '/static/images/hero_furnace.webp' }}">
-      <div class="form-help">Default image thumbnail when sharing links on LinkedIn, WhatsApp, or Twitter.</div>
+      <small class="form-help" style="color: #64748b;">Default image thumbnail when sharing links on LinkedIn, WhatsApp, or Twitter/X.</small>
+    </div>
+  </div>
+
+  <div class="admin-card" style="margin-bottom: 24px; padding: 20px; background: var(--admin-surface, #fff); border: 1px solid var(--admin-border, #e2e8f0); border-radius: 8px;">
+    <div class="admin-card-header" style="margin-bottom: 16px;">
+      <h3 class="admin-card-title" style="font-size: 1.1rem; font-weight: 700;">2. Robots.txt Crawler Directives</h3>
+      <p style="font-size: 0.85rem; color: #64748b; margin-top: 4px;">Customize crawling instructions for web search engines. Private administrative and API paths are protected.</p>
+    </div>
+
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label class="form-label" for="robotsTxt" style="font-weight: 600; display: block; margin-bottom: 6px;">Custom robots.txt Content</label>
+      <textarea id="robotsTxt" name="seo_robots_txt" rows="7" class="form-control" style="font-family: monospace; font-size: 0.9rem;">{{ robots_txt }}</textarea>
+      <small class="form-help" style="color: #64748b;">If left blank or omitted, system defaults to secure crawl policies allowing public content and disallowing <code>/admin/</code>, <code>/api/</code>, and draft paths.</small>
     </div>
   </div>
 
   <div style="display: flex; gap: 12px;">
-    <button type="submit" class="btn btn-accent btn-lg" id="btn-save-seo">Save SEO Defaults</button>
+    <button type="submit" class="btn btn-primary btn-lg" id="btn-save-seo">Save SEO & Robots Settings</button>
     <a href="/admin/settings" class="btn btn-outline btn-lg">Cancel</a>
   </div>
 

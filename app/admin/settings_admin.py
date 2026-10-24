@@ -1,6 +1,6 @@
 import json
 from typing import Optional
-from fastapi import APIRouter, Request, Depends, Form, status, HTTPException
+from fastapi import APIRouter, Request, Depends, Form, File, UploadFile, status, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from app.core.database import get_db
@@ -13,6 +13,8 @@ from app.models.setting import SiteSetting, SocialLink, SocialPlatform
 from app.services.settings_service import settings_service
 from app.services.email_service import email_service
 from app.services.theme_service import theme_service, DEFAULT_PUBLIC_THEME, DEFAULT_ADMIN_THEME
+from app.services.upload_service import upload_service
+
 
 
 router = APIRouter(prefix="/settings", tags=["Admin Settings"])
@@ -82,7 +84,9 @@ async def admin_general_settings_save(
     website_name: str = Form(...),
     company_name: str = Form(...),
     logo_url: Optional[str] = Form(None),
+    logo_file: Optional[UploadFile] = File(None),
     favicon_url: Optional[str] = Form(None),
+    favicon_file: Optional[UploadFile] = File(None),
     default_contact_email: str = Form(...),
     app_version: str = Form(...),
     copyright_text: str = Form(...),
@@ -91,18 +95,36 @@ async def admin_general_settings_save(
     current_user: User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
+    final_logo_url = logo_url.strip() if logo_url else "/static/images/logo.png"
+    final_favicon_url = favicon_url.strip() if favicon_url else "/static/favicon.ico"
+
+    if logo_file and logo_file.filename:
+        try:
+            rel_url, _ = upload_service.save_upload(logo_file, subfolder="branding", is_drawing=False)
+            final_logo_url = rel_url
+        except Exception as exc:
+            logger.error(f"Failed to upload logo: {exc}")
+
+    if favicon_file and favicon_file.filename:
+        try:
+            rel_url, _ = upload_service.save_upload(favicon_file, subfolder="branding", is_drawing=False)
+            final_favicon_url = rel_url
+        except Exception as exc:
+            logger.error(f"Failed to upload favicon: {exc}")
+
     settings_service.set_setting(db, "general_website_name", website_name.strip(), "Website Name", "general")
     settings_service.set_setting(db, "general_company_name", company_name.strip(), "Company Name", "general")
-    settings_service.set_setting(db, "general_logo_url", logo_url.strip() if logo_url else "/static/images/logo.png", "Logo URL", "general")
-    settings_service.set_setting(db, "general_favicon_url", favicon_url.strip() if favicon_url else "/static/favicon.ico", "Favicon URL", "general")
+    settings_service.set_setting(db, "general_logo_url", final_logo_url, "Logo URL", "general")
+    settings_service.set_setting(db, "general_favicon_url", final_favicon_url, "Favicon URL", "general")
     settings_service.set_setting(db, "general_default_contact_email", default_contact_email.strip(), "Default Contact Email", "general")
     settings_service.set_setting(db, "general_app_version", app_version.strip(), "Application Version", "general")
     settings_service.set_setting(db, "general_copyright_text", copyright_text.strip(), "Copyright Text", "general")
     settings_service.set_setting(db, "general_footer_developer_attribution", developer_attribution.strip(), "Footer Developer Attribution", "general")
     settings_service.set_setting(db, "general_developer_website_url", developer_website_url.strip(), "Developer Website URL", "general")
 
-    logger.info("Updated general site settings.")
+    logger.info("Updated general site settings with logo/favicon.")
     return RedirectResponse(url="/admin/settings/general?saved=1", status_code=status.HTTP_302_FOUND)
+
 
 
 # ==============================================================================
@@ -622,4 +644,71 @@ async def admin_appearance_settings_reset(
     """
     theme_service.reset_admin_theme(db)
     return RedirectResponse(url="/admin/settings/appearance?reset=1", status_code=status.HTTP_302_FOUND)
+
+
+# ==============================================================================
+# SEO & ROBOTS.TXT SETTINGS
+# ==============================================================================
+
+@router.get("/seo", response_class=HTMLResponse, summary="SEO & Robots Settings")
+async def admin_seo_settings_view(
+    request: Request,
+    saved: Optional[int] = None,
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    settings_service.seed_defaults(db)
+    general_settings = settings_service.get_general_settings(db)
+    
+    robots_setting = db.query(SiteSetting).filter(SiteSetting.key == "seo_robots_txt").first()
+    default_robots = (
+        "User-agent: *\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/\n"
+        "Disallow: /uploads/temp/\n"
+        "\n"
+        f"Sitemap: {str(request.base_url).rstrip('/')}/sitemap.xml\n"
+    )
+    robots_txt = robots_setting.value if robots_setting and robots_setting.value else default_robots
+
+    return templates.TemplateResponse(
+        request=request,
+        name="admin/settings/seo.html",
+        context={
+            "request": request,
+            "current_user": current_user,
+            "general": general_settings,
+            "robots_txt": robots_txt,
+            "saved": bool(saved),
+            "active_page": "settings",
+            "active_subpage": "settings_seo",
+        },
+    )
+
+
+@router.post("/seo", summary="Save SEO & Robots Settings")
+async def admin_seo_settings_save(
+    request: Request,
+    default_meta_title: str = Form(...),
+    default_meta_description: str = Form(...),
+    default_meta_keywords: Optional[str] = Form(None),
+    default_og_image: Optional[str] = Form(None),
+    seo_robots_txt: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_admin),
+    db: Session = Depends(get_db),
+):
+    settings_service.set_setting(db, "general_meta_title", default_meta_title.strip(), "Default Meta Title", "general")
+    settings_service.set_setting(db, "general_meta_description", default_meta_description.strip(), "Default Meta Description", "general")
+    settings_service.set_setting(db, "general_meta_keywords", default_meta_keywords.strip() if default_meta_keywords else "", "Default Meta Keywords", "general")
+    settings_service.set_setting(db, "general_og_image", default_og_image.strip() if default_og_image else "/static/images/hero_furnace.webp", "Default OG Image", "general")
+    
+    if seo_robots_txt is not None:
+        settings_service.set_setting(db, "seo_robots_txt", seo_robots_txt.strip(), "Robots.txt Content", "seo")
+
+    from app.core.templates import clear_template_cache
+    clear_template_cache()
+
+    logger.info("Updated SEO defaults and robots.txt configuration.")
+    return RedirectResponse(url="/admin/settings/seo?saved=1", status_code=status.HTTP_302_FOUND)
+
 

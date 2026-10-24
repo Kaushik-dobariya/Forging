@@ -93,6 +93,16 @@
   --container-max: 1320px;
   --admin-sidebar-width: 270px;
   --header-height: 76px;
+
+  /* Header & Footer Color Aliases */
+  --header-background: var(--theme-header-bg, var(--color-primary, #17212B));
+  --header-text: var(--theme-header-text, #FFFFFF);
+  --header-link: var(--theme-header-link, #F5F4F0);
+  --footer-background: var(--theme-footer-bg, var(--color-primary, #17212B));
+  --footer-text: var(--theme-footer-text, #CBD5E1);
+  --footer-heading: var(--theme-footer-heading, #FFFFFF);
+  --footer-link: var(--theme-footer-link, var(--color-accent, #B7793F));
+  --footer-font-size: var(--font-size-footer, 0.875rem);
 }
 
 /* Base Reset & Foundations */

@@ -23,6 +23,7 @@ class User(Base):
     role = Column(String(50), default=UserRole.SUPER_ADMIN.value, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_superuser = Column(Boolean, default=False, nullable=False)
+    avatar_url = Column(String(500), nullable=True)
 
     # Brute-force & security tracking
     failed_login_attempts = Column(Integer, default=0, nullable=False)

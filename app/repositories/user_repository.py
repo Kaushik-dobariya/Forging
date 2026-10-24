@@ -77,14 +77,18 @@ class UserRepository:
         user: User,
         full_name: str,
         email: str,
+        avatar_url: Optional[str] = None,
     ) -> User:
-        """Updates administrator profile information (full_name and email)."""
+        """Updates administrator profile information (full_name, email, and avatar_url)."""
         user.full_name = full_name.strip()
         user.email = email.strip().lower()
+        if avatar_url is not None:
+            user.avatar_url = avatar_url if avatar_url != "" else None
         db.add(user)
         db.commit()
         db.refresh(user)
         return user
+
 
     def update_password(
         self,

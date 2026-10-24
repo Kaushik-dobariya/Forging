@@ -186,4 +186,62 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => alert.remove(), 400);
     }, 6000);
   });
+
+  // ==============================================================================
+  // 4. Sticky Header State & Elevation Shadow
+  // ==============================================================================
+  const siteHeader = document.querySelector('.site-header');
+  if (siteHeader) {
+    const handleHeaderScroll = () => {
+      const scrollPos = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+      if (scrollPos > 10) {
+        siteHeader.classList.add('is-scrolled', 'is-sticky');
+      } else {
+        siteHeader.classList.remove('is-scrolled', 'is-sticky');
+      }
+    };
+    window.addEventListener('scroll', handleHeaderScroll, { passive: true });
+    window.addEventListener('resize', handleHeaderScroll, { passive: true });
+    handleHeaderScroll();
+  }
+
+  // ==============================================================================
+  // 5. Scroll to Top (Footer & Floating)
+  // ==============================================================================
+  const scrollToTopButtons = document.querySelectorAll(
+    '#footerScrollToTopBtn, #footerBottomScrollBtn, #underFooterScrollTopBtn, #floatingScrollTopBtn, #scrollPageTopBtn, .btn-scroll-to-top, .btn-scroll-to-top-footer'
+  );
+  scrollToTopButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+      document.documentElement.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  });
+
+  const floatingScrollBtn = document.getElementById('floatingScrollTopBtn');
+  if (floatingScrollBtn) {
+    const handleFloatingScroll = () => {
+      const scrollPos = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+      if (scrollPos > 200) {
+        floatingScrollBtn.style.opacity = '1';
+        floatingScrollBtn.style.visibility = 'visible';
+        floatingScrollBtn.style.transform = 'translateY(0)';
+      } else {
+        floatingScrollBtn.style.opacity = '0';
+        floatingScrollBtn.style.visibility = 'hidden';
+        floatingScrollBtn.style.transform = 'translateY(10px)';
+      }
+    };
+    window.addEventListener('scroll', handleFloatingScroll, { passive: true });
+    window.addEventListener('resize', handleFloatingScroll, { passive: true });
+    handleFloatingScroll();
+  }
 });
+

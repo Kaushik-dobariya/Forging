@@ -1,0 +1,116 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}URL Redirect Manager{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div class="header-left">
+    <h1 class="page-title">URL Redirect Manager</h1>
+    <p class="page-subtitle">Configure 301 (Permanent) and 302 (Temporary) redirects with automated cycle loop detection.</p>
+  </div>
+  <div class="header-actions">
+    <a href="/admin/redirects/create" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      Add Redirect Rule
+    </a>
+  </div>
+</div>
+
+<!-- Redirect Tester Box -->
+<div class="card" style="margin-bottom: 24px; padding: 20px; background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 8px;">
+  <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--admin-primary);">Test URL Redirect Chain</h3>
+  <form method="GET" action="/admin/redirects" style="display: flex; gap: 12px; max-width: 600px;">
+    <input type="text" name="test_path" value="{{ test_path }}" placeholder="e.g. /old-product-page" class="form-control" style="flex: 1;" required>
+    <button type="submit" class="btn btn-outline">Test URL</button>
+  </form>
+  {% if test_result %}
+    <div style="margin-top: 14px; padding: 12px 16px; border-radius: 6px; font-size: 0.9rem; {% if test_result.target %}background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;{% else %}background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;{% endif %}">
+      {% if test_result.target %}
+        <strong>Matches Rule:</strong> <code>{{ test_result.source }}</code> &rarr; <code>{{ test_result.target }}</code> (HTTP {{ test_result.status_code }})
+      {% else %}
+        <strong>No Redirect:</strong> <code>{{ test_result.source }}</code> will serve regular route / 404 (no active redirect rule matches).
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+
+<!-- Redirects List Table -->
+<div class="card">
+  <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div class="card-title">Configured Redirects ({{ total }})</div>
+    <form method="GET" action="/admin/redirects" style="display: flex; gap: 8px;">
+      <input type="text" name="search" value="{{ search }}" placeholder="Search paths..." class="form-control" style="width: 220px;">
+      <button type="submit" class="btn btn-outline btn-sm">Filter</button>
+      {% if search %}
+        <a href="/admin/redirects" class="btn btn-sm btn-subtle">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th style="width: 30%;">Old URL (Source Path)</th>
+          <th style="width: 30%;">New URL (Target Path)</th>
+          <th style="width: 10%;">Type</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 10%;">Notes</th>
+          <th style="width: 10%; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if items %}
+          {% for r in items %}
+          <tr>
+            <td>
+              <code style="font-size: 0.85rem; color: var(--admin-primary); font-weight: 600;">{{ r.source_path }}</code>
+            </td>
+            <td>
+              <code style="font-size: 0.85rem; color: var(--color-accent); font-weight: 600;">{{ r.target_path }}</code>
+            </td>
+            <td>
+              <span class="badge {% if r.status_code == 301 %}badge-success{% else %}badge-info{% endif %}" style="font-family: var(--font-mono); font-size: 0.75rem;">
+                HTTP {{ r.status_code }}
+              </span>
+            </td>
+            <td>
+              <form method="POST" action="/admin/redirects/{{ r.id }}/toggle" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+                <button type="submit" class="btn btn-sm {% if r.is_active %}btn-outline{% else %}btn-subtle{% endif %}" title="Click to toggle active status" style="font-size: 0.75rem; padding: 2px 8px;">
+                  {% if r.is_active %}Active{% else %}Inactive{% endif %}
+                </button>
+              </form>
+            </td>
+            <td style="color: var(--color-text-secondary); font-size: 0.85rem;">
+              {{ r.notes or '—' }}
+            </td>
+            <td style="text-align: right; white-space: nowrap;">
+              <a href="/admin/redirects/{{ r.id }}/edit" class="btn btn-sm btn-outline" style="padding: 4px 8px;">Edit</a>
+              <form method="POST" action="/admin/redirects/{{ r.id }}/delete" style="display: inline;" onsubmit="return confirm('Delete redirect for {{ r.source_path }}?');">
+                <input type="hidden" name="csrf_token" value="{{ get_csrf_token(request) }}">
+                <button type="submit" class="btn btn-sm btn-danger" style="padding: 4px 8px;">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
+              No URL redirect rules configured. Click "Add Redirect Rule" to create one.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if total_pages > 1 %}
+  <div class="card-footer" style="display: flex; justify-content: center; gap: 8px;">
+    {% for p in range(1, total_pages + 1) %}
+      <a href="/admin/redirects?page={{ p }}{% if search %}&search={{ search }}{% endif %}" class="btn btn-sm {% if p == page %}btn-primary{% else %}btn-outline{% endif %}">{{ p }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

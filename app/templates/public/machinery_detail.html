@@ -1,0 +1,104 @@
+{% extends "public/base_public.html" %}
+
+{% block title %}{{ equipment.meta_title or equipment.name ~ " | Heavy Forging Machinery" }}{% endblock %}
+
+{% block meta_description %}{{ equipment.meta_description or equipment.description or "Heavy industrial equipment specifications and capacity details." }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Header -->
+<section style="background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); color: #FFFFFF; padding: 4rem 0 3rem; border-bottom: 3px solid var(--color-accent); position: relative;">
+  <div class="container">
+    <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem; color: var(--color-accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">
+      <a href="/" style="color: rgba(255,255,255,0.7); text-decoration: none;">Home</a>
+      <span>/</span>
+      <a href="/infrastructure" style="color: rgba(255,255,255,0.7); text-decoration: none;">Infrastructure</a>
+      <span>/</span>
+      <a href="/machinery" style="color: rgba(255,255,255,0.7); text-decoration: none;">Machinery</a>
+      <span>/</span>
+      <span>{{ equipment.name }}</span>
+    </div>
+    <div style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+      {{ equipment.category or 'Heavy Equipment' }}
+    </div>
+    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; color: #FFFFFF; line-height: 1.2; max-width: 900px; margin-bottom: 12px;">
+      {{ equipment.name }}
+    </h1>
+    {% if equipment.capacity %}
+    <p style="font-size: 1.15rem; color: rgba(255,255,255,0.9); max-width: 760px;">
+      Operating Capacity: <strong>{{ equipment.capacity }}</strong>
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Detail Section -->
+<section style="padding: 4.5rem 0; background-color: var(--color-background);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+      <!-- Image / Gallery -->
+      <div>
+        {% if equipment.image %}
+        <div style="border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border); box-shadow: 0 4px 16px rgba(0,0,0,0.06); margin-bottom: 20px;">
+          <img src="{{ equipment.image }}" alt="{{ equipment.name }} machinery view" loading="lazy" decoding="async" style="width: 100%; height: auto; display: block; object-fit: cover;">
+        </div>
+        {% else %}
+        <div style="height: 350px; background: #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 1.1rem; font-weight: 600;">
+          Machinery Photo
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Specs & Details -->
+      <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);">
+        <h2 style="font-size: 1.4rem; font-weight: 700; color: var(--color-primary); margin-bottom: 16px; border-bottom: 2px solid var(--color-border); padding-bottom: 10px;">
+          Engineering Specifications
+        </h2>
+
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+          {% if equipment.manufacturer %}
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 8px;">
+            <span style="color: var(--color-text-secondary); font-size: 0.9rem;">Manufacturer:</span>
+            <span style="font-weight: 600; color: var(--color-primary);">{{ equipment.manufacturer }}</span>
+          </div>
+          {% endif %}
+          {% if equipment.model %}
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 8px;">
+            <span style="color: var(--color-text-secondary); font-size: 0.9rem;">Model:</span>
+            <span style="font-weight: 600; color: var(--color-primary);">{{ equipment.model }}</span>
+          </div>
+          {% endif %}
+          {% if equipment.capacity %}
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 8px;">
+            <span style="color: var(--color-text-secondary); font-size: 0.9rem;">Capacity:</span>
+            <span style="font-weight: 600; color: var(--color-primary);">{{ equipment.capacity }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if equipment.description %}
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Overview</h3>
+          <p style="color: var(--color-text-secondary); line-height: 1.6; font-size: 0.95rem;">
+            {{ equipment.description }}
+          </p>
+        </div>
+        {% endif %}
+
+        {% if equipment.specifications %}
+        <div style="margin-bottom: 24px;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px;">Technical Parameters</h3>
+          <div style="color: var(--color-text-secondary); line-height: 1.6; font-size: 0.9rem; background: var(--color-background); border: 1px solid var(--color-border-subtle); border-radius: 4px; padding: 14px;">
+            {{ equipment.specifications }}
+          </div>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 14px; margin-top: 30px;">
+          <a href="/request-a-quote" class="btn btn-primary" style="flex: 1; text-align: center;">Request Capacity Quote</a>
+          <a href="/machinery" class="btn btn-outline">All Machinery</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

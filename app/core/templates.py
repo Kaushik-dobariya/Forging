@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from app.core.config import settings, BASE_DIR
@@ -192,6 +192,61 @@ def get_dynamic_admin_theme_css() -> str:
         return ""
 
 
+# --------------------------------------------------------------------------
+# PERFORMANCE CACHING (In-Memory with TTL)
+# --------------------------------------------------------------------------
+_CACHE: Dict[str, Tuple[float, Any]] = {}
+_CACHE_TTL_SECONDS = 30.0
+
+
+def get_cached(key: str) -> Optional[Any]:
+    import time
+    if key in _CACHE:
+        ts, val = _CACHE[key]
+        if time.time() - ts < _CACHE_TTL_SECONDS:
+            return val
+    return None
+
+
+def set_cached(key: str, val: Any) -> None:
+    import time
+    _CACHE[key] = (time.time(), val)
+
+
+def clear_template_cache() -> None:
+    _CACHE.clear()
+
+
+def get_dynamic_seo(
+    request: Optional[Request] = None,
+    entity: Optional[Any] = None,
+    entity_type: Optional[str] = None,
+    custom_title: Optional[str] = None,
+    custom_description: Optional[str] = None,
+    custom_canonical: Optional[str] = None,
+    og_image: Optional[str] = None,
+    faqs: Optional[List[Any]] = None,
+) -> Dict[str, Any]:
+    """Retrieves full SEO and JSON-LD structured data context."""
+    path = request.url.path if request else "/"
+    from app.services.seo_service import seo_service
+    db = SessionLocal()
+    try:
+        return seo_service.get_seo_context(
+            path=path,
+            entity=entity,
+            entity_type=entity_type,
+            custom_title=custom_title,
+            custom_description=custom_description,
+            custom_canonical=custom_canonical,
+            og_image=og_image,
+            faqs=faqs,
+            db=db,
+        )
+    finally:
+        db.close()
+
+
 templates.env.globals["get_csrf_token"] = get_csrf_token
 templates.env.globals["get_public_csrf_token"] = get_public_csrf_token
 templates.env.globals["get_header_menu"] = get_header_menu
@@ -204,4 +259,7 @@ templates.env.globals["get_theme_settings"] = get_theme_settings
 templates.env.globals["get_dynamic_theme_css"] = get_dynamic_theme_css
 templates.env.globals["get_admin_theme_settings"] = get_admin_theme_settings
 templates.env.globals["get_dynamic_admin_theme_css"] = get_dynamic_admin_theme_css
+templates.env.globals["get_dynamic_seo"] = get_dynamic_seo
+templates.env.globals["clear_template_cache"] = clear_template_cache
+
 

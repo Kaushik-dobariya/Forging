@@ -24,12 +24,14 @@
       <div class="hero-slide {% if loop.first %}active{% endif %}" data-slide-index="{{ loop.index0 }}" style="display: {% if loop.first %}flex{% else %}none{% endif %}; align-items: center; min-height: 85vh; position: relative; padding: 5rem 0; width: 100%;">
         
         <!-- Background Image with Contrast Overlay -->
-        <div class="slide-bg" style="position: absolute; inset: 0; background-image: url('{{ slide.background_image_url or '/static/images/hero_slide_1.webp' }}'); background-size: cover; background-position: center; z-index: 1;">
-          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(23,33,43, {{ slide.overlay_opacity or 0.65 }}) 0%, rgba(15,22,29, {{ slide.overlay_opacity or 0.75 }}) 100%);"></div>
+        {% set op_dec = slide.overlay_opacity_decimal if slide.overlay_opacity_decimal is defined else 0.65 %}
+        <div class="slide-bg" style="position: absolute; inset: 0; background-image: url('{{ slide.background_image or slide.background_image_url or '/static/images/hero_slide_1.webp' }}'); background-size: cover; background-position: center; z-index: 1;">
+          <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(23,33,43, {{ op_dec }}) 0%, rgba(15,22,29, {{ [op_dec + 0.1, 0.95]|min }}) 100%);"></div>
         </div>
 
         <div class="container" style="position: relative; z-index: 2; width: 100%;">
-          <div style="max-width: 860px; {% if slide.text_alignment == 'center' %}margin: 0 auto; text-align: center;{% elif slide.text_alignment == 'right' %}margin-left: auto; text-align: right;{% else %}text-align: left;{% endif %}">
+          {% set s_align = slide.text_align or slide.text_alignment or 'left' %}
+          <div style="max-width: 860px; {% if s_align == 'center' %}margin: 0 auto; text-align: center;{% elif s_align == 'right' %}margin-left: auto; text-align: right;{% else %}text-align: left;{% endif %}">
             
             {% if slide.eyebrow %}
             <div class="hero-eyebrow" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(183, 121, 63, 0.2); border: 1px solid var(--color-accent); color: var(--color-accent); font-family: var(--font-mono); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; padding: 6px 14px; border-radius: 4px; margin-bottom: 20px;">

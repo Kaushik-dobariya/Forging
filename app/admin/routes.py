@@ -1,12 +1,14 @@
 import re
 from typing import Optional
 from urllib.parse import urlparse
-from fastapi import APIRouter, Request, Depends, Form, status, HTTPException
+from fastapi import APIRouter, Request, Depends, Form, File, UploadFile, status, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user import User
 from app.services.auth_service import auth_service
+from app.services.upload_service import upload_service
+
 from app.admin.dependencies import get_current_admin
 from app.repositories.user_repository import user_repository
 from app.core.security import (
@@ -142,11 +144,13 @@ async def admin_profile_post(
     request: Request,
     full_name: str = Form(...),
     email: str = Form(...),
+    avatar_file: Optional[UploadFile] = File(None),
+    remove_avatar: Optional[str] = Form(None),
     csrf_token: Optional[str] = Form(None),
     current_user: User = Depends(get_current_admin),
     db: Session = Depends(get_db),
 ):
-    """Processes administrative profile updates with validation and CSRF enforcement."""
+    """Processes administrative profile updates with validation, photo upload, and CSRF enforcement."""
     # 1. CSRF validation
     token = request.cookies.get(settings.SESSION_COOKIE_NAME)
     payload = verify_session_token(token) if token else None
@@ -203,8 +207,30 @@ async def admin_profile_post(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
-    # 4. Persistence of permitted fields only (roles/permissions cannot be updated)
-    updated_user = user_repository.update_profile(db, current_user, clean_name, clean_email)
+    # 4. Handle avatar file upload or removal
+    avatar_url = current_user.avatar_url
+    if remove_avatar in ("1", "true", "on"):
+        avatar_url = ""
+    elif avatar_file and avatar_file.filename:
+        try:
+            rel_url, _ = upload_service.save_upload(avatar_file, subfolder="avatars", is_drawing=False)
+            avatar_url = rel_url
+        except Exception as exc:
+            logger.error(f"Failed to upload user avatar: {exc}")
+            return templates.TemplateResponse(
+                request=request,
+                name="admin/profile.html",
+                context={
+                    "request": request,
+                    "current_user": current_user,
+                    "active_page": "profile",
+                    "error": f"Avatar upload failed: {str(exc)}",
+                },
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
+
+    # 5. Persistence of permitted fields only (roles/permissions cannot be updated)
+    updated_user = user_repository.update_profile(db, current_user, clean_name, clean_email, avatar_url=avatar_url)
 
     response = templates.TemplateResponse(
         request=request,
@@ -219,6 +245,7 @@ async def admin_profile_post(
     # Refresh session cookie with updated email
     auth_service.create_admin_session(response, updated_user)
     return response
+
 
 
 @router.get("/change-password", response_class=HTMLResponse, summary="Admin Change Password View")
@@ -365,8 +392,13 @@ from app.models.page import CMSPage
 from app.models.menu import MenuItem
 from app.models.hero_slide import HeroSlide
 from app.models.timeline import TimelineMilestone
+from app.models.media import MediaAsset
+from app.models.redirect import URLRedirect
 from app.admin.hero_admin import router as hero_router
 from app.admin.timeline_admin import router as timeline_router
+from app.admin.redirects_admin import router as redirects_router
+from app.admin.media_admin import router as media_router
+from app.admin.seo_admin import router as seo_router
 
 
 @router.get("", response_class=HTMLResponse, summary="Super Admin Dashboard")
@@ -396,6 +428,8 @@ async def admin_dashboard(
         "menu_items": db.query(MenuItem).count(),
         "hero_slides": db.query(HeroSlide).count(),
         "timeline_milestones": db.query(TimelineMilestone).count(),
+        "media_assets": db.query(MediaAsset).count(),
+        "redirects": db.query(URLRedirect).count(),
         "new_leads": db.query(ContactLead).filter(ContactLead.status == LeadStatus.NEW.value).count()
         + db.query(QuoteRequest).filter(QuoteRequest.status == LeadStatus.NEW.value).count(),
     }
@@ -435,6 +469,10 @@ router.include_router(pages_router)
 router.include_router(menus_router)
 router.include_router(hero_router)
 router.include_router(timeline_router)
+router.include_router(redirects_router)
+router.include_router(media_router)
+router.include_router(seo_router)
+
 
 
 
